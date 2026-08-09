@@ -1,0 +1,32 @@
+name: engine parity
+
+# The whole point: a tax-data edit that silently breaks the engine, or a
+# JS port that drifts from the Python reference, fails the build.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Python reference engine — golden tests
+        run: python3 tests/test_engine.py
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: JavaScript port — parity against Python fixtures
+        working-directory: web
+        run: node parity.js
+
+      - name: Shipped app — parity against Python fixtures
+        run: node tests/shipped_parity.js

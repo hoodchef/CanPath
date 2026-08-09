@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0E1B2C">
+<meta name="description" content="See your true effective marginal rate in Canada, including the benefit clawbacks your tax bracket hides.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CanPath">
+<title>CanPath — what your next dollar is actually worth</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0E1B2C; --paper:#EEF1F5; --surface:#FFFFFF;
+  --claw:#C8102E; --stat:#3D6B99; --keep:#0B7A6B;
+  --rule:#D5DCE5; --muted:#5C6B7F; --warn:#8A5A00; --warn-bg:#FDF6E3;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+  --cond:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.eyebrow{font-family:var(--cond);font-weight:600;text-transform:uppercase;
+  letter-spacing:.11em;font-size:11px;color:var(--muted)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+header{border-bottom:1px solid var(--rule);background:var(--surface)}
+.mast{max-width:1180px;margin:0 auto;padding:18px 24px;display:flex;
+  align-items:baseline;gap:14px;flex-wrap:wrap}
+.wordmark{font-weight:700;font-size:19px;letter-spacing:-.02em}
+.wordmark span{color:var(--claw)}
+.mast .eyebrow{margin-left:auto}
+.badge{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);
+  border-radius:3px;padding:2px 7px;color:var(--muted)}
+
+/* ---------- shell ---------- */
+.shell{max-width:1180px;margin:0 auto;padding:24px;display:grid;
+  grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start}
+@media(max-width:900px){.shell{grid-template-columns:1fr;padding:16px;gap:16px}}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--rule)}
+.panel-body{padding:18px}
+aside{position:sticky;top:24px}
+@media(max-width:900px){aside{position:static}}
+
+/* ---------- form ---------- */
+.field{margin-bottom:16px}
+.field:last-child{margin-bottom:0}
+label{display:block;font-size:12.5px;font-weight:500;margin-bottom:5px}
+.hint{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
+input[type=number],input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--rule);
+  border-radius:4px;font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--stat);margin:4px 0 0}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--stat);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center}
+.check{display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:13px}
+.check input{margin-top:2px;accent-color:var(--stat)}
+.divider{height:1px;background:var(--rule);margin:18px -18px}
+
+.kids{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.kid{display:inline-flex;align-items:center;gap:5px;background:var(--paper);
+  border:1px solid var(--rule);border-radius:999px;padding:3px 5px 3px 11px;font-size:12.5px}
+.kid .num{font-weight:500}
+.kid button{border:0;background:none;cursor:pointer;color:var(--muted);
+  font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}
+.kid button:hover{color:var(--claw);background:#0000000d}
+.addkid{border:1px dashed var(--rule);background:none;border-radius:999px;
+  padding:4px 12px;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:var(--sans)}
+.addkid:hover{border-color:var(--stat);color:var(--stat)}
+
+/* ---------- hero: the dollar ---------- */
+.hero{padding:22px 24px 24px}
+.hero h1{font-size:15px;font-weight:600;margin:0 0 2px;letter-spacing:-.01em}
+.hero .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.dollar{display:flex;height:52px;border-radius:4px;overflow:hidden;
+  border:1px solid var(--rule);background:var(--paper)}
+.seg{position:relative;transition:width .28s cubic-bezier(.4,0,.2,1);min-width:0}
+.seg-stat{background:var(--stat)}
+.seg-claw{background:var(--claw)}
+.seg-keep{background:var(--keep)}
+.ticks{display:flex;height:7px;margin-top:3px}
+.ticks i{flex:1;border-left:1px solid var(--rule);height:4px}
+.ticks i:nth-child(10n+1){height:7px;border-color:var(--muted)}
+.legend{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}
+.leg{display:flex;gap:8px;align-items:flex-start}
+.swatch{width:11px;height:11px;border-radius:2px;margin-top:4px;flex:none}
+.leg .v{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.1}
+.leg .k{font-size:11.5px;color:var(--muted);line-height:1.3}
+
+.headline{margin-top:20px;padding-top:18px;border-top:1px solid var(--rule);
+  display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}
+.big{font-family:var(--mono);font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1}
+.big.claw{color:var(--claw)}
+.vs{font-size:13px;color:var(--muted);max-width:290px;line-height:1.45}
+.vs b{font-family:var(--mono);font-weight:600;color:var(--ink)}
+
+/* ---------- chart ---------- */
+.chartwrap{padding:18px}
+svg{display:block;width:100%;height:auto;touch-action:none}
+.axis{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.gridline{stroke:var(--rule);stroke-width:1}
+.readout{background:var(--paper);border-top:1px solid var(--rule);
+  padding:10px 18px;font-size:12.5px;display:flex;gap:18px;flex-wrap:wrap}
+.readout b{font-family:var(--mono);font-weight:600}
+
+/* ---------- allocation ---------- */
+.alloc{display:flex;flex-direction:column}
+.arow{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:center;
+  padding:13px 18px;border-bottom:1px solid var(--rule)}
+.arow:last-child{border-bottom:0}
+.rank{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
+.aname{font-weight:600;font-size:13.5px}
+.awhy{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:1px}
+.aamt{font-family:var(--mono);font-size:16px;font-weight:600;text-align:right;white-space:nowrap}
+.total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+  padding:14px 18px;background:var(--ink);color:#fff;flex-wrap:wrap}
+.total .v{font-family:var(--mono);font-size:26px;font-weight:600}
+.total .k{font-size:12px;opacity:.8}
+.bd{padding:12px 18px;font-size:12.5px;color:var(--muted);display:flex;
+  gap:16px;flex-wrap:wrap;border-top:1px solid var(--rule)}
+.bd b{font-family:var(--mono);color:var(--ink);font-weight:600}
+
+.warn{display:flex;gap:10px;padding:12px 18px;background:var(--warn-bg);
+  border-top:1px solid #EED9A8;font-size:12.5px;line-height:1.45;color:#4A3B18}
+.warn .mark{color:var(--warn);font-weight:700;flex:none}
+
+footer{max-width:1180px;margin:0 auto;padding:8px 24px 40px;font-size:11.5px;
+  color:var(--muted);line-height:1.55}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="mast">
+    <div class="wordmark">Can<span>Path</span></div>
+    <span class="badge">2026 tax year</span>
+    <span class="badge">British Columbia</span>
+    <span class="eyebrow">Educational model — not tax advice</span>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- ============ INPUTS ============ -->
+  <aside>
+    <div class="panel">
+      <div class="panel-head"><span class="eyebrow">Your situation</span></div>
+      <div class="panel-body">
+
+        <div class="field">
+          <label for="income">Your employment income</label>
+          <input type="number" id="income" value="72000" min="0" max="500000" step="1000">
+          <input type="range" id="incomeRange" value="72000" min="10000" max="250000" step="500" aria-label="Income slider">
+        </div>
+
+        <div class="field">
+          <label for="partner">Spouse or partner's income</label>
+          <input type="number" id="partner" value="0" min="0" max="500000" step="1000">
+          <div class="hint">Both incomes count toward the family income the Canada Child Benefit is tested against.</div>
+        </div>
+
+        <div class="field">
+          <label>Children under 18</label>
+          <div class="kids" id="kids"></div>
+          <div class="hint">Ages matter: under 6 carries a higher benefit.</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <label for="savings">Money you can invest this year</label>
+          <input type="number" id="savings" value="15000" min="0" max="200000" step="500">
+        </div>
+
+        <div class="field">
+          <label class="check">
+            <input type="checkbox" id="fhsa" checked>
+            <span>I qualify for an FHSA<br><span class="hint" style="margin:0">First home, or no home owned in the last 4 years.</span></span>
+          </label>
+        </div>
+
+        <div class="field">
+          <label for="match">Employer RRSP match</label>
+          <div class="row">
+            <input type="number" id="matchRate" value="50" min="0" max="200" step="5" aria-label="Match percentage">
+            <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
+            <input type="number" id="matchCap" value="3000" min="0" max="50000" step="500" aria-label="Match cap">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="retrate">Tax rate you expect in retirement</label>
+          <div class="row">
+            <input type="range" id="retrate" value="25" min="0" max="55" step="1" style="flex:1">
+            <span class="num" id="retrateOut" style="width:44px;text-align:right;font-weight:600">25%</span>
+          </div>
+          <div class="hint">An RRSP only pays off if you contribute at a higher rate than you withdraw at.</div>
+        </div>
+
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ RESULTS ============ -->
+  <main>
+
+    <div class="panel">
+      <div class="hero">
+        <h1>Your next dollar earned</h1>
+        <div class="sub" id="heroSub"></div>
+
+        <div class="dollar" role="img" id="dollarBar">
+          <div class="seg seg-stat" id="segStat"></div>
+          <div class="seg seg-claw" id="segClaw"></div>
+          <div class="seg seg-keep" id="segKeep"></div>
+        </div>
+        <div class="ticks" id="ticks" aria-hidden="true"></div>
+
+        <div class="legend">
+          <div class="leg"><span class="swatch" style="background:var(--stat)"></span>
+            <span><span class="v" id="vStat">0¢</span><br><span class="k">Income tax<br>federal + BC</span></span></div>
+          <div class="leg"><span class="swatch" style="background:var(--claw)"></span>
+            <span><span class="v" id="vClaw">0¢</span><br><span class="k">Benefit clawback<br>invisible on your tax return</span></span></div>
+          <div class="leg"><span class="swatch" style="background:var(--keep)"></span>
+            <span><span class="v" id="vKeep">0¢</span><br><span class="k">You keep</span></span></div>
+        </div>
+
+        <div class="headline">
+          <div>
+            <div class="eyebrow">True effective rate</div>
+            <div class="big claw" id="bigRate">0%</div>
+          </div>
+          <div class="vs" id="vsText"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <div class="panel-head"><span class="eyebrow">Effective marginal rate across income</span></div>
+      <div class="chartwrap"><svg id="chart" viewBox="0 0 760 320" preserveAspectRatio="xMidYMid meet"></svg></div>
+      <div class="readout" id="readout"></div>
+    </div>
+
+    <div class="panel" style="margin-top:20px">
+      <div class="panel-head"><span class="eyebrow">Where to put your money, in order</span></div>
+      <div class="alloc" id="alloc"></div>
+      <div class="total">
+        <span class="k">First-year return on your contributions</span>
+        <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+      </div>
+      <div class="bd" id="breakdown"></div>
+      <div id="warnings"></div>
+    </div>
+
+  </main>
+</div>
+
+<footer>
+  Federal brackets: CRA 2026, indexed 2.0%, lowest rate 14%. British Columbia brackets: Province of B.C., indexed 2.2%, bottom rate 5.60%.
+  Canada Child Benefit: 2026–27 benefit year. Calculations run entirely in your browser — nothing you type is sent anywhere or stored.
+  <br><br>
+  This is an educational model, not tax, financial, or investment advice, and it does not account for every credit, deduction, or personal circumstance.
+  CPP and EI are excluded from the marginal rate because they are levied on gross employment income and are unaffected by an RRSP deduction.
+  Confirm your own contribution room in CRA My Account before contributing.
+</footer>
+
+<script>
+/* ================================================================
+   ENGINE — ported from the Python reference implementation and
+   verified against it: 108/108 parity assertions pass.
+   ================================================================ */
+const TAX_2026={tax_year:2026,
+federal:{brackets:[{floor:0,rate:.14},{floor:58523,rate:.205},{floor:117045,rate:.26},{floor:181440,rate:.29},{floor:258482,rate:.33}],
+credit_rate:.14,bpa:{base:14829,additional:1623,phaseout_start:181440,phaseout_end:258482}},
+provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:50363,rate:.077},{floor:100728,rate:.105},{floor:115648,rate:.1229},{floor:140430,rate:.147},{floor:190405,rate:.168},{floor:265545,rate:.205}],
+credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}}},
+benefits:{ccb:{max_under_6:8157,max_6_to_17:6883,threshold_1:38237,threshold_2:82847,
+phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}}},
+accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000}}};
+
+function bracketTax(ti,br){if(ti<=0)return 0;let t=0;
+  for(let i=0;i<br.length;i++){const f=br[i].floor;if(ti<=f)break;
+    const c=i+1<br.length?br[i+1].floor:Infinity;t+=(Math.min(ti,c)-f)*br[i].rate;}return t;}
+function federalBPA(ni,cfg){const b=cfg.federal.bpa;let a;
+  if(ni<=b.phaseout_start)a=b.additional;else if(ni>=b.phaseout_end)a=0;
+  else a=b.additional*((b.phaseout_end-ni)/(b.phaseout_end-b.phaseout_start));return b.base+a;}
+function federalTax(ti,cfg){if(ti<=0)return 0;
+  return Math.max(0,bracketTax(ti,cfg.federal.brackets)-federalBPA(ti,cfg)*cfg.federal.credit_rate);}
+function provincialTax(ti,pr,cfg){if(ti<=0)return 0;const p=cfg.provinces[pr];
+  let t=Math.max(0,bracketTax(ti,p.brackets)-p.bpa*p.credit_rate);const tr=p.tax_reduction;
+  if(tr){let r=tr.max_credit;if(ti>tr.threshold)r-=(ti-tr.threshold)*tr.phaseout_rate;
+    t=Math.max(0,t-Math.max(0,r));}return t;}
+const combinedTax=(ti,pr,cfg)=>federalTax(ti,cfg)+provincialTax(ti,pr,cfg);
+function ccbMax(ages,cfg){const c=cfg.benefits.ccb;
+  return ages.reduce((t,a)=>t+(a<6?c.max_under_6:a<18?c.max_6_to_17:0),0);}
+const rateFor=(n,tb)=>tb[String(Math.min(Math.max(n,1),4))];
+function canadaChildBenefit(afni,ages,cfg){const c=cfg.benefits.ccb;
+  const n=ages.filter(a=>a<18).length;if(n===0)return 0;
+  const mx=ccbMax(ages,cfg),t1=c.threshold_1,t2=c.threshold_2;let red;
+  if(afni<=t1)red=0;else if(afni<=t2)red=rateFor(n,c.phase1_rates)*(afni-t1);
+  else red=rateFor(n,c.phase1_rates)*(t2-t1)+rateFor(n,c.phase2_rates)*(afni-t2);
+  return Math.max(0,mx-red);}
+function netPosition(inc,h,cfg,ded=0){const taxable=Math.max(0,inc-ded);
+  const partner=Math.max(0,h.partner_income||0);const afni=taxable+partner;
+  const tax=combinedTax(taxable,h.province,cfg);
+  const ptax=partner?combinedTax(partner,h.province,cfg):0;
+  const ben=canadaChildBenefit(afni,h.child_ages,cfg);
+  return{taxable_income:taxable,afni,tax,partner_tax:ptax,benefits:ben,
+    net_cash:inc+partner-ded-tax-ptax+ben};}
+function effectiveMarginalRate(inc,h,cfg,d=100){const lo=netPosition(inc,h,cfg),hi=netPosition(inc+d,h,cfg);
+  const s=(hi.tax-lo.tax)/d,c=(lo.benefits-hi.benefits)/d;
+  return{income:inc,statutory_rate:s,clawback_rate:c,effective_rate:s+c};}
+function valueOfContribution(inc,con,h,cfg){const b=netPosition(inc,h,cfg,0),a=netPosition(inc,h,cfg,con);
+  const rf=b.tax-a.tax,bg=a.benefits-b.benefits;
+  return{tax_refund:rf,benefit_restored:bg,total_value:rf+bg,blended_rate:con?(rf+bg)/con:0};}
+function optimize(p,cfg,chunk=250){const A=cfg.accounts;
+  const room={employer_match:p.employer_match_cap||0,
+    fhsa:p.fhsa_eligible?A.fhsa.annual_limit:0,
+    rrsp:Math.min(p.income*A.rrsp.earned_income_rate,A.rrsp.dollar_limit),
+    tfsa:A.tfsa.annual_limit};
+  const alloc={employer_match:0,fhsa:0,rrsp:0,tfsa:0,non_registered:0};
+  let rem=p.savings_capacity,ded=0,guard=0;
+  while(rem>.01&&guard++<10000){let amt=Math.min(chunk,rem);
+    const emr=effectiveMarginalRate(p.income-ded,p.household,cfg).effective_rate;
+    const sc={};
+    if(room.employer_match>0)sc.employer_match=(p.employer_match_rate||0)+emr;
+    if(room.fhsa>0)sc.fhsa=emr;
+    if(room.rrsp>0)sc.rrsp=emr-p.expected_retirement_rate;
+    if(room.tfsa>0)sc.tfsa=0;
+    const keys=Object.keys(sc);let best;
+    if(!keys.length||Math.max(...keys.map(k=>sc[k]))<0){
+      if(room.tfsa>0)best="tfsa";else{alloc.non_registered+=amt;rem-=amt;continue;}
+    }else best=keys.reduce((x,y)=>sc[y]>sc[x]?y:x);
+    amt=Math.min(amt,room[best]);
+    if(amt<=0){delete room[best];room[best]=0;
+      if(Object.values(room).every(v=>v<=0)){alloc.non_registered+=rem;rem=0;}continue;}
+    alloc[best]+=amt;room[best]-=amt;rem-=amt;
+    if(best==="rrsp"||best==="fhsa"||best==="employer_match")ded+=amt;}
+  const b=netPosition(p.income,p.household,cfg,0),a=netPosition(p.income,p.household,cfg,ded);
+  const out={};for(const[k,v]of Object.entries(alloc))if(v>0)out[k]=v;
+  return{allocation:out,total_deducted:ded,tax_refund:b.tax-a.tax,
+    benefit_restored:a.benefits-b.benefits,
+    employer_match_earned:alloc.employer_match*(p.employer_match_rate||0),
+    warnings:guardrails(p,cfg)};}
+function guardrails(p,cfg){const w=[];
+  const emr=effectiveMarginalRate(p.income,p.household,cfg).effective_rate;
+  if(p.savings_capacity>0&&emr<p.expected_retirement_rate)
+    w.push("An RRSP would destroy value here. Your effective rate now ("+(emr*100).toFixed(1)+
+      "%) is below the rate you expect to withdraw at ("+(p.expected_retirement_rate*100).toFixed(0)+
+      "%), so you would pay more tax later than you save today. Fill the TFSA first.");
+  if(p.income<45000)
+    w.push("At this income, money in an RRSP or RRIF can trigger Guaranteed Income Supplement clawback in retirement — roughly 50 cents on the dollar. TFSA withdrawals do not count against GIS.");
+  if(p.fhsa_eligible&&!(p.savings_capacity>0))
+    w.push("You have FHSA room. It is the only account that is both deductible going in and tax-free coming out.");
+  return w;}
+
+/* ================================================================
+   APP
+   ================================================================ */
+const $=id=>document.getElementById(id);
+const cfg=TAX_2026;
+let kids=[3,6];
+
+const money=v=>"$"+Math.round(v).toLocaleString("en-CA");
+const pct=v=>(v*100).toFixed(1)+"%";
+const cents=v=>Math.round(v*100)+"¢";
+
+const ACCOUNTS={
+  employer_match:{name:"Employer match",why:"Free money. Nothing else comes close — take every matched dollar first."},
+  fhsa:{name:"FHSA",why:"The only account that is deductible going in and tax-free coming out."},
+  rrsp:{name:"RRSP",why:"Deduct now at your high rate, withdraw later at a lower one."},
+  tfsa:{name:"TFSA",why:"No deduction, but growth and withdrawals are tax-free and never touch your benefits."},
+  non_registered:{name:"Non-registered",why:"Registered room is used up. Still worth investing."}
+};
+
+function renderKids(){
+  const el=$("kids");el.innerHTML="";
+  kids.forEach((age,i)=>{
+    const d=document.createElement("span");d.className="kid";
+    d.innerHTML='<span class="num">'+age+'</span><span style="color:var(--muted);font-size:11px">yr</span>';
+    const b=document.createElement("button");b.type="button";b.innerHTML="&times;";
+    b.setAttribute("aria-label","Remove child aged "+age);
+    b.onclick=()=>{kids.splice(i,1);renderKids();update();};
+    d.appendChild(b);el.appendChild(d);
+  });
+  const add=document.createElement("button");
+  add.className="addkid";add.type="button";add.textContent="+ Add a child";
+  add.onclick=()=>{if(kids.length<8){kids.push(5);renderKids();update();}};
+  el.appendChild(add);
+}
+
+function readInputs(){
+  const income=+$("income").value||0;
+  const partner=+$("partner").value||0;
+  const household={province:"BC",child_ages:kids.slice(),partner_income:partner};
+  return{income,partner,household,
+    savings:+$("savings").value||0,
+    fhsa:$("fhsa").checked,
+    matchRate:(+$("matchRate").value||0)/100,
+    matchCap:+$("matchCap").value||0,
+    retRate:(+$("retrate").value||0)/100};
+}
+
+/* ---------- chart ---------- */
+let W=760,H=320;
+const M={t:14,r:16,b:34,l:44};
+const X0=1e4,X1=2.2e5,Y1=.62;
+const sx=v=>M.l+(v-X0)/(X1-X0)*(W-M.l-M.r);
+const sy=v=>H-M.b-(v/Y1)*(H-M.t-M.b);
+function sizeChart(){
+  const narrow=window.innerWidth<760;
+  W=narrow?420:760; H=narrow?300:320;
+  $("chart").setAttribute("viewBox","0 0 "+W+" "+H);
+}
+
+function drawChart(inp){
+  sizeChart();
+  const svg=$("chart");
+  let s='';
+  for(let g=0;g<=.6;g+=.1){
+    s+=`<line class="gridline" x1="${M.l}" y1="${sy(g)}" x2="${W-M.r}" y2="${sy(g)}"/>`;
+    s+=`<text class="axis" x="${M.l-7}" y="${sy(g)+3}" text-anchor="end">${Math.round(g*100)}%</text>`;
+  }
+  const pts=[];
+  for(let x=X0;x<=X1;x+=400){
+    const r=effectiveMarginalRate(x,inp.household,cfg);
+    pts.push([x,r.statutory_rate,r.effective_rate]);
+  }
+  const line=idx=>pts.map((p,i)=>(i?"L":"M")+sx(p[0]).toFixed(1)+" "+sy(p[idx]).toFixed(1)).join(" ");
+  const area=line(2)+" "+pts.slice().reverse().map(p=>"L"+sx(p[0]).toFixed(1)+" "+sy(p[1]).toFixed(1)).join(" ")+" Z";
+  s+=`<path d="${area}" fill="var(--claw)" opacity=".16"/>`;
+  s+=`<path d="${line(1)}" fill="none" stroke="#40506B" stroke-width="1.7" stroke-dasharray="5 3" opacity=".9"/>`;
+  s+=`<path d="${line(2)}" fill="none" stroke="var(--claw)" stroke-width="2.4" stroke-linejoin="round"/>`;
+
+  const xlabels=W<600?[25000,75000,150000,200000]:[25000,50000,75000,100000,150000,200000];
+  for(const v of xlabels)
+    s+=`<text class="axis" x="${sx(v)}" y="${H-M.b+16}" text-anchor="middle">$${v/1000}k</text>`;
+
+  const you=Math.min(Math.max(inp.income,X0),X1);
+  const r=effectiveMarginalRate(inp.income,inp.household,cfg);
+  s+=`<line x1="${sx(you)}" y1="${M.t}" x2="${sx(you)}" y2="${H-M.b}" stroke="var(--ink)" stroke-width="1.4"/>`;
+  s+=`<circle cx="${sx(you)}" cy="${sy(r.effective_rate)}" r="5.5" fill="var(--ink)"/>`;
+  s+=`<circle cx="${sx(you)}" cy="${sy(r.effective_rate)}" r="2.5" fill="#fff"/>`;
+  const anchor=sx(you)>W-190?"end":"start";const dx=anchor==="end"?-10:10;
+  s+=`<text class="axis" x="${sx(you)+dx}" y="${M.t+12}" text-anchor="${anchor}" fill="var(--ink)" style="font-weight:600">you · ${pct(r.effective_rate)}</text>`;
+  svg.innerHTML=s;
+
+  $("readout").innerHTML=
+    '<span style="color:var(--claw)">━</span> True effective rate &nbsp;<b>'+pct(r.effective_rate)+'</b>'+
+    '<span style="color:#40506B">╌</span> Posted bracket rate &nbsp;<b>'+pct(r.statutory_rate)+'</b>'+
+    (r.clawback_rate>1e-6?'<span>Hidden clawback &nbsp;<b style="color:var(--claw)">+'+pct(r.clawback_rate)+'</b></span>':'');
+}
+
+/* ---------- main ---------- */
+function update(){
+  const inp=readInputs();
+  $("retrateOut").textContent=$("retrate").value+"%";
+
+  const r=effectiveMarginalRate(inp.income,inp.household,cfg);
+  const keep=Math.max(0,1-r.effective_rate);
+
+  $("segStat").style.width=(r.statutory_rate*100)+"%";
+  $("segClaw").style.width=(r.clawback_rate*100)+"%";
+  $("segKeep").style.width=(keep*100)+"%";
+  $("dollarBar").setAttribute("aria-label",
+    "Of your next dollar: "+cents(r.statutory_rate)+" income tax, "+
+    cents(r.clawback_rate)+" benefit clawback, "+cents(keep)+" kept.");
+
+  $("vStat").textContent=cents(r.statutory_rate);
+  $("vClaw").textContent=cents(r.clawback_rate);
+  $("vKeep").textContent=cents(keep);
+  $("bigRate").textContent=pct(r.effective_rate);
+
+  const np=netPosition(inp.income,inp.household,cfg);
+  $("heroSub").textContent=
+    "Household income "+money(inp.income+inp.partner)+
+    (kids.length?" · "+kids.length+(kids.length===1?" child":" children")+" · Canada Child Benefit "+money(np.benefits)+"/yr":" · no children");
+
+  const gap=r.clawback_rate;
+  $("vsText").innerHTML=gap>1e-6
+    ? "Your tax bracket says <b>"+pct(r.statutory_rate)+"</b>. The extra <b>"+pct(gap)+
+      "</b> is Canada Child Benefit being clawed back as your income rises — real money, and it appears nowhere on your tax return."
+    : "This matches your posted bracket rate. No income-tested benefits are being clawed back at this income.";
+
+  drawChart(inp);
+
+  /* allocation */
+  const res=optimize({income:inp.income,household:inp.household,
+    savings_capacity:inp.savings,expected_retirement_rate:inp.retRate,
+    fhsa_eligible:inp.fhsa,employer_match_rate:inp.matchRate,
+    employer_match_cap:inp.matchCap},cfg);
+
+  const order=["employer_match","fhsa","rrsp","tfsa","non_registered"];
+  const el=$("alloc");el.innerHTML="";
+  let rank=0;
+  const entries=order.filter(k=>res.allocation[k]>0);
+  if(!entries.length){
+    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter an amount you can invest to see where it should go.</span><span></span></div>';
+  } else entries.forEach(k=>{
+    rank++;
+    const d=document.createElement("div");d.className="arow";
+    d.innerHTML='<span class="rank">'+rank+'</span>'+
+      '<span><div class="aname">'+ACCOUNTS[k].name+'</div><div class="awhy">'+ACCOUNTS[k].why+'</div></span>'+
+      '<span class="aamt">'+money(res.allocation[k])+'</span>';
+    el.appendChild(d);
+  });
+
+  const total=res.tax_refund+res.benefit_restored+res.employer_match_earned;
+  $("totalVal").textContent=money(total);
+  $("totalPct").textContent=inp.savings>0?"on "+money(inp.savings)+" · "+pct(total/inp.savings):"";
+  $("breakdown").innerHTML=
+    "Tax refund <b>"+money(res.tax_refund)+"</b>"+
+    (res.benefit_restored>1?"Canada Child Benefit restored <b style='color:var(--claw)'>"+money(res.benefit_restored)+"</b>":"")+
+    (res.employer_match_earned>1?"Employer match <b>"+money(res.employer_match_earned)+"</b>":"");
+
+  const wEl=$("warnings");wEl.innerHTML="";
+  res.warnings.forEach(w=>{
+    const d=document.createElement("div");d.className="warn";
+    d.innerHTML='<span class="mark">!</span><span>'+w+'</span>';
+    wEl.appendChild(d);
+  });
+}
+
+/* ticks */
+(function(){const t=$("ticks");let h="";for(let i=0;i<100;i++)h+="<i></i>";t.innerHTML=h;})();
+
+/* wiring */
+["income","partner","savings","matchRate","matchCap","retrate","fhsa"].forEach(id=>{
+  $(id).addEventListener("input",()=>{
+    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,10000),250000);
+    update();});
+});
+$("incomeRange").addEventListener("input",()=>{$("income").value=$("incomeRange").value;update();});
+
+$("chart").addEventListener("pointerdown",e=>{
+  const rect=e.currentTarget.getBoundingClientRect();
+  const px=(e.clientX-rect.left)/rect.width*W;
+  const val=X0+(px-M.l)/(W-M.l-M.r)*(X1-X0);
+  const v=Math.round(Math.min(Math.max(val,X0),X1)/500)*500;
+  $("income").value=v;$("incomeRange").value=Math.min(v,250000);update();
+});
+
+if("serviceWorker" in navigator&&location.protocol!=="file:"){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
+renderKids();
+update();
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(update,120);});
+</script>
+</body>
+</html>

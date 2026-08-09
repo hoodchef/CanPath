@@ -1,0 +1,90 @@
+{
+  "tax_year": 2026,
+  "source_notes": {
+    "federal_brackets": "CRA 2026, indexed 2.0%; lowest rate 14% (full year, post-July-2025 reduction)",
+    "bc_brackets": "www2.gov.bc.ca personal income tax rates, retrieved 2026-08; indexed 2.2%; bottom rate raised to 5.60% in Budget 2026",
+    "ccb": "2026-27 benefit year (July 2026 - June 2027), indexed 2.0%",
+    "warning": "BC indexation is PAUSED for 2027-2030 per Budget 2026. Do not auto-index BC brackets forward."
+  },
+
+  "federal": {
+    "brackets": [
+      {"floor": 0,      "rate": 0.14},
+      {"floor": 58523,  "rate": 0.205},
+      {"floor": 117045, "rate": 0.26},
+      {"floor": 181440, "rate": 0.29},
+      {"floor": 258482, "rate": 0.33}
+    ],
+    "credit_rate": 0.14,
+    "bpa": {
+      "base": 14829,
+      "additional": 1623,
+      "phaseout_start": 181440,
+      "phaseout_end": 258482
+    }
+  },
+
+  "provinces": {
+    "BC": {
+      "name": "British Columbia",
+      "brackets": [
+        {"floor": 0,      "rate": 0.056},
+        {"floor": 50363,  "rate": 0.077},
+        {"floor": 100728, "rate": 0.105},
+        {"floor": 115648, "rate": 0.1229},
+        {"floor": 140430, "rate": 0.147},
+        {"floor": 190405, "rate": 0.168},
+        {"floor": 265545, "rate": 0.205}
+      ],
+      "credit_rate": 0.056,
+      "bpa": 13216,
+      "tax_reduction": {
+        "max_credit": 690,
+        "threshold": 25570,
+        "phaseout_rate": 0.0356
+      }
+    }
+  },
+
+  "benefits": {
+    "ccb": {
+      "benefit_year": "2026-27",
+      "max_under_6": 8157,
+      "max_6_to_17": 6883,
+      "threshold_1": 38237,
+      "threshold_2": 82847,
+      "phase1_rates": {"1": 0.07,  "2": 0.135, "3": 0.19, "4": 0.23},
+      "phase2_rates": {"1": 0.032, "2": 0.057, "3": 0.08, "4": 0.095}
+    }
+  },
+
+  "accounts": {
+    "rrsp": {
+      "earned_income_rate": 0.18,
+      "dollar_limit": 33810
+    },
+    "tfsa": {
+      "annual_limit": 7000,
+      "cumulative_since_2009": 109000
+    },
+    "fhsa": {
+      "annual_limit": 8000,
+      "lifetime_limit": 40000,
+      "max_single_year_with_carryforward": 16000
+    },
+    "resp": {
+      "lifetime_contribution": 50000,
+      "cesg_match_rate": 0.20,
+      "cesg_annual_max": 500,
+      "cesg_lifetime_max": 7200,
+      "cesg_matched_contribution": 2500
+    },
+    "hbp_withdrawal_limit": 60000
+  },
+
+  "payroll": {
+    "cpp":  {"rate": 0.0595, "basic_exemption": 3500, "ympe": 74600},
+    "cpp2": {"rate": 0.04,   "yampe": 85000},
+    "ei":   {"rate": 0.0163, "max_insurable": 68900}
+  }
+}

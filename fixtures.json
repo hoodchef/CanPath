@@ -1,0 +1,243 @@
+{
+  "tax_year": 2026,
+  "generated_by": "python reference engine",
+  "marginal_cases": [
+    {
+      "income": 50000,
+      "partner_income": 0,
+      "child_ages": [],
+      "afni": 50000.0,
+      "tax": 6756.62,
+      "ccb": 0.0,
+      "statutory_rate": 0.196,
+      "clawback_rate": 0.0,
+      "effective_rate": 0.196,
+      "value_10k_tax_refund": 2136.29,
+      "value_10k_benefit": 0.0
+    },
+    {
+      "income": 50000,
+      "partner_income": 40000,
+      "child_ages": [
+        3,
+        6
+      ],
+      "afni": 90000.0,
+      "tax": 6756.62,
+      "ccb": 8609.93,
+      "statutory_rate": 0.196,
+      "clawback_rate": 0.057,
+      "effective_rate": 0.253,
+      "value_10k_tax_refund": 2136.29,
+      "value_10k_benefit": 792.07
+    },
+    {
+      "income": 95000,
+      "partner_income": 0,
+      "child_ages": [
+        3,
+        6,
+        9
+      ],
+      "afni": 95000.0,
+      "tax": 18885.01,
+      "ccb": 12474.86,
+      "statutory_rate": 0.282,
+      "clawback_rate": 0.08,
+      "effective_rate": 0.362,
+      "value_10k_tax_refund": 2820.0,
+      "value_10k_benefit": 800.0
+    },
+    {
+      "income": 95000,
+      "partner_income": 45000,
+      "child_ages": [
+        3,
+        6,
+        9
+      ],
+      "afni": 140000.0,
+      "tax": 18885.01,
+      "ccb": 8874.86,
+      "statutory_rate": 0.282,
+      "clawback_rate": 0.08,
+      "effective_rate": 0.362,
+      "value_10k_tax_refund": 2820.0,
+      "value_10k_benefit": 800.0
+    },
+    {
+      "income": 70000,
+      "partner_income": 0,
+      "child_ages": [
+        2
+      ],
+      "afni": 70000.0,
+      "tax": 11835.01,
+      "ccb": 5933.59,
+      "statutory_rate": 0.282,
+      "clawback_rate": 0.07,
+      "effective_rate": 0.352,
+      "value_10k_tax_refund": 2820.0,
+      "value_10k_benefit": 700.0
+    },
+    {
+      "income": 38000,
+      "partner_income": 0,
+      "child_ages": [
+        4
+      ],
+      "afni": 38000.0,
+      "tax": 4157.13,
+      "ccb": 8157.0,
+      "statutory_rate": 0.2316,
+      "clawback_rate": 0.0,
+      "effective_rate": 0.2316,
+      "value_10k_tax_refund": 2316.0,
+      "value_10k_benefit": 0.0
+    },
+    {
+      "income": 125000,
+      "partner_income": 0,
+      "child_ages": [],
+      "afni": 125000.0,
+      "tax": 28629.55,
+      "ccb": 0.0,
+      "statutory_rate": 0.3829,
+      "clawback_rate": 0.0,
+      "effective_rate": 0.3829,
+      "value_10k_tax_refund": 3704.93,
+      "value_10k_benefit": 0.0
+    },
+    {
+      "income": 200000,
+      "partner_income": 0,
+      "child_ages": [
+        5,
+        10
+      ],
+      "afni": 200000.0,
+      "tax": 59595.72,
+      "ccb": 2339.93,
+      "statutory_rate": 0.460949,
+      "clawback_rate": 0.057,
+      "effective_rate": 0.517949,
+      "value_10k_tax_refund": 4600.99,
+      "value_10k_benefit": 570.0
+    },
+    {
+      "income": 25000,
+      "partner_income": 0,
+      "child_ages": [],
+      "afni": 25000.0,
+      "tax": 1196.72,
+      "ccb": 0.0,
+      "statutory_rate": 0.14,
+      "clawback_rate": 0.0,
+      "effective_rate": 0.14,
+      "value_10k_tax_refund": 1196.72,
+      "value_10k_benefit": 0.0
+    },
+    {
+      "income": 82847,
+      "partner_income": 0,
+      "child_ages": [
+        1,
+        3
+      ],
+      "afni": 82847.0,
+      "tax": 15457.86,
+      "ccb": 10291.65,
+      "statutory_rate": 0.282,
+      "clawback_rate": 0.057,
+      "effective_rate": 0.339,
+      "value_10k_tax_refund": 2820.0,
+      "value_10k_benefit": 1350.0
+    },
+    {
+      "income": 58523,
+      "partner_income": 0,
+      "child_ages": [
+        1,
+        3,
+        5,
+        7
+      ],
+      "afni": 58523.0,
+      "tax": 8598.49,
+      "ccb": 26688.22,
+      "statutory_rate": 0.282,
+      "clawback_rate": 0.23,
+      "effective_rate": 0.512,
+      "value_10k_tax_refund": 2131.36,
+      "value_10k_benefit": 2300.0
+    },
+    {
+      "income": 300000,
+      "partner_income": 0,
+      "child_ages": [
+        8
+      ],
+      "afni": 300000.0,
+      "tax": 108503.75,
+      "ccb": 0.0,
+      "statutory_rate": 0.535,
+      "clawback_rate": 0.0,
+      "effective_rate": 0.535,
+      "value_10k_tax_refund": 5350.0,
+      "value_10k_benefit": 0.0
+    }
+  ],
+  "allocation_cases": [
+    {
+      "income": 95000,
+      "capacity": 20000,
+      "child_ages": [
+        3,
+        6,
+        9
+      ],
+      "fhsa_eligible": true,
+      "match_rate": 0.5,
+      "match_cap": 4000,
+      "retirement_rate": 0.25,
+      "allocation": {
+        "employer_match": 4000.0,
+        "fhsa": 8000.0,
+        "rrsp": 8000.0
+      },
+      "tax_refund": 5640.0,
+      "benefit_restored": 2463.17
+    },
+    {
+      "income": 38000,
+      "capacity": 5000,
+      "child_ages": [
+        4
+      ],
+      "fhsa_eligible": false,
+      "match_rate": 0.0,
+      "match_cap": 0,
+      "retirement_rate": 0.45,
+      "allocation": {
+        "tfsa": 5000.0
+      },
+      "tax_refund": 0.0,
+      "benefit_restored": 0.0
+    },
+    {
+      "income": 150000,
+      "capacity": 30000,
+      "child_ages": [],
+      "fhsa_eligible": true,
+      "match_rate": 0.0,
+      "match_cap": 0,
+      "retirement_rate": 0.3,
+      "allocation": {
+        "fhsa": 8000.0,
+        "rrsp": 22000.0
+      },
+      "tax_refund": 11717.64,
+      "benefit_restored": 0.0
+    }
+  ]
+}
