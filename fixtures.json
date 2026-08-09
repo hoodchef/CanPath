@@ -239,5 +239,172 @@
       "tax_refund": 11717.64,
       "benefit_restored": 0.0
     }
+  ],
+  "projection_cases": [
+    {
+      "principal": 0,
+      "monthly": 500,
+      "rate": 0.08,
+      "years": 30,
+      "fv": 704275.2936,
+      "real_rate": 0.05882353,
+      "fv_real": 477038.3924,
+      "req_monthly": 354.9748
+    },
+    {
+      "principal": 10000,
+      "monthly": 0,
+      "rate": 0.08,
+      "years": 30,
+      "fv": 100626.5689,
+      "real_rate": 0.05882353,
+      "fv_real": 55552.9993,
+      "req_monthly": 283.535
+    },
+    {
+      "principal": 15000,
+      "monthly": 600,
+      "rate": 0.08,
+      "years": 25,
+      "fv": 648121.703,
+      "real_rate": 0.05882353,
+      "fv_real": 461523.9339,
+      "req_monthly": 437.0482
+    },
+    {
+      "principal": 0,
+      "monthly": 250,
+      "rate": 0.05,
+      "years": 10,
+      "fv": 38590.7903,
+      "real_rate": 0.02941176,
+      "fv_real": 34758.5546,
+      "req_monthly": 3239.1148
+    },
+    {
+      "principal": 5000,
+      "monthly": 300,
+      "rate": 0.0,
+      "years": 15,
+      "fv": 59000,
+      "real_rate": -0.01960784,
+      "fv_real": 50472.0274,
+      "req_monthly": 2750.0
+    },
+    {
+      "principal": 2000,
+      "monthly": 1000,
+      "rate": 0.12,
+      "years": 40,
+      "fv": 9887121.9838,
+      "real_rate": 0.09803922,
+      "fv_real": 5342511.2964,
+      "req_monthly": 32.3572
+    },
+    {
+      "principal": 50000,
+      "monthly": 0,
+      "rate": 0.06,
+      "years": 20,
+      "fv": 160356.7736,
+      "real_rate": 0.03921569,
+      "fv_real": 107915.5117,
+      "req_monthly": 749.039
+    },
+    {
+      "principal": 0,
+      "monthly": 100,
+      "rate": 0.08,
+      "years": 5,
+      "fv": 7294.465,
+      "real_rate": 0.05882353,
+      "fv_real": 6928.7114,
+      "req_monthly": 6854.5123
+    }
+  ],
+  "pension_cases": [
+    {
+      "age": 60,
+      "cpp": 7106.688,
+      "oas": 8907.72
+    },
+    {
+      "age": 62,
+      "cpp": 8705.6928,
+      "oas": 8907.72
+    },
+    {
+      "age": 65,
+      "cpp": 11104.2,
+      "oas": 8907.72
+    },
+    {
+      "age": 67,
+      "cpp": 12969.7056,
+      "oas": 10190.4317
+    },
+    {
+      "age": 70,
+      "cpp": 15767.964,
+      "oas": 12114.4992
+    }
+  ],
+  "readiness_cases": [
+    {
+      "current_age": 35,
+      "retirement_age": 65,
+      "target": 55000,
+      "savings": 15000,
+      "monthly": 600,
+      "rate": 0.08,
+      "government": 20011.92,
+      "nest_egg": 874702.0,
+      "projected_real": 655775.5699,
+      "required_monthly": 829.4642,
+      "coverage": 0.749713,
+      "wait_cost": 194251.636
+    },
+    {
+      "current_age": 25,
+      "retirement_age": 60,
+      "target": 45000,
+      "savings": 0,
+      "monthly": 300,
+      "rate": 0.07,
+      "government": 16014.408,
+      "nest_egg": 724639.8,
+      "projected_real": 325722.5363,
+      "required_monthly": 667.4145,
+      "coverage": 0.449496,
+      "wait_cost": 85292.1369
+    },
+    {
+      "current_age": 45,
+      "retirement_age": 65,
+      "target": 70000,
+      "savings": 80000,
+      "monthly": 1200,
+      "rate": 0.08,
+      "government": 20011.92,
+      "nest_egg": 1249702.0,
+      "projected_real": 787953.7158,
+      "required_monthly": 2231.8042,
+      "coverage": 0.630513,
+      "wait_cost": 258346.8185
+    },
+    {
+      "current_age": 30,
+      "retirement_age": 65,
+      "target": 40000,
+      "savings": 5000,
+      "monthly": 200,
+      "rate": 0.06,
+      "government": 20011.92,
+      "nest_egg": 499702.0,
+      "projected_real": 196329.3828,
+      "required_monthly": 542.575,
+      "coverage": 0.392893,
+      "wait_cost": 45250.1661
+    }
   ]
 }

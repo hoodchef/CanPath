@@ -7,3 +7,4 @@ venv/
 *.log
 .vscode/
 .idea/
+# index.html is generated from the .part files by build.py

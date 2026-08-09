@@ -4,281 +4,425 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0E1B2C">
-<meta name="description" content="See your true effective marginal rate in Canada, including the benefit clawbacks your tax bracket hides.">
+<meta name="description" content="See what your savings could become, and how much the Canadian government will help you get there.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CanPath">
-<title>CanPath — what your next dollar is actually worth</title>
+<title>CanPath — what your money could become</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#0E1B2C; --paper:#EEF1F5; --surface:#FFFFFF;
-  --claw:#C8102E; --stat:#3D6B99; --keep:#0B7A6B;
+  --ink:#0E1B2C; --paper:#EEF1F5; --surface:#FFF;
+  --claw:#C8102E; --stat:#3D6B99; --keep:#0B7A6B; --gold:#B7791F;
   --rule:#D5DCE5; --muted:#5C6B7F; --warn:#8A5A00; --warn-bg:#FDF6E3;
+  --good-bg:#ECF7F3; --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,monospace;
-  --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
   --cond:'IBM Plex Sans Condensed','IBM Plex Sans',sans-serif;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
-body{background:var(--paper);color:var(--ink);font-family:var(--sans);
-  font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;
+  line-height:1.5;-webkit-font-smoothing:antialiased}
 .eyebrow{font-family:var(--cond);font-weight:600;text-transform:uppercase;
   letter-spacing:.11em;font-size:11px;color:var(--muted)}
 .num{font-family:var(--mono);font-variant-numeric:tabular-nums}
 
-/* ---------- masthead ---------- */
 header{border-bottom:1px solid var(--rule);background:var(--surface)}
-.mast{max-width:1180px;margin:0 auto;padding:18px 24px;display:flex;
-  align-items:baseline;gap:14px;flex-wrap:wrap}
+.mast{max-width:1180px;margin:0 auto;padding:16px 24px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .wordmark{font-weight:700;font-size:19px;letter-spacing:-.02em}
 .wordmark span{color:var(--claw)}
+.badge{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);border-radius:3px;padding:2px 7px;color:var(--muted)}
 .mast .eyebrow{margin-left:auto}
-.badge{font-family:var(--mono);font-size:11px;border:1px solid var(--rule);
-  border-radius:3px;padding:2px 7px;color:var(--muted)}
 
-/* ---------- shell ---------- */
-.shell{max-width:1180px;margin:0 auto;padding:24px;display:grid;
-  grid-template-columns:330px minmax(0,1fr);gap:24px;align-items:start}
-@media(max-width:900px){.shell{grid-template-columns:1fr;padding:16px;gap:16px}}
-
-.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px}
-.panel-head{padding:14px 18px;border-bottom:1px solid var(--rule)}
+.shell{max-width:1180px;margin:0 auto;padding:22px 24px;display:grid;
+  grid-template-columns:330px minmax(0,1fr);gap:22px;align-items:start}
+@media(max-width:940px){.shell{grid-template-columns:1fr;padding:14px;gap:14px}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:6px;margin-bottom:20px}
+.panel:last-child{margin-bottom:0}
+.panel-head{padding:13px 18px;border-bottom:1px solid var(--rule);display:flex;
+  justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .panel-body{padding:18px}
-aside{position:sticky;top:24px}
-@media(max-width:900px){aside{position:static}}
+aside{position:sticky;top:20px}
+@media(max-width:940px){aside{position:static}}
 
-/* ---------- form ---------- */
-.field{margin-bottom:16px}
+/* --- form --- */
+.field{margin-bottom:15px}
 .field:last-child{margin-bottom:0}
 label{display:block;font-size:12.5px;font-weight:500;margin-bottom:5px}
 .hint{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.4}
-input[type=number],input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--rule);
-  border-radius:4px;font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--ink)}
-input[type=range]{width:100%;accent-color:var(--stat);margin:4px 0 0}
-input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--stat);outline-offset:2px}
+input[type=number]{width:100%;padding:8px 10px;border:1px solid var(--rule);border-radius:4px;
+  font-family:var(--mono);font-size:14px;background:var(--surface);color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--stat)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--stat);outline-offset:2px}
 .row{display:flex;gap:8px;align-items:center}
-.check{display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-size:13px}
-.check input{margin-top:2px;accent-color:var(--stat)}
-.divider{height:1px;background:var(--rule);margin:18px -18px}
+.divider{height:1px;background:var(--rule);margin:16px -18px}
+
+/* --- segmented toggles --- */
+.seg-ctl{display:flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;background:var(--paper)}
+.seg-ctl button{flex:1;border:0;background:none;padding:8px 6px;font-family:var(--sans);
+  font-size:12.5px;font-weight:500;cursor:pointer;color:var(--muted);transition:.15s}
+.seg-ctl button+button{border-left:1px solid var(--rule)}
+.seg-ctl button[aria-pressed=true]{background:var(--ink);color:#fff}
+.seg-ctl button:hover:not([aria-pressed=true]){background:#fff;color:var(--ink)}
 
 .kids{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.kid{display:inline-flex;align-items:center;gap:5px;background:var(--paper);
-  border:1px solid var(--rule);border-radius:999px;padding:3px 5px 3px 11px;font-size:12.5px}
-.kid .num{font-weight:500}
-.kid button{border:0;background:none;cursor:pointer;color:var(--muted);
-  font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}
+.kid{display:inline-flex;align-items:center;gap:4px;background:var(--paper);border:1px solid var(--rule);
+  border-radius:999px;padding:3px 5px 3px 11px;font-size:12.5px}
+.kid button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:2px 5px;border-radius:50%}
 .kid button:hover{color:var(--claw);background:#0000000d}
-.addkid{border:1px dashed var(--rule);background:none;border-radius:999px;
-  padding:4px 12px;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:var(--sans)}
+.addkid{border:1px dashed var(--rule);background:none;border-radius:999px;padding:4px 12px;
+  font-size:12.5px;cursor:pointer;color:var(--muted);font-family:var(--sans)}
 .addkid:hover{border-color:var(--stat);color:var(--stat)}
 
-/* ---------- hero: the dollar ---------- */
-.hero{padding:22px 24px 24px}
-.hero h1{font-size:15px;font-weight:600;margin:0 0 2px;letter-spacing:-.01em}
-.hero .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px}
-.dollar{display:flex;height:52px;border-radius:4px;overflow:hidden;
-  border:1px solid var(--rule);background:var(--paper)}
-.seg{position:relative;transition:width .28s cubic-bezier(.4,0,.2,1);min-width:0}
-.seg-stat{background:var(--stat)}
-.seg-claw{background:var(--claw)}
-.seg-keep{background:var(--keep)}
-.ticks{display:flex;height:7px;margin-top:3px}
-.ticks i{flex:1;border-left:1px solid var(--rule);height:4px}
-.ticks i:nth-child(10n+1){height:7px;border-color:var(--muted)}
-.legend{display:flex;gap:20px;margin-top:16px;flex-wrap:wrap}
-.leg{display:flex;gap:8px;align-items:flex-start}
-.swatch{width:11px;height:11px;border-radius:2px;margin-top:4px;flex:none}
-.leg .v{font-family:var(--mono);font-size:20px;font-weight:600;line-height:1.1}
-.leg .k{font-size:11.5px;color:var(--muted);line-height:1.3}
+/* --- hero --- */
+.hero{padding:24px 24px 22px;text-align:left}
+.hero .eyebrow{margin-bottom:8px}
+.hero-num{font-family:var(--mono);font-size:clamp(38px,7vw,62px);font-weight:600;
+  letter-spacing:-.03em;line-height:1;color:var(--keep)}
+.hero-sub{font-size:13.5px;color:var(--muted);margin-top:8px;max-width:560px;line-height:1.5}
+.hero-sub b{color:var(--ink);font-family:var(--mono);font-weight:600}
+.split{display:flex;height:38px;border-radius:4px;overflow:hidden;border:1px solid var(--rule);margin-top:18px}
+.split div{transition:width .3s cubic-bezier(.4,0,.2,1)}
+.sp-you{background:var(--stat)}.sp-grow{background:var(--keep)}.sp-gov{background:var(--gold)}
+.splitkey{display:flex;gap:20px;margin-top:11px;flex-wrap:wrap}
+.spk{display:flex;gap:7px;align-items:flex-start;font-size:11.5px;color:var(--muted)}
+.spk i{width:10px;height:10px;border-radius:2px;margin-top:3px;flex:none;display:block}
+.spk b{display:block;font-family:var(--mono);font-size:15px;color:var(--ink);font-weight:600}
 
-.headline{margin-top:20px;padding-top:18px;border-top:1px solid var(--rule);
-  display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}
-.big{font-family:var(--mono);font-size:44px;font-weight:600;letter-spacing:-.02em;line-height:1}
-.big.claw{color:var(--claw)}
-.vs{font-size:13px;color:var(--muted);max-width:290px;line-height:1.45}
-.vs b{font-family:var(--mono);font-weight:600;color:var(--ink)}
+/* --- pills --- */
+.pills{display:flex;gap:5px;flex-wrap:wrap}
+.pills button{border:1px solid var(--rule);background:var(--surface);border-radius:999px;
+  padding:4px 11px;font-family:var(--mono);font-size:12px;cursor:pointer;color:var(--muted)}
+.pills button[aria-pressed=true]{background:var(--ink);color:#fff;border-color:var(--ink)}
 
-/* ---------- chart ---------- */
-.chartwrap{padding:18px}
 svg{display:block;width:100%;height:auto;touch-action:none}
-.axis{font-family:var(--mono);font-size:10px;fill:var(--muted)}
+.axis{font-family:var(--mono);font-size:11px;fill:var(--muted)}
 .gridline{stroke:var(--rule);stroke-width:1}
-.readout{background:var(--paper);border-top:1px solid var(--rule);
-  padding:10px 18px;font-size:12.5px;display:flex;gap:18px;flex-wrap:wrap}
+.chartwrap{padding:16px 18px}
+.readout{background:var(--paper);border-top:1px solid var(--rule);padding:10px 18px;
+  font-size:12.5px;display:flex;gap:18px;flex-wrap:wrap}
 .readout b{font-family:var(--mono);font-weight:600}
 
-/* ---------- allocation ---------- */
-.alloc{display:flex;flex-direction:column}
-.arow{display:grid;grid-template-columns:26px 1fr auto;gap:12px;align-items:center;
+/* --- track meter --- */
+.track{padding:18px}
+.meter{height:26px;background:var(--paper);border:1px solid var(--rule);border-radius:4px;
+  overflow:hidden;position:relative;display:flex}
+.meter i{display:block;height:100%;transition:width .3s}
+.m-gov{background:var(--gold)}.m-port{background:var(--keep)}
+.meter .target{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.trackrow{display:flex;justify-content:space-between;gap:14px;margin-top:12px;flex-wrap:wrap;font-size:12.5px}
+.trackrow b{font-family:var(--mono);font-weight:600}
+.verdict{margin-top:14px;padding:12px 14px;border-radius:5px;font-size:13px;line-height:1.5}
+.v-good{background:var(--good-bg);border:1px solid #B8DED2}
+.v-gap{background:var(--warn-bg);border:1px solid #EED9A8;color:#4A3B18}
+.verdict b{font-family:var(--mono);font-weight:600}
+
+/* --- allocation --- */
+.arow{display:grid;grid-template-columns:24px 1fr auto;gap:12px;align-items:center;
   padding:13px 18px;border-bottom:1px solid var(--rule)}
 .arow:last-child{border-bottom:0}
 .rank{font-family:var(--mono);font-size:11px;color:var(--muted);text-align:right}
 .aname{font-weight:600;font-size:13.5px}
-.awhy{font-size:11.5px;color:var(--muted);line-height:1.4;margin-top:1px}
+.aname .full{font-weight:400;color:var(--muted);font-size:11.5px}
+.awhy{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:2px}
 .aamt{font-family:var(--mono);font-size:16px;font-weight:600;text-align:right;white-space:nowrap}
 .total{display:flex;justify-content:space-between;align-items:baseline;gap:12px;
   padding:14px 18px;background:var(--ink);color:#fff;flex-wrap:wrap}
-.total .v{font-family:var(--mono);font-size:26px;font-weight:600}
-.total .k{font-size:12px;opacity:.8}
-.bd{padding:12px 18px;font-size:12.5px;color:var(--muted);display:flex;
-  gap:16px;flex-wrap:wrap;border-top:1px solid var(--rule)}
+.total .v{font-family:var(--mono);font-size:25px;font-weight:600}
+.total .k{font-size:12px;opacity:.85}
+.bd{padding:11px 18px;font-size:12.5px;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap;border-top:1px solid var(--rule)}
 .bd b{font-family:var(--mono);color:var(--ink);font-weight:600}
-
 .warn{display:flex;gap:10px;padding:12px 18px;background:var(--warn-bg);
   border-top:1px solid #EED9A8;font-size:12.5px;line-height:1.45;color:#4A3B18}
 .warn .mark{color:var(--warn);font-weight:700;flex:none}
 
-footer{max-width:1180px;margin:0 auto;padding:8px 24px 40px;font-size:11.5px;
-  color:var(--muted);line-height:1.55}
-@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* --- dollar bar --- */
+.dollar{display:flex;height:44px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.dollar div{transition:width .28s}
+.d-tax{background:var(--stat)}.d-claw{background:var(--claw)}.d-keep{background:var(--keep)}
+
+/* --- explainer --- */
+details{border-top:1px solid var(--rule)}
+summary{padding:11px 18px;cursor:pointer;font-size:12.5px;color:var(--stat);font-weight:500;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"＋ ";font-family:var(--mono)}
+details[open] summary::before{content:"− "}
+details .panel-body{padding-top:0;font-size:13px;color:var(--muted);line-height:1.6}
+details dt{font-weight:600;color:var(--ink);font-size:13px;margin-top:12px}
+details dt:first-child{margin-top:0}
+details dd{margin:3px 0 0}
+
+footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;color:var(--muted);line-height:1.55}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-
-<header>
-  <div class="mast">
-    <div class="wordmark">Can<span>Path</span></div>
-    <span class="badge">2026 tax year</span>
-    <span class="badge">British Columbia</span>
-    <span class="eyebrow">Educational model — not tax advice</span>
-  </div>
-</header>
-
+<header><div class="mast">
+  <div class="wordmark">Can<span>Path</span></div>
+  <span class="badge">2026</span>
+  <span class="badge" id="provBadge">British Columbia</span>
+  <span class="eyebrow">Educational model — not financial advice</span>
+</div></header>
 <div class="shell">
 
-  <!-- ============ INPUTS ============ -->
-  <aside>
-    <div class="panel">
-      <div class="panel-head"><span class="eyebrow">Your situation</span></div>
-      <div class="panel-body">
+<aside>
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">About you</span></div>
+    <div class="panel-body">
 
-        <div class="field">
-          <label for="income">Your employment income</label>
-          <input type="number" id="income" value="72000" min="0" max="500000" step="1000">
-          <input type="range" id="incomeRange" value="72000" min="10000" max="250000" step="500" aria-label="Income slider">
+      <div class="field">
+        <label for="prov">Where you live</label>
+        <div class="seg-ctl" id="prov">
+          <button type="button" data-v="BC" aria-pressed="true">British&nbsp;Columbia</button>
+          <button type="button" data-v="soon" aria-pressed="false" disabled title="Coming soon">Other&nbsp;— soon</button>
         </div>
+      </div>
 
-        <div class="field">
-          <label for="partner">Spouse or partner's income</label>
-          <input type="number" id="partner" value="0" min="0" max="500000" step="1000">
-          <div class="hint">Both incomes count toward the family income the Canada Child Benefit is tested against.</div>
+      <div class="field">
+        <label>Your household</label>
+        <div class="seg-ctl" id="marital">
+          <button type="button" data-v="single" aria-pressed="true">Single</button>
+          <button type="button" data-v="couple" aria-pressed="false">Married or common-law</button>
         </div>
+      </div>
 
-        <div class="field">
-          <label>Children under 18</label>
+      <div class="field">
+        <label>Children under 18</label>
+        <div class="seg-ctl" id="haskids">
+          <button type="button" data-v="no" aria-pressed="true">No children</button>
+          <button type="button" data-v="yes" aria-pressed="false">I have children</button>
+        </div>
+        <div id="kidsWrap" hidden>
           <div class="kids" id="kids"></div>
-          <div class="hint">Ages matter: under 6 carries a higher benefit.</div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="field">
-          <label for="savings">Money you can invest this year</label>
-          <input type="number" id="savings" value="15000" min="0" max="200000" step="500">
-        </div>
-
-        <div class="field">
-          <label class="check">
-            <input type="checkbox" id="fhsa" checked>
-            <span>I qualify for an FHSA<br><span class="hint" style="margin:0">First home, or no home owned in the last 4 years.</span></span>
-          </label>
-        </div>
-
-        <div class="field">
-          <label for="match">Employer RRSP match</label>
-          <div class="row">
-            <input type="number" id="matchRate" value="50" min="0" max="200" step="5" aria-label="Match percentage">
-            <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
-            <input type="number" id="matchCap" value="3000" min="0" max="50000" step="500" aria-label="Match cap">
-          </div>
-        </div>
-
-        <div class="field">
-          <label for="retrate">Tax rate you expect in retirement</label>
-          <div class="row">
-            <input type="range" id="retrate" value="25" min="0" max="55" step="1" style="flex:1">
-            <span class="num" id="retrateOut" style="width:44px;text-align:right;font-weight:600">25%</span>
-          </div>
-          <div class="hint">An RRSP only pays off if you contribute at a higher rate than you withdraw at.</div>
-        </div>
-
-      </div>
-    </div>
-  </aside>
-
-  <!-- ============ RESULTS ============ -->
-  <main>
-
-    <div class="panel">
-      <div class="hero">
-        <h1>Your next dollar earned</h1>
-        <div class="sub" id="heroSub"></div>
-
-        <div class="dollar" role="img" id="dollarBar">
-          <div class="seg seg-stat" id="segStat"></div>
-          <div class="seg seg-claw" id="segClaw"></div>
-          <div class="seg seg-keep" id="segKeep"></div>
-        </div>
-        <div class="ticks" id="ticks" aria-hidden="true"></div>
-
-        <div class="legend">
-          <div class="leg"><span class="swatch" style="background:var(--stat)"></span>
-            <span><span class="v" id="vStat">0¢</span><br><span class="k">Income tax<br>federal + BC</span></span></div>
-          <div class="leg"><span class="swatch" style="background:var(--claw)"></span>
-            <span><span class="v" id="vClaw">0¢</span><br><span class="k">Benefit clawback<br>invisible on your tax return</span></span></div>
-          <div class="leg"><span class="swatch" style="background:var(--keep)"></span>
-            <span><span class="v" id="vKeep">0¢</span><br><span class="k">You keep</span></span></div>
-        </div>
-
-        <div class="headline">
-          <div>
-            <div class="eyebrow">True effective rate</div>
-            <div class="big claw" id="bigRate">0%</div>
-          </div>
-          <div class="vs" id="vsText"></div>
+          <div class="hint">Under 6 carries a larger benefit than 6–17.</div>
         </div>
       </div>
-    </div>
 
-    <div class="panel" style="margin-top:20px">
-      <div class="panel-head"><span class="eyebrow">Effective marginal rate across income</span></div>
-      <div class="chartwrap"><svg id="chart" viewBox="0 0 760 320" preserveAspectRatio="xMidYMid meet"></svg></div>
-      <div class="readout" id="readout"></div>
-    </div>
+      <div class="divider"></div>
 
-    <div class="panel" style="margin-top:20px">
-      <div class="panel-head"><span class="eyebrow">Where to put your money, in order</span></div>
-      <div class="alloc" id="alloc"></div>
-      <div class="total">
-        <span class="k">First-year return on your contributions</span>
-        <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+      <div class="field">
+        <label for="income">Your income before tax</label>
+        <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
+        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
       </div>
-      <div class="bd" id="breakdown"></div>
-      <div id="warnings"></div>
-    </div>
 
-  </main>
+      <div class="field" id="partnerField" hidden>
+        <label for="partner">Your partner's income before tax</label>
+        <input type="number" id="partner" value="55000" min="0" max="500000" step="1000">
+      </div>
+
+      <div class="field">
+        <label for="save">What you can save each month</label>
+        <input type="number" id="save" value="500" min="0" max="20000" step="50">
+        <div class="hint">Even small amounts matter far more than most people expect.</div>
+      </div>
+
+      <div class="field">
+        <label for="have">What you've already saved or invested</label>
+        <input type="number" id="have" value="10000" min="0" max="5000000" step="1000">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>Your age, and when you want to stop working</label>
+        <div class="row">
+          <input type="number" id="age" value="32" min="16" max="80" step="1" aria-label="Current age">
+          <span class="hint" style="margin:0;white-space:nowrap">→ retire at</span>
+          <input type="number" id="retage" value="65" min="45" max="75" step="1" aria-label="Retirement age">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="target">Yearly income you'd want in retirement</label>
+        <input type="number" id="target" value="50000" min="0" max="300000" step="1000">
+        <div class="hint">In today's money. Many people aim for roughly 60–70% of what they earn now.</div>
+      </div>
+
+      <div class="field">
+        <label for="growth">Yearly investment growth you assume</label>
+        <div class="row">
+          <input type="range" id="growth" value="8" min="0" max="12" step="0.5" style="flex:1">
+          <span class="num" id="growthOut" style="width:52px;text-align:right;font-weight:600">8.0%</span>
+        </div>
+        <div class="hint" id="realHint"></div>
+      </div>
+
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="fhsa" checked style="accent-color:var(--stat)">
+          <span>I could buy a first home someday</span>
+        </label>
+        <div class="hint">Unlocks the FHSA — the single best account most Canadians have never opened.</div>
+      </div>
+
+      <div class="field">
+        <label for="matchRate">Employer retirement match, if any</label>
+        <div class="row">
+          <input type="number" id="matchRate" value="0" min="0" max="200" step="5" aria-label="Match cents">
+          <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
+          <input type="number" id="matchCap" value="0" min="0" max="50000" step="500" aria-label="Match cap">
+        </div>
+        <div class="hint">Check your benefits handbook. This is free money and it is routinely left unclaimed.</div>
+      </div>
+
+    </div>
+  </div>
+</aside>
+
+<main>
+
+  <!-- HERO: growth first. Tax comes later. -->
+  <div class="panel">
+    <div class="hero">
+      <div class="eyebrow" id="heroLabel">What you'd have when you retire</div>
+      <div class="hero-num" id="heroNum">$0</div>
+      <div class="hero-sub" id="heroSub"></div>
+      <div class="split" role="img" id="splitBar">
+        <div class="sp-you" id="spYou"></div>
+        <div class="sp-grow" id="spGrow"></div>
+        <div class="sp-gov" id="spGov"></div>
+      </div>
+      <div class="splitkey">
+        <span class="spk"><i style="background:var(--stat)"></i><span><b id="kYou">$0</b>you put in</span></span>
+        <span class="spk"><i style="background:var(--keep)"></i><span><b id="kGrow">$0</b>growth on top</span></span>
+        <span class="spk"><i style="background:var(--gold)"></i><span><b id="kGov">$0</b>government help, invested</span></span>
+      </div>
+    </div>
+    <details>
+      <summary>Why is this smaller than other calculators show me?</summary>
+      <div class="panel-body">
+        Because this is in <b>today's money</b>. A calculator that promises you a
+        seven-figure balance in forty years is not lying, but that number will not buy
+        what it sounds like — inflation quietly eats most of it. Everything here is
+        adjusted so you can compare it directly to what things cost now.
+      </div>
+    </details>
+  </div>
+
+  <!-- GROWTH CHART -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="eyebrow">How it grows over time</span>
+      <span class="pills" id="horizons"></span>
+    </div>
+    <div class="chartwrap"><svg id="growthChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="readout" id="growthRead"></div>
+    <details>
+      <summary>The part almost nobody is told</summary>
+      <div class="panel-body" id="crossoverText"></div>
+    </details>
+  </div>
+
+  <!-- RETIREMENT TRACK -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Are you on track?</span></div>
+    <div class="track">
+      <div class="meter" id="meter">
+        <i class="m-gov" id="mGov"></i><i class="m-port" id="mPort"></i>
+        <span class="target" id="mTarget"></span>
+      </div>
+      <div class="trackrow">
+        <span>Government pensions (CPP + OAS) <b id="tGov">$0</b></span>
+        <span>From your investments <b id="tPort">$0</b></span>
+        <span>Your target <b id="tTarget">$0</b></span>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+    <details>
+      <summary>What are CPP and OAS, and why do they matter here?</summary>
+      <div class="panel-body">
+        <dl>
+          <dt>CPP — Canada Pension Plan</dt>
+          <dd>A pension you build up by working. The average person starting at 65 gets about
+          <b>$925 a month</b>, not the $1,508 maximum you'll see quoted — that maximum assumes
+          almost 40 years of contributions at the highest income level. We use the average, because
+          it's closer to most people.</dd>
+          <dt>OAS — Old Age Security</dt>
+          <dd>Paid from age 65 based on how long you've lived in Canada, not on whether you worked.
+          Roughly <b>$742 a month</b> at full residency.</dd>
+          <dt>Why it changes the answer</dt>
+          <dd>These cover the first slice of your retirement income, so your savings only need to
+          cover the rest. Calculators that ignore them make the target look terrifying and put
+          people off starting at all.</dd>
+        </dl>
+      </div>
+    </details>
+  </div>
+
+  <!-- ALLOCATION -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Where to put your money, in order</span></div>
+    <div id="alloc"></div>
+    <div class="total">
+      <span class="k">What the government gives back in year one</span>
+      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+    </div>
+    <div class="bd" id="breakdown"></div>
+    <div id="warnings"></div>
+    <details>
+      <summary>Plain-English guide to these accounts</summary>
+      <div class="panel-body">
+        <dl>
+          <dt>TFSA — Tax-Free Savings Account</dt>
+          <dd>Money goes in after tax. Everything it earns is yours, forever, tax-free. You can take
+          it out any time for any reason. It is not a savings account — you can hold investments in it,
+          and most people should.</dd>
+          <dt>RRSP — Registered Retirement Savings Plan</dt>
+          <dd>You get a tax refund for putting money in, then pay tax when you take it out in
+          retirement. It works when you earn more now than you will later.</dd>
+          <dt>FHSA — First Home Savings Account</dt>
+          <dd>The best of both: a refund going in, <em>and</em> tax-free coming out if you buy a first
+          home. $8,000 a year, $40,000 lifetime. Introduced in 2023, and badly under-used.</dd>
+          <dt>Employer match</dt>
+          <dd>If your employer adds money when you contribute, that is an instant return no
+          investment can match. Always take all of it first.</dd>
+        </dl>
+      </div>
+    </details>
+  </div>
+
+  <!-- COST OF WAITING -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">The cost of waiting</span></div>
+    <div class="panel-body" id="waitBox"></div>
+  </div>
+
+  <!-- MARGINAL RATE -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Why saving is worth more than you think</span></div>
+    <div class="panel-body">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:14px" id="dollarIntro"></div>
+      <div class="dollar" role="img" id="dollarBar">
+        <div class="d-tax" id="dTax"></div><div class="d-claw" id="dClaw"></div><div class="d-keep" id="dKeep"></div>
+      </div>
+      <div class="splitkey">
+        <span class="spk"><i style="background:var(--stat)"></i><span><b id="cTax">0¢</b>income tax</span></span>
+        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost child benefit</span></span>
+        <span class="spk"><i style="background:var(--keep)"></i><span><b id="cKeep">0¢</b>you keep</span></span>
+      </div>
+      <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>
+    </div>
+  </div>
+
+</main>
 </div>
 
 <footer>
-  Federal brackets: CRA 2026, indexed 2.0%, lowest rate 14%. British Columbia brackets: Province of B.C., indexed 2.2%, bottom rate 5.60%.
-  Canada Child Benefit: 2026–27 benefit year. Calculations run entirely in your browser — nothing you type is sent anywhere or stored.
+  Federal brackets: CRA 2026. British Columbia brackets: Province of B.C. Canada Child Benefit: 2026–27 benefit year.
+  CPP and OAS: Canada.ca, January 2026 — average, not maximum. Growth figures are shown in today's dollars, adjusted for 2% inflation.
+  Everything runs in your browser; nothing you type is sent anywhere or stored.
   <br><br>
-  This is an educational model, not tax, financial, or investment advice, and it does not account for every credit, deduction, or personal circumstance.
-  CPP and EI are excluded from the marginal rate because they are levied on gross employment income and are unaffected by an RRSP deduction.
-  Confirm your own contribution room in CRA My Account before contributing.
+  This is an educational model, not tax, financial, or investment advice. Investment returns are not guaranteed and past performance does not predict future results.
+  It does not account for every credit, deduction, or personal circumstance. Confirm your contribution room in CRA My Account, and consider speaking to a qualified professional before acting.
 </footer>
 
 <script>
-/* ================================================================
-   ENGINE — ported from the Python reference implementation and
-   verified against it: 108/108 parity assertions pass.
-   ================================================================ */
+/* ENGINE — ported from Python reference, parity-verified in CI */
 const TAX_2026={tax_year:2026,
 federal:{brackets:[{floor:0,rate:.14},{floor:58523,rate:.205},{floor:117045,rate:.26},{floor:181440,rate:.29},{floor:258482,rate:.33}],
 credit_rate:.14,bpa:{base:14829,additional:1623,phaseout_start:181440,phaseout_end:258482}},
@@ -364,199 +508,399 @@ function guardrails(p,cfg){const w=[];
     w.push("You have FHSA room. It is the only account that is both deductible going in and tax-free coming out.");
   return w;}
 
+/* Compound growth + retirement engine — port of engine/projection.py.
+   Verified against Python-generated fixtures. Real (today's dollars) is the
+   default reporting basis throughout; nominal figures flatter and mislead. */
+const CPP_2026={average_monthly_at_65:925.35,maximum_monthly_at_65:1507.65,
+  early_reduction_per_month:.006,late_increase_per_month:.007};
+const OAS_2026={maximum_monthly_at_65:742.31,late_increase_per_month:.006};
+const DEFAULT_INFLATION=.02, DEFAULT_WITHDRAWAL=.04;
+
+/* Fisher equation, not nominal minus inflation. */
+const realRate=(nom,inf=DEFAULT_INFLATION)=>(1+nom)/(1+inf)-1;
+/* (1+r)^(1/12)-1 so twelve months reproduces exactly the annual rate typed. */
+const monthlyRate=r=>Math.pow(1+r,1/12)-1;
+
+function futureValue(principal,monthly,annualRate,years,atStart=false){
+  const n=Math.round(years*12), i=monthlyRate(annualRate);
+  if(Math.abs(i)<1e-12) return principal+monthly*n;      // 0% would divide by zero
+  const g=Math.pow(1+i,n);
+  let ann=monthly*((g-1)/i);
+  if(atStart) ann*=(1+i);
+  return principal*g+ann;
+}
+function requiredMonthly(target,principal,annualRate,years){
+  const n=Math.round(years*12); if(n<=0) return 0;
+  const i=monthlyRate(annualRate);
+  if(Math.abs(i)<1e-12) return Math.max(0,(target-principal)/n);
+  const g=Math.pow(1+i,n), rem=target-principal*g;
+  return rem<=0?0:rem*i/(g-1);
+}
+function projectionSeries(principal,monthly,annualRate,years,inflation=DEFAULT_INFLATION){
+  const out=[], rr=realRate(annualRate,inflation);
+  for(let y=0;y<=years;y++){
+    const nominal=futureValue(principal,monthly,annualRate,y);
+    const real=futureValue(principal,monthly,rr,y);
+    const contributed=principal+monthly*12*y;
+    out.push({year:y,nominal,real,contributed,
+      growth_nominal:nominal-contributed,growth_real:Math.max(0,real-contributed)});
+  }
+  return out;
+}
+function cppEstimate(startAge=65,share=1,useMax=false){
+  let base=(useMax?CPP_2026.maximum_monthly_at_65:CPP_2026.average_monthly_at_65)*share;
+  const months=(startAge-65)*12;
+  const f=months<0?1+months*CPP_2026.early_reduction_per_month
+                  :1+months*CPP_2026.late_increase_per_month;
+  return Math.max(0,base*f*12);
+}
+function oasEstimate(startAge=65,yearsInCanada=40){
+  const base=OAS_2026.maximum_monthly_at_65*Math.min(1,Math.max(0,yearsInCanada)/40);
+  const months=Math.max(0,(startAge-65)*12);
+  return base*(1+months*OAS_2026.late_increase_per_month)*12;
+}
+function retirementReadiness(p){
+  const years=Math.max(0,p.retirement_age-p.current_age);
+  const wr=p.withdrawal_rate??DEFAULT_WITHDRAWAL;
+  const cpp=cppEstimate(p.retirement_age,p.cpp_share??1);
+  const oas=oasEstimate(Math.max(p.retirement_age,65),p.years_in_canada??40);
+  const government=cpp+oas;
+  const gap=Math.max(0,p.target_annual_income-government);
+  const nest=wr>0?gap/wr:0;
+  const rr=realRate(p.annual_rate,p.inflation??DEFAULT_INFLATION);
+  const projReal=futureValue(p.current_savings,p.monthly_contribution,rr,years);
+  const projNom=futureValue(p.current_savings,p.monthly_contribution,p.annual_rate,years);
+  const need=requiredMonthly(nest,p.current_savings,rr,years);
+  return{years_to_retirement:years,cpp_annual:cpp,oas_annual:oas,government_annual:government,
+    income_gap:gap,nest_egg_needed:nest,projected_real:projReal,projected_nominal:projNom,
+    total_contributed:p.current_savings+p.monthly_contribution*12*years,
+    required_monthly:need,monthly_shortfall:Math.max(0,need-p.monthly_contribution),
+    on_track:projReal>=nest,coverage:nest>0?projReal/nest:1,
+    portfolio_income:projReal*wr,projected_retirement_income:government+projReal*wr};
+}
+function costOfWaiting(p,delay=5){
+  const years=Math.max(0,p.retirement_age-p.current_age);
+  const rr=realRate(p.annual_rate,p.inflation??DEFAULT_INFLATION);
+  const now=futureValue(p.current_savings,p.monthly_contribution,rr,years);
+  const later=futureValue(p.current_savings,p.monthly_contribution,rr,Math.max(0,years-delay));
+  const skipped=p.monthly_contribution*12*Math.min(delay,years);
+  return{delay_years:delay,start_now:now,start_later:later,cost:Math.max(0,now-later),
+    contributions_skipped:skipped,lost_per_dollar_skipped:skipped>0?(now-later)/skipped:0};
+}
+
 /* ================================================================
    APP
    ================================================================ */
 const $=id=>document.getElementById(id);
 const cfg=TAX_2026;
-let kids=[3,6];
+const state={prov:"BC",marital:"single",haskids:"no",kids:[3,7],horizon:null};
 
 const money=v=>"$"+Math.round(v).toLocaleString("en-CA");
+const moneyK=v=>Math.abs(v)>=1e6?"$"+(v/1e6).toFixed(2)+"M":Math.abs(v)>=1000?"$"+Math.round(v/1000)+"k":"$"+Math.round(v);
 const pct=v=>(v*100).toFixed(1)+"%";
 const cents=v=>Math.round(v*100)+"¢";
 
 const ACCOUNTS={
-  employer_match:{name:"Employer match",why:"Free money. Nothing else comes close — take every matched dollar first."},
-  fhsa:{name:"FHSA",why:"The only account that is deductible going in and tax-free coming out."},
-  rrsp:{name:"RRSP",why:"Deduct now at your high rate, withdraw later at a lower one."},
-  tfsa:{name:"TFSA",why:"No deduction, but growth and withdrawals are tax-free and never touch your benefits."},
-  non_registered:{name:"Non-registered",why:"Registered room is used up. Still worth investing."}
+  employer_match:{name:"Employer match",full:"free money from work",
+    why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
+  fhsa:{name:"FHSA",full:"First Home Savings Account",
+    why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
+    why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
+  tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
+    why:"No refund, but everything it earns is tax-free forever and you can withdraw any time."},
+  non_registered:{name:"Regular investment account",full:"no tax shelter left",
+    why:"Your registered room is full. Still worth investing — you just pay tax on the gains."}
 };
+
+/* ---- toggles ---- */
+function wireSeg(id,onPick){
+  $(id).querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(b.disabled)return;
+      $(id).querySelectorAll("button").forEach(o=>o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      onPick(b.dataset.v);
+    });
+  });
+}
+wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
+wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
+  if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});
+wireSeg("prov",v=>{state.prov=v;update();});
 
 function renderKids(){
   const el=$("kids");el.innerHTML="";
-  kids.forEach((age,i)=>{
+  state.kids.forEach((age,i)=>{
     const d=document.createElement("span");d.className="kid";
     d.innerHTML='<span class="num">'+age+'</span><span style="color:var(--muted);font-size:11px">yr</span>';
     const b=document.createElement("button");b.type="button";b.innerHTML="&times;";
     b.setAttribute("aria-label","Remove child aged "+age);
-    b.onclick=()=>{kids.splice(i,1);renderKids();update();};
+    b.onclick=()=>{state.kids.splice(i,1);renderKids();update();};
     d.appendChild(b);el.appendChild(d);
   });
   const add=document.createElement("button");
   add.className="addkid";add.type="button";add.textContent="+ Add a child";
-  add.onclick=()=>{if(kids.length<8){kids.push(5);renderKids();update();}};
+  add.onclick=()=>{if(state.kids.length<8){state.kids.push(5);renderKids();update();}};
   el.appendChild(add);
 }
 
-function readInputs(){
-  const income=+$("income").value||0;
-  const partner=+$("partner").value||0;
-  const household={province:"BC",child_ages:kids.slice(),partner_income:partner};
-  return{income,partner,household,
-    savings:+$("savings").value||0,
-    fhsa:$("fhsa").checked,
-    matchRate:(+$("matchRate").value||0)/100,
-    matchCap:+$("matchCap").value||0,
-    retRate:(+$("retrate").value||0)/100};
+function renderHorizons(maxYears){
+  const el=$("horizons");el.innerHTML="";
+  const opts=[5,10,15,20,25,30,35,40].filter(y=>y<=Math.max(5,maxYears));
+  if(!opts.includes(maxYears)&&maxYears>0)opts.push(maxYears);
+  if(state.horizon===null||!opts.includes(state.horizon))
+    state.horizon=opts.includes(maxYears)?maxYears:opts[opts.length-1];
+  opts.forEach(y=>{
+    const b=document.createElement("button");b.type="button";
+    b.textContent=y+"y";b.setAttribute("aria-pressed",String(y===state.horizon));
+    b.onclick=()=>{state.horizon=y;update();};
+    el.appendChild(b);
+  });
 }
 
-/* ---------- chart ---------- */
-let W=760,H=320;
-const M={t:14,r:16,b:34,l:44};
-const X0=1e4,X1=2.2e5,Y1=.62;
-const sx=v=>M.l+(v-X0)/(X1-X0)*(W-M.l-M.r);
-const sy=v=>H-M.b-(v/Y1)*(H-M.t-M.b);
-function sizeChart(){
+/* ---- inputs ---- */
+function read(){
+  const kids=state.haskids==="yes"?state.kids.slice():[];
+  const partner=state.marital==="couple"?(+$("partner").value||0):0;
+  return{
+    income:+$("income").value||0, partner,
+    household:{province:"BC",child_ages:kids,partner_income:partner},
+    monthly:+$("save").value||0, have:+$("have").value||0,
+    age:+$("age").value||30, retage:+$("retage").value||65,
+    target:+$("target").value||0, rate:(+$("growth").value||0)/100,
+    fhsa:$("fhsa").checked, matchRate:(+$("matchRate").value||0)/100,
+    matchCap:+$("matchCap").value||0
+  };
+}
+
+/* ---- growth chart ---- */
+let GW=760,GH=300;
+const GM={t:16,r:16,b:34,l:56};
+function drawGrowth(i,govMonthly){
   const narrow=window.innerWidth<760;
-  W=narrow?420:760; H=narrow?300:320;
-  $("chart").setAttribute("viewBox","0 0 "+W+" "+H);
+  GW=narrow?420:760;GH=narrow?280:300;
+  $("growthChart").setAttribute("viewBox","0 0 "+GW+" "+GH);
+  const years=state.horizon;
+  const rr=realRate(i.rate,0.02);
+  /* Three coherent bands built only from verified engine functions:
+     your money, government help reinvested, and growth on both. */
+  const s=[];
+  for(let y=0;y<=years;y++){
+    const total=futureValue(i.have,i.monthly+govMonthly,rr,y);
+    const mine=i.have+i.monthly*12*y;
+    const gov=govMonthly*12*y;
+    s.push({year:y,total,mine,govt:mine+gov,contributed:mine,
+            gov_only:gov,growth:Math.max(0,total-mine-gov)});
+  }
+  const maxV=Math.max(1,...s.map(d=>d.total));
+  const sx=y=>GM.l+(y/Math.max(1,years))*(GW-GM.l-GM.r);
+  const sy=v=>GH-GM.b-(v/maxV)*(GH-GM.t-GM.b);
+
+  let out="";
+  for(let k=0;k<=4;k++){
+    const v=maxV*k/4;
+    out+=`<line class="gridline" x1="${GM.l}" y1="${sy(v)}" x2="${GW-GM.r}" y2="${sy(v)}"/>`;
+    out+=`<text class="axis" x="${GM.l-7}" y="${sy(v)+4}" text-anchor="end">${moneyK(v)}</text>`;
+  }
+  const areaTo=key=>{
+    let p="M"+sx(0)+" "+sy(0);
+    s.forEach(d=>{p+="L"+sx(d.year).toFixed(1)+" "+sy(d[key]).toFixed(1);});
+    p+="L"+sx(years)+" "+sy(0)+" Z";return p;
+  };
+  out+=`<path d="${areaTo("total")}" fill="var(--keep)" opacity=".22"/>`;
+  out+=`<path d="${areaTo("govt")}" fill="var(--gold)" opacity=".5"/>`;
+  out+=`<path d="${areaTo("mine")}" fill="var(--stat)" opacity=".6"/>`;
+  let line="";s.forEach((d,k)=>{line+=(k?"L":"M")+sx(d.year).toFixed(1)+" "+sy(d.total).toFixed(1);});
+  out+=`<path d="${line}" fill="none" stroke="var(--keep)" stroke-width="2.6"/>`;
+
+  const step=years<=10?2:years<=20?5:10;
+  for(let y=0;y<=years;y+=step)
+    out+=`<text class="axis" x="${sx(y)}" y="${GH-GM.b+17}" text-anchor="middle">${y}y</text>`;
+
+  const last=s[s.length-1];
+  out+=`<circle cx="${sx(years)}" cy="${sy(last.total)}" r="5" fill="var(--keep)"/>`;
+  $("growthChart").innerHTML=out;
+
+  $("growthRead").innerHTML=
+    `<span><i style="color:var(--stat)">■</i> You put in <b>${money(last.mine)}</b></span>`+
+    (govMonthly>0?`<span><i style="color:var(--gold)">■</i> Government help <b>${money(last.gov_only)}</b></span>`:"")+
+    `<span><i style="color:var(--keep)">■</i> Growth adds <b>${money(last.growth)}</b></span>`+
+    `<span>Total after ${years} years <b>${money(last.total)}</b></span>`;
+
+  const cross=s.find(d=>d.growth>d.mine+d.gov_only);
+  $("crossoverText").innerHTML=cross
+    ? `Around <b>year ${cross.year}</b>, the growth on your money overtakes everything you have put in.
+       From then on your investments are contributing more than you are. That crossover is the entire
+       reason starting early beats saving harder later — and it is why the first years feel slow and
+       the last ones do not.`
+    : `Over this timeframe your own contributions still make up most of the balance. Stretch the horizon
+       out and you will see growth overtake them — that crossover is where investing starts doing the
+       heavy lifting instead of you.`;
 }
 
-function drawChart(inp){
-  sizeChart();
-  const svg=$("chart");
-  let s='';
-  for(let g=0;g<=.6;g+=.1){
-    s+=`<line class="gridline" x1="${M.l}" y1="${sy(g)}" x2="${W-M.r}" y2="${sy(g)}"/>`;
-    s+=`<text class="axis" x="${M.l-7}" y="${sy(g)+3}" text-anchor="end">${Math.round(g*100)}%</text>`;
-  }
-  const pts=[];
-  for(let x=X0;x<=X1;x+=400){
-    const r=effectiveMarginalRate(x,inp.household,cfg);
-    pts.push([x,r.statutory_rate,r.effective_rate]);
-  }
-  const line=idx=>pts.map((p,i)=>(i?"L":"M")+sx(p[0]).toFixed(1)+" "+sy(p[idx]).toFixed(1)).join(" ");
-  const area=line(2)+" "+pts.slice().reverse().map(p=>"L"+sx(p[0]).toFixed(1)+" "+sy(p[1]).toFixed(1)).join(" ")+" Z";
-  s+=`<path d="${area}" fill="var(--claw)" opacity=".16"/>`;
-  s+=`<path d="${line(1)}" fill="none" stroke="#40506B" stroke-width="1.7" stroke-dasharray="5 3" opacity=".9"/>`;
-  s+=`<path d="${line(2)}" fill="none" stroke="var(--claw)" stroke-width="2.4" stroke-linejoin="round"/>`;
-
-  const xlabels=W<600?[25000,75000,150000,200000]:[25000,50000,75000,100000,150000,200000];
-  for(const v of xlabels)
-    s+=`<text class="axis" x="${sx(v)}" y="${H-M.b+16}" text-anchor="middle">$${v/1000}k</text>`;
-
-  const you=Math.min(Math.max(inp.income,X0),X1);
-  const r=effectiveMarginalRate(inp.income,inp.household,cfg);
-  s+=`<line x1="${sx(you)}" y1="${M.t}" x2="${sx(you)}" y2="${H-M.b}" stroke="var(--ink)" stroke-width="1.4"/>`;
-  s+=`<circle cx="${sx(you)}" cy="${sy(r.effective_rate)}" r="5.5" fill="var(--ink)"/>`;
-  s+=`<circle cx="${sx(you)}" cy="${sy(r.effective_rate)}" r="2.5" fill="#fff"/>`;
-  const anchor=sx(you)>W-190?"end":"start";const dx=anchor==="end"?-10:10;
-  s+=`<text class="axis" x="${sx(you)+dx}" y="${M.t+12}" text-anchor="${anchor}" fill="var(--ink)" style="font-weight:600">you · ${pct(r.effective_rate)}</text>`;
-  svg.innerHTML=s;
-
-  $("readout").innerHTML=
-    '<span style="color:var(--claw)">━</span> True effective rate &nbsp;<b>'+pct(r.effective_rate)+'</b>'+
-    '<span style="color:#40506B">╌</span> Posted bracket rate &nbsp;<b>'+pct(r.statutory_rate)+'</b>'+
-    (r.clawback_rate>1e-6?'<span>Hidden clawback &nbsp;<b style="color:var(--claw)">+'+pct(r.clawback_rate)+'</b></span>':'');
-}
-
-/* ---------- main ---------- */
+/* ---- main ---- */
 function update(){
-  const inp=readInputs();
-  $("retrateOut").textContent=$("retrate").value+"%";
+  const i=read();
+  $("growthOut").textContent=(i.rate*100).toFixed(1)+"%";
+  $("realHint").innerHTML="After 2% inflation that's about <b>"+pct(realRate(i.rate,0.02))+
+    "</b> of real growth. 8% is a common long-run stock-market assumption, not a promise.";
 
-  const r=effectiveMarginalRate(inp.income,inp.household,cfg);
-  const keep=Math.max(0,1-r.effective_rate);
+  const years=Math.max(0,i.retage-i.age);
+  renderHorizons(years);
 
-  $("segStat").style.width=(r.statutory_rate*100)+"%";
-  $("segClaw").style.width=(r.clawback_rate*100)+"%";
-  $("segKeep").style.width=(keep*100)+"%";
-  $("dollarBar").setAttribute("aria-label",
-    "Of your next dollar: "+cents(r.statutory_rate)+" income tax, "+
-    cents(r.clawback_rate)+" benefit clawback, "+cents(keep)+" kept.");
+  /* hero */
+  const alloc=optimize({income:i.income,household:i.household,
+    savings_capacity:i.monthly*12,expected_retirement_rate:0.25,
+    fhsa_eligible:i.fhsa,employer_match_rate:i.matchRate,employer_match_cap:i.matchCap},cfg);
+  const govYear1=alloc.tax_refund+alloc.benefit_restored+alloc.employer_match_earned;
+  const govMonthly=govYear1/12;
 
-  $("vStat").textContent=cents(r.statutory_rate);
-  $("vClaw").textContent=cents(r.clawback_rate);
-  $("vKeep").textContent=cents(keep);
-  $("bigRate").textContent=pct(r.effective_rate);
+  /* One number everywhere: hero, chart and readiness all model the same
+     stream -- your contributions plus government help, reinvested. */
+  const plan={current_age:i.age,retirement_age:i.retage,target_annual_income:i.target,
+    current_savings:i.have,monthly_contribution:i.monthly+govMonthly,annual_rate:i.rate};
+  const ready=retirementReadiness(plan);
 
-  const np=netPosition(inp.income,inp.household,cfg);
-  $("heroSub").textContent=
-    "Household income "+money(inp.income+inp.partner)+
-    (kids.length?" · "+kids.length+(kids.length===1?" child":" children")+" · Canada Child Benefit "+money(np.benefits)+"/yr":" · no children");
+  const rr=realRate(i.rate,0.02);
+  const contributed=i.have+i.monthly*12*years;
+  const govFV=govMonthly*12*years;
+  const totalFV=ready.projected_real;
+  const growth=Math.max(0,totalFV-contributed-govFV);
 
-  const gap=r.clawback_rate;
-  $("vsText").innerHTML=gap>1e-6
-    ? "Your tax bracket says <b>"+pct(r.statutory_rate)+"</b>. The extra <b>"+pct(gap)+
-      "</b> is Canada Child Benefit being clawed back as your income rises — real money, and it appears nowhere on your tax return."
-    : "This matches your posted bracket rate. No income-tested benefits are being clawed back at this income.";
+  $("heroNum").textContent=money(totalFV);
+  $("heroLabel").textContent=years>0?`What you'd have at ${i.retage}, in today's money`:"What you have today";
+  $("heroSub").innerHTML=years>0
+    ? `Saving <b>${money(i.monthly)}</b> a month for <b>${years}</b> years, growing at ${pct(i.rate)} a year.
+       You'd put in ${money(contributed)} of your own money${govYear1>1?", and reinvest the "+money(govYear1)+" a year the government gives back":""}.`
+    : `Set a retirement age above your current age to see a projection.`;
 
-  drawChart(inp);
+  const tot=Math.max(1,contributed+growth+govFV);
+  $("spYou").style.width=(contributed/tot*100)+"%";
+  $("spGrow").style.width=(growth/tot*100)+"%";
+  $("spGov").style.width=(govFV/tot*100)+"%";
+  $("kYou").textContent=money(contributed);
+  $("kGrow").textContent=money(growth);
+  $("kGov").textContent=money(govFV);
+  $("splitBar").setAttribute("aria-label",
+    `You contribute ${money(contributed)}, growth adds ${money(growth)}, reinvested government help adds ${money(govFV)}.`);
+
+  drawGrowth(i,govMonthly);
+
+  /* retirement track */
+  const gov=ready.government_annual, port=ready.portfolio_income;
+  const scale=Math.max(i.target,gov+port,1);
+  $("mGov").style.width=(gov/scale*100)+"%";
+  $("mPort").style.width=(port/scale*100)+"%";
+  $("mTarget").style.left=(i.target/scale*100)+"%";
+  $("tGov").textContent=money(gov)+"/yr";
+  $("tPort").textContent=money(port)+"/yr";
+  $("tTarget").textContent=money(i.target)+"/yr";
+
+  const v=$("verdict");
+  const totalIncome=gov+port;
+  if(i.target<=0){v.className="verdict v-good";v.innerHTML="Set a target income to see whether you're on track.";}
+  else if(totalIncome>=i.target){
+    v.className="verdict v-good";
+    v.innerHTML=`On track. You'd have about <b>${money(totalIncome)}</b> a year — roughly
+      <b>${money(totalIncome-i.target)}</b> more than your target. CPP and OAS cover
+      <b>${pct(gov/totalIncome)}</b> of it before your savings do anything.`;
+  } else {
+    const extra=ready.monthly_shortfall;
+    v.className="verdict v-gap";
+    v.innerHTML=`You'd have about <b>${money(totalIncome)}</b> a year, short of your
+      <b>${money(i.target)}</b> target. Saving roughly <b>${money(extra)}</b> more per month would close
+      the gap. Retiring a couple of years later, or trimming the target, does much of the same work.`;
+  }
 
   /* allocation */
-  const res=optimize({income:inp.income,household:inp.household,
-    savings_capacity:inp.savings,expected_retirement_rate:inp.retRate,
-    fhsa_eligible:inp.fhsa,employer_match_rate:inp.matchRate,
-    employer_match_cap:inp.matchCap},cfg);
-
   const order=["employer_match","fhsa","rrsp","tfsa","non_registered"];
   const el=$("alloc");el.innerHTML="";
-  let rank=0;
-  const entries=order.filter(k=>res.allocation[k]>0);
-  if(!entries.length){
-    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter an amount you can invest to see where it should go.</span><span></span></div>';
-  } else entries.forEach(k=>{
-    rank++;
+  const rows=order.filter(k=>alloc.allocation[k]>0);
+  if(!rows.length){
+    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter a monthly amount to see where it should go.</span><span></span></div>';
+  } else rows.forEach((k,n)=>{
     const d=document.createElement("div");d.className="arow";
-    d.innerHTML='<span class="rank">'+rank+'</span>'+
-      '<span><div class="aname">'+ACCOUNTS[k].name+'</div><div class="awhy">'+ACCOUNTS[k].why+'</div></span>'+
-      '<span class="aamt">'+money(res.allocation[k])+'</span>';
+    d.innerHTML='<span class="rank">'+(n+1)+'</span><span><div class="aname">'+ACCOUNTS[k].name+
+      ' <span class="full">'+ACCOUNTS[k].full+'</span></div><div class="awhy">'+ACCOUNTS[k].why+
+      '</div></span><span class="aamt">'+money(alloc.allocation[k]/12)+'<span style="font-size:11px;color:var(--muted)">/mo</span></span>';
     el.appendChild(d);
   });
-
-  const total=res.tax_refund+res.benefit_restored+res.employer_match_earned;
-  $("totalVal").textContent=money(total);
-  $("totalPct").textContent=inp.savings>0?"on "+money(inp.savings)+" · "+pct(total/inp.savings):"";
+  $("totalVal").textContent=money(govYear1);
+  $("totalPct").textContent=i.monthly>0?"on "+money(i.monthly*12)+" saved":"";
   $("breakdown").innerHTML=
-    "Tax refund <b>"+money(res.tax_refund)+"</b>"+
-    (res.benefit_restored>1?"Canada Child Benefit restored <b style='color:var(--claw)'>"+money(res.benefit_restored)+"</b>":"")+
-    (res.employer_match_earned>1?"Employer match <b>"+money(res.employer_match_earned)+"</b>":"");
+    "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
+    (alloc.benefit_restored>1?"Child benefit you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
+    (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
 
-  const wEl=$("warnings");wEl.innerHTML="";
-  res.warnings.forEach(w=>{
+  const w=$("warnings");w.innerHTML="";
+  alloc.warnings.forEach(t=>{
     const d=document.createElement("div");d.className="warn";
-    d.innerHTML='<span class="mark">!</span><span>'+w+'</span>';
-    wEl.appendChild(d);
+    d.innerHTML='<span class="mark">!</span><span>'+t+'</span>';w.appendChild(d);
   });
-}
 
-/* ticks */
-(function(){const t=$("ticks");let h="";for(let i=0;i<100;i++)h+="<i></i>";t.innerHTML=h;})();
+  /* cost of waiting */
+  const wait=costOfWaiting(plan,5);
+  /* Denominate in the user's OWN money. costOfWaiting counts the combined
+     stream, but "money I didn't put in" is what a person actually recognises,
+     and it makes the per-dollar figure honest rather than flattering. */
+  const ownSkipped=i.monthly*12*Math.min(5,years);
+  const perDollar=ownSkipped>0?wait.cost/ownSkipped:0;
+  $("waitBox").innerHTML=years>5
+    ? `<div style="font-family:var(--mono);font-size:30px;font-weight:600;color:var(--claw);letter-spacing:-.02em">${money(wait.cost)}</div>
+       <div style="font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55;max-width:620px">
+       That's what putting this off for five years would cost you by age ${i.retage}, in today's money —
+       even though you'd only skip <b style="font-family:var(--mono);color:var(--ink)">${money(ownSkipped)}</b>
+       of your own contributions. Every dollar you don't invest now costs you about
+       <b style="font-family:var(--mono);color:var(--ink)">$${perDollar.toFixed(2)}</b> later.
+       That gap is compounding, and it never comes back.</div>`
+    : `<div style="font-size:13.5px;color:var(--muted)">With ${years} years to go, there isn't much room left to delay — which is
+       itself the point. The cost of waiting is largest when you have the most time.</div>`;
+
+  /* marginal rate */
+  const r=effectiveMarginalRate(i.income,i.household,cfg);
+  const keep=Math.max(0,1-r.effective_rate);
+  $("dTax").style.width=(r.statutory_rate*100)+"%";
+  $("dClaw").style.width=(r.clawback_rate*100)+"%";
+  $("dKeep").style.width=(keep*100)+"%";
+  $("cTax").textContent=cents(r.statutory_rate);
+  $("cClaw").textContent=cents(r.clawback_rate);
+  $("cKeep").textContent=cents(keep);
+  $("dollarBar").setAttribute("aria-label",
+    `Of your next dollar earned: ${cents(r.statutory_rate)} income tax, ${cents(r.clawback_rate)} lost child benefit, ${cents(keep)} kept.`);
+  $("dollarIntro").textContent="Here's what happens to the next dollar you earn:";
+  $("dollarWhy").innerHTML=r.clawback_rate>1e-6
+    ? `You lose <b class="num">${pct(r.effective_rate)}</b> of it — well above the
+       <b class="num">${pct(r.statutory_rate)}</b> your tax bracket suggests, because earning more also
+       shrinks your Canada Child Benefit. Here's the useful half: putting money into an RRSP or FHSA
+       runs that in reverse. You get the tax back <em>and</em> stop losing the child benefit, which is why
+       every dollar you contribute is worth about <b class="num">${pct(r.effective_rate)}</b> to you, not
+       <b class="num">${pct(r.statutory_rate)}</b>.`
+    : `You lose <b class="num">${pct(r.effective_rate)}</b> of it to income tax. Putting money into an
+       RRSP or FHSA runs that backwards — you get that share returned as a refund, which is money you
+       can invest on top of what you already saved.`;
+
+  renderHorizons(years);
+}
 
 /* wiring */
-["income","partner","savings","matchRate","matchCap","retrate","fhsa"].forEach(id=>{
-  $(id).addEventListener("input",()=>{
-    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,10000),250000);
-    update();});
+["income","partner","save","have","age","retage","target","growth","fhsa","matchRate","matchCap"]
+.forEach(id=>{
+  const el=$(id);if(!el)return;
+  el.addEventListener("input",()=>{
+    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,15000),250000);
+    if(id==="age"||id==="retage")state.horizon=null;
+    update();
+  });
 });
 $("incomeRange").addEventListener("input",()=>{$("income").value=$("incomeRange").value;update();});
-
-$("chart").addEventListener("pointerdown",e=>{
-  const rect=e.currentTarget.getBoundingClientRect();
-  const px=(e.clientX-rect.left)/rect.width*W;
-  const val=X0+(px-M.l)/(W-M.l-M.r)*(X1-X0);
-  const v=Math.round(Math.min(Math.max(val,X0),X1)/500)*500;
-  $("income").value=v;$("incomeRange").value=Math.min(v,250000);update();
-});
-
-if("serviceWorker" in navigator&&location.protocol!=="file:"){
+if("serviceWorker" in navigator&&location.protocol!=="file:")
   window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-}
 
 renderKids();
 update();
 let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(update,120);});
+
 </script>
 </body>
 </html>

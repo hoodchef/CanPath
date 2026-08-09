@@ -1,0 +1,253 @@
+<div class="shell">
+
+<aside>
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">About you</span></div>
+    <div class="panel-body">
+
+      <div class="field">
+        <label for="prov">Where you live</label>
+        <div class="seg-ctl" id="prov">
+          <button type="button" data-v="BC" aria-pressed="true">British&nbsp;Columbia</button>
+          <button type="button" data-v="soon" aria-pressed="false" disabled title="Coming soon">Other&nbsp;— soon</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Your household</label>
+        <div class="seg-ctl" id="marital">
+          <button type="button" data-v="single" aria-pressed="true">Single</button>
+          <button type="button" data-v="couple" aria-pressed="false">Married or common-law</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Children under 18</label>
+        <div class="seg-ctl" id="haskids">
+          <button type="button" data-v="no" aria-pressed="true">No children</button>
+          <button type="button" data-v="yes" aria-pressed="false">I have children</button>
+        </div>
+        <div id="kidsWrap" hidden>
+          <div class="kids" id="kids"></div>
+          <div class="hint">Under 6 carries a larger benefit than 6–17.</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label for="income">Your income before tax</label>
+        <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
+        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
+      </div>
+
+      <div class="field" id="partnerField" hidden>
+        <label for="partner">Your partner's income before tax</label>
+        <input type="number" id="partner" value="55000" min="0" max="500000" step="1000">
+      </div>
+
+      <div class="field">
+        <label for="save">What you can save each month</label>
+        <input type="number" id="save" value="500" min="0" max="20000" step="50">
+        <div class="hint">Even small amounts matter far more than most people expect.</div>
+      </div>
+
+      <div class="field">
+        <label for="have">What you've already saved or invested</label>
+        <input type="number" id="have" value="10000" min="0" max="5000000" step="1000">
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <label>Your age, and when you want to stop working</label>
+        <div class="row">
+          <input type="number" id="age" value="32" min="16" max="80" step="1" aria-label="Current age">
+          <span class="hint" style="margin:0;white-space:nowrap">→ retire at</span>
+          <input type="number" id="retage" value="65" min="45" max="75" step="1" aria-label="Retirement age">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="target">Yearly income you'd want in retirement</label>
+        <input type="number" id="target" value="50000" min="0" max="300000" step="1000">
+        <div class="hint">In today's money. Many people aim for roughly 60–70% of what they earn now.</div>
+      </div>
+
+      <div class="field">
+        <label for="growth">Yearly investment growth you assume</label>
+        <div class="row">
+          <input type="range" id="growth" value="8" min="0" max="12" step="0.5" style="flex:1">
+          <span class="num" id="growthOut" style="width:52px;text-align:right;font-weight:600">8.0%</span>
+        </div>
+        <div class="hint" id="realHint"></div>
+      </div>
+
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="fhsa" checked style="accent-color:var(--stat)">
+          <span>I could buy a first home someday</span>
+        </label>
+        <div class="hint">Unlocks the FHSA — the single best account most Canadians have never opened.</div>
+      </div>
+
+      <div class="field">
+        <label for="matchRate">Employer retirement match, if any</label>
+        <div class="row">
+          <input type="number" id="matchRate" value="0" min="0" max="200" step="5" aria-label="Match cents">
+          <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
+          <input type="number" id="matchCap" value="0" min="0" max="50000" step="500" aria-label="Match cap">
+        </div>
+        <div class="hint">Check your benefits handbook. This is free money and it is routinely left unclaimed.</div>
+      </div>
+
+    </div>
+  </div>
+</aside>
+
+<main>
+
+  <!-- HERO: growth first. Tax comes later. -->
+  <div class="panel">
+    <div class="hero">
+      <div class="eyebrow" id="heroLabel">What you'd have when you retire</div>
+      <div class="hero-num" id="heroNum">$0</div>
+      <div class="hero-sub" id="heroSub"></div>
+      <div class="split" role="img" id="splitBar">
+        <div class="sp-you" id="spYou"></div>
+        <div class="sp-grow" id="spGrow"></div>
+        <div class="sp-gov" id="spGov"></div>
+      </div>
+      <div class="splitkey">
+        <span class="spk"><i style="background:var(--stat)"></i><span><b id="kYou">$0</b>you put in</span></span>
+        <span class="spk"><i style="background:var(--keep)"></i><span><b id="kGrow">$0</b>growth on top</span></span>
+        <span class="spk"><i style="background:var(--gold)"></i><span><b id="kGov">$0</b>government help, invested</span></span>
+      </div>
+    </div>
+    <details>
+      <summary>Why is this smaller than other calculators show me?</summary>
+      <div class="panel-body">
+        Because this is in <b>today's money</b>. A calculator that promises you a
+        seven-figure balance in forty years is not lying, but that number will not buy
+        what it sounds like — inflation quietly eats most of it. Everything here is
+        adjusted so you can compare it directly to what things cost now.
+      </div>
+    </details>
+  </div>
+
+  <!-- GROWTH CHART -->
+  <div class="panel">
+    <div class="panel-head">
+      <span class="eyebrow">How it grows over time</span>
+      <span class="pills" id="horizons"></span>
+    </div>
+    <div class="chartwrap"><svg id="growthChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    <div class="readout" id="growthRead"></div>
+    <details>
+      <summary>The part almost nobody is told</summary>
+      <div class="panel-body" id="crossoverText"></div>
+    </details>
+  </div>
+
+  <!-- RETIREMENT TRACK -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Are you on track?</span></div>
+    <div class="track">
+      <div class="meter" id="meter">
+        <i class="m-gov" id="mGov"></i><i class="m-port" id="mPort"></i>
+        <span class="target" id="mTarget"></span>
+      </div>
+      <div class="trackrow">
+        <span>Government pensions (CPP + OAS) <b id="tGov">$0</b></span>
+        <span>From your investments <b id="tPort">$0</b></span>
+        <span>Your target <b id="tTarget">$0</b></span>
+      </div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+    <details>
+      <summary>What are CPP and OAS, and why do they matter here?</summary>
+      <div class="panel-body">
+        <dl>
+          <dt>CPP — Canada Pension Plan</dt>
+          <dd>A pension you build up by working. The average person starting at 65 gets about
+          <b>$925 a month</b>, not the $1,508 maximum you'll see quoted — that maximum assumes
+          almost 40 years of contributions at the highest income level. We use the average, because
+          it's closer to most people.</dd>
+          <dt>OAS — Old Age Security</dt>
+          <dd>Paid from age 65 based on how long you've lived in Canada, not on whether you worked.
+          Roughly <b>$742 a month</b> at full residency.</dd>
+          <dt>Why it changes the answer</dt>
+          <dd>These cover the first slice of your retirement income, so your savings only need to
+          cover the rest. Calculators that ignore them make the target look terrifying and put
+          people off starting at all.</dd>
+        </dl>
+      </div>
+    </details>
+  </div>
+
+  <!-- ALLOCATION -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Where to put your money, in order</span></div>
+    <div id="alloc"></div>
+    <div class="total">
+      <span class="k">What the government gives back in year one</span>
+      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+    </div>
+    <div class="bd" id="breakdown"></div>
+    <div id="warnings"></div>
+    <details>
+      <summary>Plain-English guide to these accounts</summary>
+      <div class="panel-body">
+        <dl>
+          <dt>TFSA — Tax-Free Savings Account</dt>
+          <dd>Money goes in after tax. Everything it earns is yours, forever, tax-free. You can take
+          it out any time for any reason. It is not a savings account — you can hold investments in it,
+          and most people should.</dd>
+          <dt>RRSP — Registered Retirement Savings Plan</dt>
+          <dd>You get a tax refund for putting money in, then pay tax when you take it out in
+          retirement. It works when you earn more now than you will later.</dd>
+          <dt>FHSA — First Home Savings Account</dt>
+          <dd>The best of both: a refund going in, <em>and</em> tax-free coming out if you buy a first
+          home. $8,000 a year, $40,000 lifetime. Introduced in 2023, and badly under-used.</dd>
+          <dt>Employer match</dt>
+          <dd>If your employer adds money when you contribute, that is an instant return no
+          investment can match. Always take all of it first.</dd>
+        </dl>
+      </div>
+    </details>
+  </div>
+
+  <!-- COST OF WAITING -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">The cost of waiting</span></div>
+    <div class="panel-body" id="waitBox"></div>
+  </div>
+
+  <!-- MARGINAL RATE -->
+  <div class="panel">
+    <div class="panel-head"><span class="eyebrow">Why saving is worth more than you think</span></div>
+    <div class="panel-body">
+      <div style="font-size:13.5px;color:var(--muted);margin-bottom:14px" id="dollarIntro"></div>
+      <div class="dollar" role="img" id="dollarBar">
+        <div class="d-tax" id="dTax"></div><div class="d-claw" id="dClaw"></div><div class="d-keep" id="dKeep"></div>
+      </div>
+      <div class="splitkey">
+        <span class="spk"><i style="background:var(--stat)"></i><span><b id="cTax">0¢</b>income tax</span></span>
+        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost child benefit</span></span>
+        <span class="spk"><i style="background:var(--keep)"></i><span><b id="cKeep">0¢</b>you keep</span></span>
+      </div>
+      <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<footer>
+  Federal brackets: CRA 2026. British Columbia brackets: Province of B.C. Canada Child Benefit: 2026–27 benefit year.
+  CPP and OAS: Canada.ca, January 2026 — average, not maximum. Growth figures are shown in today's dollars, adjusted for 2% inflation.
+  Everything runs in your browser; nothing you type is sent anywhere or stored.
+  <br><br>
+  This is an educational model, not tax, financial, or investment advice. Investment returns are not guaranteed and past performance does not predict future results.
+  It does not account for every credit, deduction, or personal circumstance. Confirm your contribution room in CRA My Account, and consider speaking to a qualified professional before acting.
+</footer>

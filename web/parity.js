@@ -1,7 +1,7 @@
 /* Proves the JS port reproduces the Python reference engine exactly. */
-const fs = require("fs");
+const fs = require("fs"), path = require("path");
 const E = require("./engine.js");
-const fx = JSON.parse(fs.readFileSync("../fixtures.json", "utf8"));
+const fx = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "fixtures.json"), "utf8"));
 const cfg = E.TAX_2026;
 let pass = 0, fail = 0;
 

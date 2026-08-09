@@ -17,16 +17,21 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Python reference engine — golden tests
+      - name: Python reference — tax engine
         run: python3 tests/test_engine.py
+
+      - name: Python reference — projection engine
+        run: python3 tests/test_projection.py
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: JavaScript port — parity against Python fixtures
-        working-directory: web
-        run: node parity.js
+      - name: JavaScript port — tax parity
+        run: node web/parity.js
+
+      - name: JavaScript port — projection parity
+        run: node web/parity_projection.js
 
       - name: Shipped app — parity against Python fixtures
         run: node tests/shipped_parity.js

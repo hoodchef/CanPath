@@ -1,0 +1,312 @@
+/* ================================================================
+   APP
+   ================================================================ */
+const $=id=>document.getElementById(id);
+const cfg=TAX_2026;
+const state={prov:"BC",marital:"single",haskids:"no",kids:[3,7],horizon:null};
+
+const money=v=>"$"+Math.round(v).toLocaleString("en-CA");
+const moneyK=v=>Math.abs(v)>=1e6?"$"+(v/1e6).toFixed(2)+"M":Math.abs(v)>=1000?"$"+Math.round(v/1000)+"k":"$"+Math.round(v);
+const pct=v=>(v*100).toFixed(1)+"%";
+const cents=v=>Math.round(v*100)+"¢";
+
+const ACCOUNTS={
+  employer_match:{name:"Employer match",full:"free money from work",
+    why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
+  fhsa:{name:"FHSA",full:"First Home Savings Account",
+    why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
+    why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
+  tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
+    why:"No refund, but everything it earns is tax-free forever and you can withdraw any time."},
+  non_registered:{name:"Regular investment account",full:"no tax shelter left",
+    why:"Your registered room is full. Still worth investing — you just pay tax on the gains."}
+};
+
+/* ---- toggles ---- */
+function wireSeg(id,onPick){
+  $(id).querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(b.disabled)return;
+      $(id).querySelectorAll("button").forEach(o=>o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");
+      onPick(b.dataset.v);
+    });
+  });
+}
+wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
+wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
+  if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});
+wireSeg("prov",v=>{state.prov=v;update();});
+
+function renderKids(){
+  const el=$("kids");el.innerHTML="";
+  state.kids.forEach((age,i)=>{
+    const d=document.createElement("span");d.className="kid";
+    d.innerHTML='<span class="num">'+age+'</span><span style="color:var(--muted);font-size:11px">yr</span>';
+    const b=document.createElement("button");b.type="button";b.innerHTML="&times;";
+    b.setAttribute("aria-label","Remove child aged "+age);
+    b.onclick=()=>{state.kids.splice(i,1);renderKids();update();};
+    d.appendChild(b);el.appendChild(d);
+  });
+  const add=document.createElement("button");
+  add.className="addkid";add.type="button";add.textContent="+ Add a child";
+  add.onclick=()=>{if(state.kids.length<8){state.kids.push(5);renderKids();update();}};
+  el.appendChild(add);
+}
+
+function renderHorizons(maxYears){
+  const el=$("horizons");el.innerHTML="";
+  const opts=[5,10,15,20,25,30,35,40].filter(y=>y<=Math.max(5,maxYears));
+  if(!opts.includes(maxYears)&&maxYears>0)opts.push(maxYears);
+  if(state.horizon===null||!opts.includes(state.horizon))
+    state.horizon=opts.includes(maxYears)?maxYears:opts[opts.length-1];
+  opts.forEach(y=>{
+    const b=document.createElement("button");b.type="button";
+    b.textContent=y+"y";b.setAttribute("aria-pressed",String(y===state.horizon));
+    b.onclick=()=>{state.horizon=y;update();};
+    el.appendChild(b);
+  });
+}
+
+/* ---- inputs ---- */
+function read(){
+  const kids=state.haskids==="yes"?state.kids.slice():[];
+  const partner=state.marital==="couple"?(+$("partner").value||0):0;
+  return{
+    income:+$("income").value||0, partner,
+    household:{province:"BC",child_ages:kids,partner_income:partner},
+    monthly:+$("save").value||0, have:+$("have").value||0,
+    age:+$("age").value||30, retage:+$("retage").value||65,
+    target:+$("target").value||0, rate:(+$("growth").value||0)/100,
+    fhsa:$("fhsa").checked, matchRate:(+$("matchRate").value||0)/100,
+    matchCap:+$("matchCap").value||0
+  };
+}
+
+/* ---- growth chart ---- */
+let GW=760,GH=300;
+const GM={t:16,r:16,b:34,l:56};
+function drawGrowth(i,govMonthly){
+  const narrow=window.innerWidth<760;
+  GW=narrow?420:760;GH=narrow?280:300;
+  $("growthChart").setAttribute("viewBox","0 0 "+GW+" "+GH);
+  const years=state.horizon;
+  const rr=realRate(i.rate,0.02);
+  /* Three coherent bands built only from verified engine functions:
+     your money, government help reinvested, and growth on both. */
+  const s=[];
+  for(let y=0;y<=years;y++){
+    const total=futureValue(i.have,i.monthly+govMonthly,rr,y);
+    const mine=i.have+i.monthly*12*y;
+    const gov=govMonthly*12*y;
+    s.push({year:y,total,mine,govt:mine+gov,contributed:mine,
+            gov_only:gov,growth:Math.max(0,total-mine-gov)});
+  }
+  const maxV=Math.max(1,...s.map(d=>d.total));
+  const sx=y=>GM.l+(y/Math.max(1,years))*(GW-GM.l-GM.r);
+  const sy=v=>GH-GM.b-(v/maxV)*(GH-GM.t-GM.b);
+
+  let out="";
+  for(let k=0;k<=4;k++){
+    const v=maxV*k/4;
+    out+=`<line class="gridline" x1="${GM.l}" y1="${sy(v)}" x2="${GW-GM.r}" y2="${sy(v)}"/>`;
+    out+=`<text class="axis" x="${GM.l-7}" y="${sy(v)+4}" text-anchor="end">${moneyK(v)}</text>`;
+  }
+  const areaTo=key=>{
+    let p="M"+sx(0)+" "+sy(0);
+    s.forEach(d=>{p+="L"+sx(d.year).toFixed(1)+" "+sy(d[key]).toFixed(1);});
+    p+="L"+sx(years)+" "+sy(0)+" Z";return p;
+  };
+  out+=`<path d="${areaTo("total")}" fill="var(--keep)" opacity=".22"/>`;
+  out+=`<path d="${areaTo("govt")}" fill="var(--gold)" opacity=".5"/>`;
+  out+=`<path d="${areaTo("mine")}" fill="var(--stat)" opacity=".6"/>`;
+  let line="";s.forEach((d,k)=>{line+=(k?"L":"M")+sx(d.year).toFixed(1)+" "+sy(d.total).toFixed(1);});
+  out+=`<path d="${line}" fill="none" stroke="var(--keep)" stroke-width="2.6"/>`;
+
+  const step=years<=10?2:years<=20?5:10;
+  for(let y=0;y<=years;y+=step)
+    out+=`<text class="axis" x="${sx(y)}" y="${GH-GM.b+17}" text-anchor="middle">${y}y</text>`;
+
+  const last=s[s.length-1];
+  out+=`<circle cx="${sx(years)}" cy="${sy(last.total)}" r="5" fill="var(--keep)"/>`;
+  $("growthChart").innerHTML=out;
+
+  $("growthRead").innerHTML=
+    `<span><i style="color:var(--stat)">■</i> You put in <b>${money(last.mine)}</b></span>`+
+    (govMonthly>0?`<span><i style="color:var(--gold)">■</i> Government help <b>${money(last.gov_only)}</b></span>`:"")+
+    `<span><i style="color:var(--keep)">■</i> Growth adds <b>${money(last.growth)}</b></span>`+
+    `<span>Total after ${years} years <b>${money(last.total)}</b></span>`;
+
+  const cross=s.find(d=>d.growth>d.mine+d.gov_only);
+  $("crossoverText").innerHTML=cross
+    ? `Around <b>year ${cross.year}</b>, the growth on your money overtakes everything you have put in.
+       From then on your investments are contributing more than you are. That crossover is the entire
+       reason starting early beats saving harder later — and it is why the first years feel slow and
+       the last ones do not.`
+    : `Over this timeframe your own contributions still make up most of the balance. Stretch the horizon
+       out and you will see growth overtake them — that crossover is where investing starts doing the
+       heavy lifting instead of you.`;
+}
+
+/* ---- main ---- */
+function update(){
+  const i=read();
+  $("growthOut").textContent=(i.rate*100).toFixed(1)+"%";
+  $("realHint").innerHTML="After 2% inflation that's about <b>"+pct(realRate(i.rate,0.02))+
+    "</b> of real growth. 8% is a common long-run stock-market assumption, not a promise.";
+
+  const years=Math.max(0,i.retage-i.age);
+  renderHorizons(years);
+
+  /* hero */
+  const alloc=optimize({income:i.income,household:i.household,
+    savings_capacity:i.monthly*12,expected_retirement_rate:0.25,
+    fhsa_eligible:i.fhsa,employer_match_rate:i.matchRate,employer_match_cap:i.matchCap},cfg);
+  const govYear1=alloc.tax_refund+alloc.benefit_restored+alloc.employer_match_earned;
+  const govMonthly=govYear1/12;
+
+  /* One number everywhere: hero, chart and readiness all model the same
+     stream -- your contributions plus government help, reinvested. */
+  const plan={current_age:i.age,retirement_age:i.retage,target_annual_income:i.target,
+    current_savings:i.have,monthly_contribution:i.monthly+govMonthly,annual_rate:i.rate};
+  const ready=retirementReadiness(plan);
+
+  const rr=realRate(i.rate,0.02);
+  const contributed=i.have+i.monthly*12*years;
+  const govFV=govMonthly*12*years;
+  const totalFV=ready.projected_real;
+  const growth=Math.max(0,totalFV-contributed-govFV);
+
+  $("heroNum").textContent=money(totalFV);
+  $("heroLabel").textContent=years>0?`What you'd have at ${i.retage}, in today's money`:"What you have today";
+  $("heroSub").innerHTML=years>0
+    ? `Saving <b>${money(i.monthly)}</b> a month for <b>${years}</b> years, growing at ${pct(i.rate)} a year.
+       You'd put in ${money(contributed)} of your own money${govYear1>1?", and reinvest the "+money(govYear1)+" a year the government gives back":""}.`
+    : `Set a retirement age above your current age to see a projection.`;
+
+  const tot=Math.max(1,contributed+growth+govFV);
+  $("spYou").style.width=(contributed/tot*100)+"%";
+  $("spGrow").style.width=(growth/tot*100)+"%";
+  $("spGov").style.width=(govFV/tot*100)+"%";
+  $("kYou").textContent=money(contributed);
+  $("kGrow").textContent=money(growth);
+  $("kGov").textContent=money(govFV);
+  $("splitBar").setAttribute("aria-label",
+    `You contribute ${money(contributed)}, growth adds ${money(growth)}, reinvested government help adds ${money(govFV)}.`);
+
+  drawGrowth(i,govMonthly);
+
+  /* retirement track */
+  const gov=ready.government_annual, port=ready.portfolio_income;
+  const scale=Math.max(i.target,gov+port,1);
+  $("mGov").style.width=(gov/scale*100)+"%";
+  $("mPort").style.width=(port/scale*100)+"%";
+  $("mTarget").style.left=(i.target/scale*100)+"%";
+  $("tGov").textContent=money(gov)+"/yr";
+  $("tPort").textContent=money(port)+"/yr";
+  $("tTarget").textContent=money(i.target)+"/yr";
+
+  const v=$("verdict");
+  const totalIncome=gov+port;
+  if(i.target<=0){v.className="verdict v-good";v.innerHTML="Set a target income to see whether you're on track.";}
+  else if(totalIncome>=i.target){
+    v.className="verdict v-good";
+    v.innerHTML=`On track. You'd have about <b>${money(totalIncome)}</b> a year — roughly
+      <b>${money(totalIncome-i.target)}</b> more than your target. CPP and OAS cover
+      <b>${pct(gov/totalIncome)}</b> of it before your savings do anything.`;
+  } else {
+    const extra=ready.monthly_shortfall;
+    v.className="verdict v-gap";
+    v.innerHTML=`You'd have about <b>${money(totalIncome)}</b> a year, short of your
+      <b>${money(i.target)}</b> target. Saving roughly <b>${money(extra)}</b> more per month would close
+      the gap. Retiring a couple of years later, or trimming the target, does much of the same work.`;
+  }
+
+  /* allocation */
+  const order=["employer_match","fhsa","rrsp","tfsa","non_registered"];
+  const el=$("alloc");el.innerHTML="";
+  const rows=order.filter(k=>alloc.allocation[k]>0);
+  if(!rows.length){
+    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter a monthly amount to see where it should go.</span><span></span></div>';
+  } else rows.forEach((k,n)=>{
+    const d=document.createElement("div");d.className="arow";
+    d.innerHTML='<span class="rank">'+(n+1)+'</span><span><div class="aname">'+ACCOUNTS[k].name+
+      ' <span class="full">'+ACCOUNTS[k].full+'</span></div><div class="awhy">'+ACCOUNTS[k].why+
+      '</div></span><span class="aamt">'+money(alloc.allocation[k]/12)+'<span style="font-size:11px;color:var(--muted)">/mo</span></span>';
+    el.appendChild(d);
+  });
+  $("totalVal").textContent=money(govYear1);
+  $("totalPct").textContent=i.monthly>0?"on "+money(i.monthly*12)+" saved":"";
+  $("breakdown").innerHTML=
+    "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
+    (alloc.benefit_restored>1?"Child benefit you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
+    (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
+
+  const w=$("warnings");w.innerHTML="";
+  alloc.warnings.forEach(t=>{
+    const d=document.createElement("div");d.className="warn";
+    d.innerHTML='<span class="mark">!</span><span>'+t+'</span>';w.appendChild(d);
+  });
+
+  /* cost of waiting */
+  const wait=costOfWaiting(plan,5);
+  /* Denominate in the user's OWN money. costOfWaiting counts the combined
+     stream, but "money I didn't put in" is what a person actually recognises,
+     and it makes the per-dollar figure honest rather than flattering. */
+  const ownSkipped=i.monthly*12*Math.min(5,years);
+  const perDollar=ownSkipped>0?wait.cost/ownSkipped:0;
+  $("waitBox").innerHTML=years>5
+    ? `<div style="font-family:var(--mono);font-size:30px;font-weight:600;color:var(--claw);letter-spacing:-.02em">${money(wait.cost)}</div>
+       <div style="font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.55;max-width:620px">
+       That's what putting this off for five years would cost you by age ${i.retage}, in today's money —
+       even though you'd only skip <b style="font-family:var(--mono);color:var(--ink)">${money(ownSkipped)}</b>
+       of your own contributions. Every dollar you don't invest now costs you about
+       <b style="font-family:var(--mono);color:var(--ink)">$${perDollar.toFixed(2)}</b> later.
+       That gap is compounding, and it never comes back.</div>`
+    : `<div style="font-size:13.5px;color:var(--muted)">With ${years} years to go, there isn't much room left to delay — which is
+       itself the point. The cost of waiting is largest when you have the most time.</div>`;
+
+  /* marginal rate */
+  const r=effectiveMarginalRate(i.income,i.household,cfg);
+  const keep=Math.max(0,1-r.effective_rate);
+  $("dTax").style.width=(r.statutory_rate*100)+"%";
+  $("dClaw").style.width=(r.clawback_rate*100)+"%";
+  $("dKeep").style.width=(keep*100)+"%";
+  $("cTax").textContent=cents(r.statutory_rate);
+  $("cClaw").textContent=cents(r.clawback_rate);
+  $("cKeep").textContent=cents(keep);
+  $("dollarBar").setAttribute("aria-label",
+    `Of your next dollar earned: ${cents(r.statutory_rate)} income tax, ${cents(r.clawback_rate)} lost child benefit, ${cents(keep)} kept.`);
+  $("dollarIntro").textContent="Here's what happens to the next dollar you earn:";
+  $("dollarWhy").innerHTML=r.clawback_rate>1e-6
+    ? `You lose <b class="num">${pct(r.effective_rate)}</b> of it — well above the
+       <b class="num">${pct(r.statutory_rate)}</b> your tax bracket suggests, because earning more also
+       shrinks your Canada Child Benefit. Here's the useful half: putting money into an RRSP or FHSA
+       runs that in reverse. You get the tax back <em>and</em> stop losing the child benefit, which is why
+       every dollar you contribute is worth about <b class="num">${pct(r.effective_rate)}</b> to you, not
+       <b class="num">${pct(r.statutory_rate)}</b>.`
+    : `You lose <b class="num">${pct(r.effective_rate)}</b> of it to income tax. Putting money into an
+       RRSP or FHSA runs that backwards — you get that share returned as a refund, which is money you
+       can invest on top of what you already saved.`;
+
+  renderHorizons(years);
+}
+
+/* wiring */
+["income","partner","save","have","age","retage","target","growth","fhsa","matchRate","matchCap"]
+.forEach(id=>{
+  const el=$(id);if(!el)return;
+  el.addEventListener("input",()=>{
+    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,15000),250000);
+    if(id==="age"||id==="retage")state.horizon=null;
+    update();
+  });
+});
+$("incomeRange").addEventListener("input",()=>{$("income").value=$("incomeRange").value;update();});
+if("serviceWorker" in navigator&&location.protocol!=="file:")
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+
+renderKids();
+update();
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(update,120);});
