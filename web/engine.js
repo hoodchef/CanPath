@@ -51,6 +51,11 @@ const TAX_2026 = {
     tfsa: { annual_limit: 7000, cumulative_since_2009: 109000 },
     fhsa: { annual_limit: 8000, lifetime_limit: 40000, max_single_year: 16000 },
   },
+  payroll: {
+    cpp: { rate: 0.0595, basic_exemption: 3500, ympe: 74600 },
+    cpp2: { rate: 0.04, yampe: 85000 },
+    ei: { rate: 0.0163, max_insurable: 68900 },
+  },
 };
 
 function bracketTax(taxableIncome, brackets) {
@@ -96,6 +101,18 @@ function provincialTax(taxableIncome, province, cfg) {
 }
 
 const combinedTax = (ti, prov, cfg) => federalTax(ti, cfg) + provincialTax(ti, prov, cfg);
+
+// CPP, CPP2 and EI. Deliberately excluded from the marginal rate -- they are
+// levied on gross employment income and an RRSP deduction does not reduce
+// them -- but they are most of the gap between gross pay and take-home.
+function payrollDeductions(income, cfg) {
+  const pr = cfg.payroll;
+  const cppBase = Math.max(0, Math.min(income, pr.cpp.ympe) - pr.cpp.basic_exemption);
+  const cpp = cppBase * pr.cpp.rate;
+  const cpp2 = Math.max(0, Math.min(income, pr.cpp2.yampe) - pr.cpp.ympe) * pr.cpp2.rate;
+  const ei = Math.min(income, pr.ei.max_insurable) * pr.ei.rate;
+  return { cpp, cpp2, ei, total: cpp + cpp2 + ei };
+}
 
 function ccbMax(childAges, cfg) {
   const c = cfg.benefits.ccb;
@@ -260,5 +277,6 @@ function guardrails(profile, cfg, allocated, rrspLeft) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { TAX_2026, bracketTax, federalBPA, federalTax, provincialTax, combinedTax,
-    canadaChildBenefit, netPosition, effectiveMarginalRate, valueOfContribution, optimize };
+    canadaChildBenefit, netPosition, effectiveMarginalRate, valueOfContribution, optimize,
+    payrollDeductions };
 }

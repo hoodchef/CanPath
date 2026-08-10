@@ -212,6 +212,35 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
     }
 
 
+def depletion_years(balance: float, annual_draw: float, annual_rate: float,
+                    max_years: int = 60) -> int:
+    """
+    How many full years a balance survives a fixed annual withdrawal.
+
+    The 4%-rule framing the readiness panel uses answers "is the income
+    sustainable in perpetuity", which is a different question from "when
+    does the money run out". Someone drawing more than their portfolio
+    earns wants the second answer, and a planner that only offers the first
+    quietly never tells them.
+
+    Withdrawal happens at the START of each year, then the remainder grows:
+    the retiree needs the cash before the market cooperates, and assuming
+    otherwise flatters the result by a full year of compounding.
+
+    Returns the count of years fully funded, capped at max_years. Hitting
+    the cap means the balance out-earns the draw and does not deplete.
+    """
+    if annual_draw <= 0:
+        return max_years
+    b = float(balance)
+    for y in range(max_years):
+        b -= annual_draw
+        if b <= 0:
+            return y
+        b *= (1.0 + annual_rate)
+    return max_years
+
+
 def cost_of_waiting(plan: RetirementPlan, delay_years: float = 5) -> dict:
     """
     What procrastination costs, in today's dollars.

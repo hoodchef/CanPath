@@ -5,7 +5,8 @@ provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:5036
 credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}}},
 benefits:{ccb:{max_under_6:8157,max_6_to_17:6883,threshold_1:38237,threshold_2:82847,
 phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}}},
-accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000}}};
+accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000}},
+payroll:{cpp:{rate:.0595,basic_exemption:3500,ympe:74600},cpp2:{rate:.04,yampe:85000},ei:{rate:.0163,max_insurable:68900}}};
 
 function bracketTax(ti,br){if(ti<=0)return 0;let t=0;
   for(let i=0;i<br.length;i++){const f=br[i].floor;if(ti<=f)break;
@@ -20,6 +21,15 @@ function provincialTax(ti,pr,cfg){if(ti<=0)return 0;const p=cfg.provinces[pr];
   if(tr){let r=tr.max_credit;if(ti>tr.threshold)r-=(ti-tr.threshold)*tr.phaseout_rate;
     t=Math.max(0,t-Math.max(0,r));}return t;}
 const combinedTax=(ti,pr,cfg)=>federalTax(ti,cfg)+provincialTax(ti,pr,cfg);
+/* CPP, CPP2 and EI. Excluded from the marginal rate by design -- they are
+   levied on gross employment income and an RRSP deduction does not reduce
+   them -- but they are most of the gap between gross pay and take-home. */
+function payrollDeductions(inc,cfg){const pr=cfg.payroll;
+  const cppBase=Math.max(0,Math.min(inc,pr.cpp.ympe)-pr.cpp.basic_exemption);
+  const cpp=cppBase*pr.cpp.rate;
+  const cpp2=Math.max(0,Math.min(inc,pr.cpp2.yampe)-pr.cpp.ympe)*pr.cpp2.rate;
+  const ei=Math.min(inc,pr.ei.max_insurable)*pr.ei.rate;
+  return{cpp,cpp2,ei,total:cpp+cpp2+ei};}
 function ccbMax(ages,cfg){const c=cfg.benefits.ccb;
   return ages.reduce((t,a)=>t+(a<6?c.max_under_6:a<18?c.max_6_to_17:0),0);}
 const rateFor=(n,tb)=>tb[String(Math.min(Math.max(n,1),4))];

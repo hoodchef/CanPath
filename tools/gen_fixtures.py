@@ -23,14 +23,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from engine.tax import load_year                                    # noqa: E402
+from engine.tax import load_year, payroll_deductions                # noqa: E402
 from engine.benefits import Household                               # noqa: E402
 from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E402
                              value_of_contribution)
 from engine.accounts import Profile, optimize                       # noqa: E402
 from engine.projection import (RetirementPlan, cost_of_waiting,     # noqa: E402
-                               cpp_estimate, future_value, oas_estimate,
-                               real_rate, required_monthly,
+                               cpp_estimate, depletion_years, future_value,
+                               oas_estimate, real_rate, required_monthly,
                                retirement_readiness)
 
 # (income, partner_income, child_ages)
@@ -67,6 +67,16 @@ PROJECTION = [
 ]
 
 PENSION_AGES = [60, 62, 65, 67, 70]
+
+# Gross employment income for the take-home breakdown.
+PAYROLL_INCOMES = [0, 3500, 30000, 68000, 74600, 80000, 85000, 150000]
+
+# (balance, annual_draw, rate)
+DEPLETION = [
+    (1000000, 0, 0.04), (1000000, 40000, 0.04), (1000000, 60000, 0.04),
+    (1000000, 100000, 0.04), (500000, 45000, 0.05), (250000, 30000, 0.03),
+    (100000, 120000, 0.05),
+]
 
 # (current_age, retirement_age, target, savings, monthly, rate)
 READINESS = [
@@ -129,6 +139,15 @@ def build(cfg):
             "req_monthly": r(required_monthly(500000, principal, rate, years)),
         })
 
+    payroll = []
+    for inc in PAYROLL_INCOMES:
+        d = payroll_deductions(inc, cfg)
+        payroll.append({"income": inc, "cpp": r(d["cpp"], 2), "cpp2": r(d["cpp2"], 2),
+                        "ei": r(d["ei"], 2), "total": r(d["total"], 2)})
+
+    depletion = [{"balance": b, "draw": d, "rate": rt,
+                  "years": depletion_years(b, d, rt)} for b, d, rt in DEPLETION]
+
     pension = [{"age": a, "cpp": r(cpp_estimate(a)),
                 "oas": r(oas_estimate(max(a, 65)))} for a in PENSION_AGES]
 
@@ -157,6 +176,8 @@ def build(cfg):
         "marginal_cases": marginal,
         "allocation_cases": allocation,
         "projection_cases": projection,
+        "payroll_cases": payroll,
+        "depletion_cases": depletion,
         "pension_cases": pension,
         "readiness_cases": readiness,
     }

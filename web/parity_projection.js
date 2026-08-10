@@ -27,5 +27,9 @@ for(const c of fx.readiness_cases){
   chk(t+" coverage",r.coverage,c.coverage,1e-6);
   chk(t+" waitcost",w.cost,c.wait_cost);
 }
+for(const c of fx.depletion_cases){
+  chk(`deplete ${c.balance}@${c.draw}/${c.rate}`,
+      P.depletionYears(c.balance,c.draw,c.rate),c.years,0);
+}
 console.log(`projection JS port vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

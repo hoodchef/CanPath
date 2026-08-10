@@ -4,7 +4,7 @@
 const $=id=>document.getElementById(id);
 const cfg=TAX_2026;
 const state={prov:"BC",marital:"single",haskids:"no",kids:[3,7],horizon:null,
-             basis:"nominal",tab:"proj"};
+             basis:"nominal",tab:"proj",scale:"linear"};
 
 const money=v=>"$"+Math.round(v).toLocaleString("en-CA");
 const pct=v=>(v*100).toFixed(1)+"%";
@@ -48,6 +48,7 @@ wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
   if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});
 wireSeg("prov",v=>{state.prov=v;update();});
 wireSeg("basis",v=>{state.basis=v;update();});
+wireSeg("chartview",v=>{state.scale=v;update();});
 
 function renderKids(){
   const el=$("kids");el.innerHTML="";
@@ -216,7 +217,7 @@ function chartSize(){
 }
 
 /* ---- growth chart ---- */
-function drawGrowth(i,st){
+function drawGrowth(i,st,nestEgg){
   const narrow=chartSize();
   const svg=$("growthChart");
   svg.setAttribute("viewBox","0 0 "+GW+" "+GH);
@@ -244,9 +245,22 @@ function drawGrowth(i,st){
   if(curve[curve.length-1].t<years)curve.push(at(years));
   const yearly=[];for(let y=0;y<=years;y++)yearly.push(at(y));
 
-  const {step:tick,max:maxV}=niceScale(curve[curve.length-1].total,4);
+  /* Sensitivity band: the same plan at +/- 2 percentage points of growth.
+     A single deterministic line is the model's biggest simplification, and
+     drawing only that line implies a precision the model does not have. */
+  const showBand=$("showBand").checked;
+  const bandAt=(dr,t)=>fvPiecewise(i.have,mE,mL,st.switchYear,realRate(i.rate+dr,i.infl),t);
+  const peakV=Math.max(curve[curve.length-1].total,
+                       showBand?bandAt(0.02,years):0,nestEgg||0);
+
+  const log=state.scale==="log";
+  const {step:tick,max:maxV}=niceScale(peakV,4);
+  const LO=Math.max(1000,peakV/1e4);
   const sx=t=>GM.l+(t/Math.max(1,years))*(GW-GM.l-GM.r);
-  const sy=v=>GH-GM.b-(v/maxV)*(GH-GM.t-GM.b);
+  const syLin=v=>GH-GM.b-(v/maxV)*(GH-GM.t-GM.b);
+  const syLog=v=>{const c=Math.max(v,LO);
+    return GH-GM.b-((Math.log(c)-Math.log(LO))/(Math.log(maxV)-Math.log(LO)))*(GH-GM.t-GM.b);};
+  const sy=v=>log?syLog(v):syLin(v);
   const X=t=>sx(t).toFixed(1), Y=v=>sy(v).toFixed(1);
 
   /* Stacked ribbons, not stacked opacities: layering translucent areas made
@@ -264,11 +278,21 @@ function drawGrowth(i,st){
 
   let out=`<defs>${g("gYou","var(--stat)",.62,.42)}${g("gGov","var(--gold)",.62,.40)}`+
           `${g("gGrow","var(--keep)",.30,.05)}</defs>`;
-  for(let v=tick;v<=maxV+1e-6;v+=tick)
-    out+=`<line class="gridline-d" x1="${GM.l}" y1="${Y(v)}" x2="${GW-GM.r}" y2="${Y(v)}"/>`;
-  for(let v=0;v<=maxV+1e-6;v+=tick)
-    out+=`<text class="axis" x="${GM.l-9}" y="${sy(v)+4}" text-anchor="end">${axisMoney(v)}</text>`;
+  const ticks=[];
+  if(log){for(let d=Math.pow(10,Math.floor(Math.log10(LO)));d<=maxV;d*=10){
+    if(d>=LO)ticks.push(d); if(d*3<=maxV&&d*3>=LO)ticks.push(d*3);}
+    ticks.push(maxV);}
+  else{for(let v=0;v<=maxV+1e-6;v+=tick)ticks.push(v);}
+  ticks.forEach(v=>{
+    if(v>0)out+=`<line class="gridline-d" x1="${GM.l}" y1="${Y(v)}" x2="${GW-GM.r}" y2="${Y(v)}"/>`;
+    out+=`<text class="axis" x="${GM.l-9}" y="${sy(v)+4}" text-anchor="end">${axisMoney(v)}</text>`;});
 
+  if(showBand){
+    let bp="M"+X(0)+" "+Y(bandAt(0.02,0));
+    for(const d of curve)bp+="L"+X(d.t)+" "+Y(bandAt(0.02,d.t));
+    for(let k=curve.length-1;k>=0;k--)bp+="L"+X(curve[k].t)+" "+Y(bandAt(-0.02,curve[k].t));
+    out+=`<path d="${bp}Z" fill="var(--keep)" opacity=".10"/>`;
+  }
   out+=`<path d="${band(()=>0,d=>d.mine)}" fill="url(#gYou)"/>`;
   out+=`<path d="${band(d=>d.mine,d=>d.mine+d.gov)}" fill="url(#gGov)"/>`;
   out+=`<path d="${band(d=>d.mine+d.gov,d=>d.total)}" fill="url(#gGrow)"/>`;
@@ -278,6 +302,35 @@ function drawGrowth(i,st){
   out+=`<path d="${edge(d=>d.total)}" fill="none" stroke="var(--keep)" stroke-width="2.4" `+
        `stroke-linecap="round" stroke-linejoin="round"/>`;
   out+=`<line class="axis-base" x1="${GM.l}" y1="${Y(0)}" x2="${GW-GM.r}" y2="${Y(0)}"/>`;
+
+  /* Saved scenarios as ghost lines. A/B comparison that exists only as two
+     numbers in the rail makes the reader do the shape comparison in their head. */
+  ["A","B"].forEach((key,n)=>{
+    const sc=SCN[key];if(!sc||!sc.curve)return;
+    const c=sc.curve;let p="";
+    for(let k=0;k<=60;k++){const t=years*k/60;
+      p+=(k?"L":"M")+X(t)+" "+Y(fvPiecewise(c.have,c.mE,c.mL,c.k,c.rate,t));}
+    out+=`<path d="${p}" fill="none" stroke="var(--${n?"gold":"stat"})" stroke-width="1.5" `+
+         `stroke-dasharray="5 3" opacity=".75"/>`;
+    out+=`<text class="chart-note" x="${GW-GM.r-2}" y="${sy(fvPiecewise(c.have,c.mE,c.mL,c.k,c.rate,years))-6}" `+
+         `text-anchor="end" style="fill:var(--${n?"gold":"stat"})">${key}</text>`;
+  });
+
+  /* The number the target implies, and when the plan reaches it. */
+  let funded=null;
+  if(nestEgg>0&&nestEgg<=maxV){
+    out+=`<line x1="${GM.l}" y1="${Y(nestEgg)}" x2="${GW-GM.r}" y2="${Y(nestEgg)}" `+
+         `stroke="var(--gold)" stroke-width="1.4" stroke-dasharray="6 4" opacity=".9"/>`;
+    if(!narrow)
+      out+=`<text class="chart-note" x="${GM.l+4}" y="${sy(nestEgg)-6}" style="fill:var(--gold)">`+
+           `target ${compact(nestEgg)}</text>`;
+    funded=yearly.find(d=>d.total>=nestEgg)||null;
+    if(funded){
+      out+=`<circle cx="${X(funded.t)}" cy="${Y(funded.total)}" r="8" fill="var(--gold)" opacity=".18"/>`;
+      out+=`<circle cx="${X(funded.t)}" cy="${Y(funded.total)}" r="4" fill="var(--gold)" `+
+           `stroke="var(--surface)" stroke-width="1.5"/>`;
+    }
+  }
 
   const cross=yearly.find(d=>d.growth>d.mine+d.gov);
   if(cross&&cross.t>0&&cross.t<years){
@@ -316,7 +369,17 @@ function drawGrowth(i,st){
     (st.helpDrops&&st.switchYear<years
       ? `<span style="color:var(--muted)">FHSA room ends year ${st.switchYear}; help drops to ${money(st.govLate)}/yr</span>`
       : "");
-  return{yearly,cross};
+  /* Milestones: the round numbers people actually track. */
+  const MS=[100000,250000,500000,1000000,2000000,5000000];
+  const hits=MS.filter(m=>m<=yearly[yearly.length-1].total)
+    .map(m=>{const row=yearly.find(d=>d.total>=m);
+      return row?`<span>${compact(m)} at <b>age ${i.age+row.t}</b></span>`:"";})
+    .filter(Boolean);
+  $("milestones").innerHTML=hits.length
+    ? `<span style="color:var(--muted)">Milestones</span>`+hits.join("")
+    : `<span style="color:var(--muted)">No six-figure milestone within this horizon yet.</span>`;
+
+  return{yearly,cross,funded};
 }
 
 /* Scrub the chart for a value at any year. Wired once, against whatever
@@ -390,7 +453,6 @@ function drawEMR(i){
   out+=`<path d="${pts.map((p,k)=>(k?"L":"M")+X(p.x)+" "+Y(p.tax)).join("")}" `+
        `fill="none" stroke="var(--stat)" stroke-width="1.4" stroke-linejoin="round"/>`;
   out+=`<line class="axis-base" x1="${GM.l}" y1="${Y(0)}" x2="${GW-GM.r}" y2="${Y(0)}"/>`;
-
   const step=hi<=120000?20000:hi<=250000?50000:100000;
   for(let v=0;v<=hi+1;v+=step)
     out+=`<text class="axis" x="${X(v)}" y="${GH-GM.b+18}" text-anchor="middle">${compact(v)}</text>`;
@@ -459,8 +521,12 @@ function download(name,text,mime){
 
 /* ---- scenarios ---- */
 const SCN={A:null,B:null};
-function snapshot(i,balance,ready){
-  return{balance,coverage:ready.coverage,gov:0,
+function snapshot(i,balance,ready,st){
+  /* Keep the curve parameters, not just the headline: a saved scenario that
+     cannot be redrawn can only ever be compared as one number. */
+  return{balance,coverage:ready.coverage,
+    curve:{have:i.have,mE:i.monthly+st.govEarly/12,mL:i.monthly+st.govLate/12,
+           k:st.switchYear,rate:realRate(i.rate,i.infl),years:Math.max(0,i.retage-i.age)},
     label:`${money(i.income)} income · ${money(i.monthly)}/mo · retire ${i.retage}`,
     qs:encodeState()};
 }
@@ -543,7 +609,7 @@ function update(){
 
   /* ---- charts (only the visible one; the other has no layout width) ---- */
   let drawn=null, me=effectiveMarginalRate(i.income,i.household,cfg);
-  if(state.tab==="proj")drawn=drawGrowth(i,st);
+  if(state.tab==="proj")drawn=drawGrowth(i,st,ready.nest_egg_needed);
   if(state.tab==="marg")me=drawEMR(i)||me;
 
   const yearlyRows=buildSchedule(i,st,Math.max(years,state.horizon||0));
@@ -598,7 +664,8 @@ function update(){
   $("tGov").textContent=money(gov)+"/yr";
   $("tPort").textContent=money(port)+"/yr";
   $("tTarget").textContent=money(i.target)+"/yr";
-  $("readySub").textContent=`Nest egg implied by your target: ${money(ready.nest_egg_needed)}`;
+  $("readySub").innerHTML=`Nest egg implied by your target: <b>${money(ready.nest_egg_needed)}</b>`+
+    (drawn&&drawn.funded?` · reached at <b>age ${i.age+drawn.funded.t}</b>`:"");
 
   const v=$("verdict");
   const totalIncome=gov+port;
@@ -679,6 +746,49 @@ function update(){
     `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
     `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
 
+  /* ---- take-home pay ----
+     payrollDeductions has existed in the reference since the first commit
+     and nothing ever showed it. CPP and EI are excluded from the marginal
+     rate by design, but they are most of the gap between gross and net. */
+  const pay=payrollDeductions(i.income,cfg);
+  const fed=federalTax(i.income,cfg), prov=provincialTax(i.income,state.prov,cfg);
+  const net=Math.max(0,i.income-fed-prov-pay.total);
+  const share=v=>i.income>0?pct(v/i.income):"—";
+  const payRows=[
+    ["Gross employment income",i.income,""],
+    ["Federal income tax",-fed,"neg"],
+    ["BC income tax",-prov,"neg"],
+    ["CPP"+(pay.cpp2>0?" (incl. CPP2)":""),-(pay.cpp+pay.cpp2),"neg"],
+    ["Employment Insurance",-pay.ei,"neg"],
+    ["Take-home",net,"pos"]
+  ];
+  $("takehome").innerHTML=payRows.map(([n,v,cls],k)=>
+    `<tr${k===payRows.length-1?' class="mark"':''}><td>${n}</td>`+
+    `<td${cls==="neg"?' style="color:var(--claw)"':''}>${v<0?"−":""}${money(Math.abs(v))}</td>`+
+    `<td>${v<0?"−":""}${money(Math.abs(v)/12)}</td>`+
+    `<td>${share(Math.abs(v))}</td></tr>`).join("");
+
+  /* ---- how long the money lasts ----
+     The 4%-rule coverage figure answers "is this sustainable forever", which
+     is a different question from "when does it run out". Someone drawing more
+     than the portfolio earns deserves the second answer too. */
+  const dep=$("depletion");
+  const drawNeed=Math.max(0,i.target-gov);
+  if(years<=0||i.target<=0){dep.hidden=true;}
+  else{
+    dep.hidden=false;
+    const lasted=depletionYears(totalFV,drawNeed,i.rate);
+    dep.innerHTML=drawNeed<=0
+      ? `CPP and OAS alone cover your target, so the portfolio is not drawn down at all.`
+      : lasted>=60
+        ? `Drawing <b>${money(drawNeed)}</b> a year on top of CPP and OAS, the balance
+           still grows — at ${pct(i.rate)} it out-earns the withdrawal and does not deplete
+           within 60 years.`
+        : `Drawing <b>${money(drawNeed)}</b> a year on top of CPP and OAS, the balance
+           funds <b>${lasted} years</b> — to about <b>age ${i.retage+lasted}</b>. Withdrawals
+           are taken at the start of each year, before any growth.`;
+  }
+
   /* ---- cost of waiting ---- */
   const wait=costOfWaiting(plan,5);
   const ownSkipped=i.monthly*12*Math.min(5,years);
@@ -716,12 +826,12 @@ function update(){
 
   /* ---- URL reflects the scenario, without spamming history ---- */
   history.replaceState(null,"","?"+encodeState());
-  window.__last={i,totalFV,ready};
+  window.__last={i,totalFV,ready,st};
 }
 
 /* ---- wiring ---- */
 ["income","partner","save","have","age","retage","target","growth","fhsa","hasMatch",
- "matchRate","matchCap","retrate","wdraw","cppshare"].forEach(id=>{
+ "matchRate","matchCap","retrate","wdraw","cppshare","showBand"].forEach(id=>{
   const el=$(id);if(!el)return;
   el.addEventListener("input",()=>{
     if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,15000),250000);
@@ -740,10 +850,10 @@ document.addEventListener("wheel",e=>{
   if(el&&el===e.target&&el.tagName==="INPUT"&&el.type==="number")el.blur();
 },{passive:true});
 
-$("saveA").onclick=()=>{const L=window.__last;SCN.A=snapshot(L.i,L.totalFV,L.ready);renderScenarios();};
-$("saveB").onclick=()=>{const L=window.__last;SCN.B=snapshot(L.i,L.totalFV,L.ready);renderScenarios();};
-$("clrA").onclick=()=>{SCN.A=null;renderScenarios();};
-$("clrB").onclick=()=>{SCN.B=null;renderScenarios();};
+$("saveA").onclick=()=>{const L=window.__last;SCN.A=snapshot(L.i,L.totalFV,L.ready,L.st);renderScenarios();update();};
+$("saveB").onclick=()=>{const L=window.__last;SCN.B=snapshot(L.i,L.totalFV,L.ready,L.st);renderScenarios();update();};
+$("clrA").onclick=()=>{SCN.A=null;renderScenarios();update();};
+$("clrB").onclick=()=>{SCN.B=null;renderScenarios();update();};
 
 function copyLink(){
   const url=location.origin+location.pathname+"?"+encodeState();

@@ -68,6 +68,21 @@ function retirementReadiness(p){
     on_track:projReal>=nest,coverage:nest>0?projReal/nest:1,
     portfolio_income:projReal*wr,projected_retirement_income:government+projReal*wr};
 }
+/* How many full years a balance survives a fixed annual withdrawal.
+   The 4%-rule framing answers "is this sustainable forever", which is a
+   different question from "when does the money run out". Withdrawal happens
+   at the START of each year: the retiree needs the cash before the market
+   cooperates, and assuming otherwise flatters the result by a year. */
+function depletionYears(balance,annualDraw,annualRate,maxYears=60){
+  if(annualDraw<=0)return maxYears;
+  let b=balance;
+  for(let y=0;y<maxYears;y++){
+    b-=annualDraw;
+    if(b<=0)return y;
+    b*=(1+annualRate);
+  }
+  return maxYears;
+}
 function costOfWaiting(p,delay=5){
   const years=Math.max(0,p.retirement_age-p.current_age);
   const rr=realRate(p.annual_rate,p.inflation??DEFAULT_INFLATION);
@@ -79,4 +94,4 @@ function costOfWaiting(p,delay=5){
 }
 if(typeof module!=="undefined"&&module.exports)module.exports={CPP_2026,OAS_2026,realRate,
   monthlyRate,futureValue,requiredMonthly,projectionSeries,cppEstimate,oasEstimate,
-  retirementReadiness,costOfWaiting};
+  retirementReadiness,costOfWaiting,depletionYears};

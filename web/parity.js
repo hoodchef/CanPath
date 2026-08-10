@@ -46,6 +46,14 @@ for (const c of fx.allocation_cases) {
   const consumed = (r.allocation.employer_match || 0) * (1 + c.match_rate) + (r.allocation.rrsp || 0);
   check(`${tag} within RRSP room`, Math.max(0, consumed - c.rrsp_room), 0);
 }
+for (const c of fx.payroll_cases) {
+  const d = E.payrollDeductions(c.income, E.TAX_2026);
+  check(`payroll@${c.income} cpp`, d.cpp, c.cpp);
+  check(`payroll@${c.income} cpp2`, d.cpp2, c.cpp2);
+  check(`payroll@${c.income} ei`, d.ei, c.ei);
+  check(`payroll@${c.income} total`, d.total, c.total);
+}
+
 console.log("-".repeat(62));
 console.log(`  ${pass} assertions passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

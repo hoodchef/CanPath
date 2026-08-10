@@ -25,7 +25,17 @@ the financially fluent.
   order the solver actually funded them
 - **Every assumption is yours to set** — growth, expected withdrawal tax rate,
   sustainable withdrawal rate, CPP relative to average, and the reporting basis
-- **Scenario A/B compare** with the delta between them
+- **Scenario A/B compare** — delta in the rail, and both saved plans drawn as
+  ghost curves on the chart
+- **A sensitivity band** at ±2 percentage points of growth, so the single
+  deterministic line does not imply precision the model lacks
+- **Target line and funded age** — the nest egg your target implies, and the
+  year the plan reaches it
+- **Milestones** — the age you cross $100k, $250k, $500k, $1M
+- **Depletion analysis** — how long the balance funds your draw, in years and
+  to an age, since a 4% coverage figure never says when the money runs out
+- **Take-home breakdown** — gross to net through federal tax, BC tax, CPP and EI
+- **Linear or log scale**, because forty years of compounding hides the first ten
 - **Year-by-year schedule**, CSV export, print report, and a permalink that
   encodes the whole scenario in the URL
 - **The cost of waiting** — what a five-year delay actually costs
@@ -80,7 +90,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  143 assertions    tools/gen_fixtures.py   200 assertions   184 assertions
+  147 assertions    tools/gen_fixtures.py   239 assertions   223 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a

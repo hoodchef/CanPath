@@ -49,6 +49,10 @@ for kpi in ("kBalance", "kEmr", "kGov", "kCover", "kCross", "kRoom"):
     check(f"KPI {kpi} present", f'id="{kpi}"' in html)
 
 check("both charts present", 'id="growthChart"' in html and 'id="emrChart"' in html)
+check("chart view controls present", 'id="chartview"' in html and 'id="showBand"' in html)
+check("milestones readout present", 'id="milestones"' in html)
+check("depletion readout present", 'id="depletion"' in html)
+check("take-home table present", 'id="takehome"' in html)
 check("schedule table body present", 'id="schedBody"' in html)
 check("scenario slots present", 'id="slotA"' in html and 'id="slotB"' in html)
 check("export controls present",

@@ -233,11 +233,22 @@
     <div class="block">
       <div class="block-h">
         <h3>Balance over time</h3>
-        <span class="pills" id="horizons"></span>
+        <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="seg-ctl" id="chartview" style="width:auto">
+            <button type="button" data-v="linear" aria-pressed="true">Linear</button>
+            <button type="button" data-v="log" aria-pressed="false">Log</button>
+          </span>
+          <label class="row" style="gap:6px;cursor:pointer;font-size:11.5px;color:var(--muted);margin:0">
+            <input type="checkbox" id="showBand" checked style="accent-color:var(--stat)">
+            <span>Rate ±2%</span>
+          </label>
+          <span class="pills" id="horizons"></span>
+        </span>
       </div>
       <div class="chartwrap" style="padding:0"><svg id="growthChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
     </div>
     <div class="statline" id="growthRead"></div>
+    <div class="statline" id="milestones" style="border-top:0"></div>
     <div class="block">
       <div class="block-h">
         <h3>Composition at the horizon</h3>
@@ -266,6 +277,7 @@
         <span>Your target <b id="tTarget">$0</b></span>
       </div>
       <div class="verdict" id="verdict"></div>
+      <div class="assum" id="depletion"></div>
     </div>
     <div class="block">
       <div class="block-h"><h3>The cost of waiting</h3><span class="sub">A five-year delay</span></div>
@@ -294,6 +306,21 @@
         <span class="spk"><i style="background:var(--keep)"></i><span><b id="cKeep">0¢</b>you keep</span></span>
       </div>
       <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>
+    </div>
+    <div class="block">
+      <div class="block-h">
+        <h3>Where the paycheque goes</h3>
+        <span class="sub">Gross to net, before any contribution</span>
+      </div>
+      <div class="dt-wrap" style="max-height:none">
+        <table class="dt" style="min-width:420px"><thead><tr>
+          <th>Line</th><th>Annual</th><th>Monthly</th><th>% of gross</th>
+        </tr></thead><tbody id="takehome"></tbody></table>
+      </div>
+      <div class="assum">CPP and EI are excluded from the marginal rate above by
+      design — they are levied on gross employment income and an RRSP deduction
+      does not reduce them. They are still most of the gap between gross and net,
+      so they belong here.</div>
     </div>
   </section>
 

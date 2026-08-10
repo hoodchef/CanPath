@@ -20,7 +20,7 @@ const pm = [block("projection")];
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
   "\nmodule.exports={TAX_2026,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
-  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting};");
+  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,payrollDeductions};");
 const E = require(tmp);
 const fx = JSON.parse(fs.readFileSync(path.join(root, "fixtures.json"), "utf8"));
 
@@ -77,6 +77,16 @@ for (const c of fx.readiness_cases) {
   chk(t + " projreal", r.projected_real, c.projected_real);
   chk(t + " reqmonthly", r.required_monthly, c.required_monthly);
   chk(t + " waitcost", w.cost, c.wait_cost);
+}
+for (const c of fx.payroll_cases) {
+  const d = E.payrollDeductions(c.income, E.TAX_2026);
+  chk(`payroll@${c.income} cpp`, d.cpp, c.cpp);
+  chk(`payroll@${c.income} cpp2`, d.cpp2, c.cpp2);
+  chk(`payroll@${c.income} ei`, d.ei, c.ei);
+  chk(`payroll@${c.income} total`, d.total, c.total);
+}
+for (const c of fx.depletion_cases) {
+  chk(`deplete ${c.balance}@${c.draw}`, E.depletionYears(c.balance, c.draw, c.rate), c.years, 0);
 }
 console.log(`shipped index.html vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
