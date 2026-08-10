@@ -23,6 +23,7 @@ class Profile:
     rrsp_room: float = None
     tfsa_room: float = None
     fhsa_room: float = None
+    fhsa_lifetime_remaining: float = None    # FHSA is lifetime-capped, not just annual
     employer_match_rate: float = 0.0         # e.g. 0.50 = 50 cents per dollar
     employer_match_cap: float = 0.0          # max employee $ that gets matched
 
@@ -33,8 +34,16 @@ class Profile:
                                  a["rrsp"]["dollar_limit"])
         if self.tfsa_room is None:
             self.tfsa_room = a["tfsa"]["annual_limit"]
+        if self.fhsa_lifetime_remaining is None:
+            self.fhsa_lifetime_remaining = a["fhsa"]["lifetime_limit"]
         if self.fhsa_room is None:
-            self.fhsa_room = a["fhsa"]["annual_limit"] if self.fhsa_eligible else 0.0
+            # The $40,000 lifetime cap binds before the $8,000 annual one in
+            # the final year of an FHSA. Granting the annual limit forever is
+            # how a tool ends up projecting a deduction that cannot legally
+            # exist -- the FHSA runs out after five full years.
+            self.fhsa_room = (min(a["fhsa"]["annual_limit"],
+                                  max(0.0, self.fhsa_lifetime_remaining))
+                              if self.fhsa_eligible else 0.0)
 
 
 def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
@@ -57,13 +66,23 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
 
     allocated = {"employer_match": 0.0, "fhsa": 0.0, "rrsp": 0.0,
                  "tfsa": 0.0, "non_registered": 0.0}
-    room = {
-        "employer_match": profile.employer_match_cap,
-        "fhsa": profile.fhsa_room,
-        "rrsp": profile.rrsp_room,
-        "tfsa": profile.tfsa_room,
-    }
+    room = {"fhsa": profile.fhsa_room, "tfsa": profile.tfsa_room}
+
+    # A group-RRSP match is still an RRSP. The employee's contribution AND
+    # the employer's match both consume the SAME contribution room, so they
+    # draw on one pool rather than two. Tracking them separately let the
+    # solver recommend $52,000 of deductible contributions against $27,000
+    # of room -- a penalty-taxed over-contribution presented as advice.
+    rrsp_pool = profile.rrsp_room
+    match_cap_left = profile.employer_match_cap
+    match_multiple = 1.0 + profile.employer_match_rate
+
     steps = []
+    # The order accounts were FIRST funded in. The allocation dict is
+    # unordered by nature, and the UI renders a ranked list -- without this
+    # it has to invent a ranking, which is how a panel headed "funding
+    # order" ends up showing RRSP above the TFSA that was funded first.
+    sequence = []
     remaining = profile.savings_capacity
     deducted = 0.0
 
@@ -73,21 +92,33 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
             profile.income - deducted, profile.household, cfg
         )["effective_rate"]
 
+        # Every dollar matched costs (1 + match_rate) dollars of room.
+        match_room = min(match_cap_left, rrsp_pool / match_multiple)
+
         scores = {}
-        if room["employer_match"] > 0:
+        if match_room > 0:
             scores["employer_match"] = profile.employer_match_rate + emr
         if room["fhsa"] > 0:
             scores["fhsa"] = emr
-        if room["rrsp"] > 0:
+        if rrsp_pool > 0:
             scores["rrsp"] = emr - profile.expected_retirement_rate
         if room["tfsa"] > 0:
             scores["tfsa"] = 0.0
 
         if not scores or max(scores.values()) < 0:
-            # Nothing beats a taxable account (or all deductible options
-            # would be actively value-destroying)
+            # Registered room beats a taxable account even when the score is
+            # negative. This function measures YEAR ONE, and a taxable
+            # account's cost is not in year one -- it is the tax on every
+            # year of growth after it. Contributing at 19.6% to withdraw at
+            # 25% scores -5.4 here, but over 30 years at 7% it still returns
+            # 7.10 per after-tax dollar against 6.79 for a taxable account,
+            # because the shelter outlives the rate difference. Falling
+            # through to non-registered while RRSP room sat open traded a
+            # three-decade shelter for a one-year rate gap.
             if room["tfsa"] > 0:
                 best = "tfsa"
+            elif rrsp_pool > 0:
+                best = "rrsp"
             else:
                 allocated["non_registered"] += amount
                 remaining -= amount
@@ -95,10 +126,32 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
         else:
             best = max(scores, key=scores.get)
 
-        amount = min(amount, room[best])
+        if best == "employer_match":
+            amount = min(amount, match_room)
+        elif best == "rrsp":
+            amount = min(amount, rrsp_pool)
+        else:
+            amount = min(amount, room[best])
+
+        # A room that is positive only by floating-point dust would otherwise
+        # spin here forever, re-selecting an account it cannot fund.
+        if amount <= 1e-9:
+            allocated["non_registered"] += remaining
+            remaining = 0.0
+            continue
+
+        if best == "employer_match":
+            match_cap_left -= amount
+            rrsp_pool -= amount * match_multiple
+        elif best == "rrsp":
+            rrsp_pool -= amount
+        else:
+            room[best] -= amount
+
         allocated[best] += amount
-        room[best] -= amount
         remaining -= amount
+        if best not in sequence:
+            sequence.append(best)
 
         if best in ("rrsp", "fhsa", "employer_match"):
             deducted += amount
@@ -111,16 +164,20 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
 
     return {
         "allocation": {k: v for k, v in allocated.items() if v > 0},
+        "sequence": sequence,
         "total_deducted": deducted,
+        "rrsp_room_used": profile.rrsp_room - rrsp_pool,
+        "rrsp_room_left": rrsp_pool,
         "tax_refund": before["tax"] - after["tax"],
         "benefit_restored": after["benefits"] - before["benefits"],
         "employer_match_earned": allocated["employer_match"] * profile.employer_match_rate,
-        "warnings": _guardrails(profile, cfg),
+        "warnings": _guardrails(profile, cfg, allocated, rrsp_pool),
         "steps": steps,
     }
 
 
-def _guardrails(profile: Profile, cfg: dict) -> list:
+def _guardrails(profile: Profile, cfg: dict, allocated: dict = None,
+                rrsp_left: float = None) -> list:
     """
     Detect cases where the obvious advice is actively harmful.
 
@@ -148,4 +205,21 @@ def _guardrails(profile: Profile, cfg: dict) -> list:
             "FHSA room is unused. It is the only account that is both "
             "deductible going in and tax-free coming out."
         )
+
+    # An employer match you cannot legally absorb is not free money -- it is
+    # an over-contribution penalty waiting to happen, and the employee is the
+    # one the CRA charges.
+    # Only when room is what ran out. Someone simply saving less than their
+    # employer would match has a different problem, and telling them their
+    # room is short would be false.
+    if (allocated is not None and profile.employer_match_cap > 0
+            and rrsp_left is not None and rrsp_left <= 0.01):
+        taken = allocated.get("employer_match", 0.0)
+        if taken < profile.employer_match_cap - 0.01:
+            w.append(
+                f"Your RRSP room only covers ${taken:,.0f} of the "
+                f"${profile.employer_match_cap:,.0f} your employer will match. "
+                "The match uses the same room your own contributions do. "
+                "Check your room in CRA My Account before topping up."
+            )
     return w

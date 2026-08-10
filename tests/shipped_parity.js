@@ -4,10 +4,18 @@
 const fs = require("fs"), path = require("path");
 const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "index.html"), "utf8");
-const m = html.match(/const TAX_2026=[\s\S]*?function guardrails\(p,cfg\)\{[\s\S]*?return w;\}/);
-if (!m) { console.error("FAIL: could not locate tax engine block in index.html"); process.exit(1); }
-const pm = html.match(/const CPP_2026=[\s\S]*?function costOfWaiting\(p,delay=5\)\{[\s\S]*?\n\}/);
-if (!pm) { console.error("FAIL: could not locate projection engine block in index.html"); process.exit(1); }
+
+/* Extract by sentinel marker rather than by matching the code's own shape.
+   The old patterns keyed off a function signature, so a renamed argument
+   made this test silently unable to find the engine -- the one failure mode
+   a shipped-code parity check must never have. */
+function block(name) {
+  const m = html.match(new RegExp(`/\\* @${name}:start \\*/([\\s\\S]*?)/\\* @${name}:end \\*/`));
+  if (!m) { console.error(`FAIL: could not locate @${name} block in index.html`); process.exit(1); }
+  return m[1];
+}
+const m = [block("engine")];
+const pm = [block("projection")];
 
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
@@ -40,6 +48,12 @@ for (const c of fx.allocation_cases) {
   for (const [k, v] of Object.entries(c.allocation)) chk(`alloc@${c.income} ${k}`, r.allocation[k] || 0, v);
   chk(`alloc@${c.income} refund`, r.tax_refund, c.tax_refund);
   chk(`alloc@${c.income} benefit`, r.benefit_restored, c.benefit_restored);
+  chk(`alloc@${c.income} deducted`, r.total_deducted, c.total_deducted);
+  // The shipped app must respect contribution room too, not just the
+  // reference. Derived from the allocation rather than the solver's own
+  // room accounting, so deleting that accounting fails the test.
+  const consumed = (r.allocation.employer_match || 0) * (1 + c.match_rate) + (r.allocation.rrsp || 0);
+  chk(`alloc@${c.income} within RRSP room`, Math.max(0, consumed - c.rrsp_room), 0);
 }
 for (const c of fx.projection_cases) {
   const t = `P${c.principal}/M${c.monthly}/r${c.rate}/y${c.years}`;

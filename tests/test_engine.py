@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine.tax import load_year, bracket_tax, federal_tax, provincial_tax, federal_bpa
 from engine.benefits import canada_child_benefit, Household
 from engine.marginal import effective_marginal_rate, value_of_contribution
+from engine.accounts import Profile, optimize
 
 cfg = load_year(2026)
 PASS = FAIL = 0
@@ -69,6 +70,33 @@ print(f"    tax refund       ${v['tax_refund']:>9,.2f}")
 print(f"    CCB restored     ${v['benefit_restored']:>9,.2f}")
 print(f"    TOTAL VALUE      ${v['total_value']:>9,.2f}   ({v['blended_rate']:.1%})")
 check("benefit component is material", v["benefit_restored"], 800, tol=200)
+
+print("\n--- Contribution room is a hard limit, not a suggestion ---")
+# Recommending more deductible contribution than a person has room for is
+# not a rounding error: past the $2,000 lifetime cushion the CRA charges 1%
+# a month on the excess. The employer match draws on the same RRSP room the
+# employee's own contributions do, so the two must never be summed.
+for _income, _cap, _capacity in [(150000, 25000, 60000), (200000, 20000, 60000),
+                                 (120000, 15000, 45000), (68000, 12000, 30000)]:
+    _p = Profile(income=_income, household=single, savings_capacity=_capacity,
+                 fhsa_eligible=False, employer_match_rate=0.5,
+                 employer_match_cap=_cap)
+    _r = optimize(_p, cfg)
+    # Derived from the allocation itself, never from the solver's own
+    # bookkeeping -- an invariant checked against the internals it is meant
+    # to police would pass even with the accounting removed.
+    _consumed = (_r["allocation"].get("employer_match", 0.0) * 1.5
+                 + _r["allocation"].get("rrsp", 0.0))
+    check(f"RRSP room respected @ {_income:,} match {_cap:,}",
+          max(0.0, _consumed - _p.rrsp_room), 0.0, tol=0.01)
+
+# FHSA is capped over a lifetime, not only per year: someone $3,000 from the
+# $40,000 ceiling has $3,000 of room this year, not $8,000.
+for _remaining, _expected in [(40000, 8000), (8000, 8000), (3000, 3000), (0, 0)]:
+    _p = Profile(income=95000, household=single, savings_capacity=20000,
+                 fhsa_eligible=True, fhsa_lifetime_remaining=_remaining)
+    optimize(_p, cfg)
+    check(f"FHSA room with {_remaining:,} of lifetime left", _p.fhsa_room, _expected)
 
 print(f"\n{'='*72}\n  {PASS} passed, {FAIL} failed\n{'='*72}")
 sys.exit(1 if FAIL else 0)

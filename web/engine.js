@@ -161,11 +161,23 @@ function optimize(profile, cfg, chunk = 250) {
   const a = cfg.accounts;
   const rrspRoom = profile.rrsp_room ?? Math.min(profile.income * a.rrsp.earned_income_rate, a.rrsp.dollar_limit);
   const tfsaRoom = profile.tfsa_room ?? a.tfsa.annual_limit;
-  const fhsaRoom = profile.fhsa_room ?? (profile.fhsa_eligible ? a.fhsa.annual_limit : 0);
+  // FHSA is capped over a lifetime ($40,000), not only per year. Handing out
+  // the annual limit indefinitely models an account that runs forever.
+  const fhsaLife = profile.fhsa_lifetime_remaining ?? a.fhsa.lifetime_limit;
+  const fhsaRoom = profile.fhsa_room ??
+    (profile.fhsa_eligible ? Math.min(a.fhsa.annual_limit, Math.max(0, fhsaLife)) : 0);
 
   const allocated = { employer_match: 0, fhsa: 0, rrsp: 0, tfsa: 0, non_registered: 0 };
-  const room = { employer_match: profile.employer_match_cap || 0, fhsa: fhsaRoom, rrsp: rrspRoom, tfsa: tfsaRoom };
+  const room = { fhsa: fhsaRoom, tfsa: tfsaRoom };
+  // Employer match and RRSP share ONE pool: a group-RRSP match consumes the
+  // same room the employee's own contributions do, and each matched dollar
+  // costs (1 + rate) of it.
+  let pool = rrspRoom;
+  let matchLeft = profile.employer_match_cap || 0;
+  const mult = 1 + (profile.employer_match_rate || 0);
   const steps = [];
+  // Order accounts were FIRST funded in; the allocation object is unordered.
+  const sequence = [];
   let remaining = profile.savings_capacity;
   let deducted = 0;
   let guard = 0;
@@ -173,26 +185,40 @@ function optimize(profile, cfg, chunk = 250) {
   while (remaining > 0.01 && guard++ < 10000) {
     let amount = Math.min(chunk, remaining);
     const emr = effectiveMarginalRate(profile.income - deducted, profile.household, cfg).effective_rate;
+    const matchRoom = Math.min(matchLeft, pool / mult);
 
     const scores = {};
-    if (room.employer_match > 0) scores.employer_match = (profile.employer_match_rate || 0) + emr;
+    if (matchRoom > 0) scores.employer_match = (profile.employer_match_rate || 0) + emr;
     if (room.fhsa > 0) scores.fhsa = emr;
-    if (room.rrsp > 0) scores.rrsp = emr - profile.expected_retirement_rate;
+    if (pool > 0) scores.rrsp = emr - profile.expected_retirement_rate;
     if (room.tfsa > 0) scores.tfsa = 0;
 
     const keys = Object.keys(scores);
     let best;
+    // Registered room beats a taxable account even at a negative score: this
+    // scores YEAR ONE, and a taxable account's cost is the tax on every year
+    // of growth after it. 19.6% in / 25% out scores -5.4 but still returns
+    // 7.10 per after-tax dollar over 30y at 7% against 6.79 taxable.
     if (keys.length === 0 || Math.max(...keys.map((k) => scores[k])) < 0) {
       if (room.tfsa > 0) best = "tfsa";
+      else if (pool > 0) best = "rrsp";
       else { allocated.non_registered += amount; remaining -= amount; continue; }
     } else {
       best = keys.reduce((x, y) => (scores[y] > scores[x] ? y : x));
     }
 
-    amount = Math.min(amount, room[best]);
+    if (best === "employer_match") amount = Math.min(amount, matchRoom);
+    else if (best === "rrsp") amount = Math.min(amount, pool);
+    else amount = Math.min(amount, room[best]);
+    if (amount <= 1e-9) { allocated.non_registered += remaining; remaining = 0; continue; }
+
+    if (best === "employer_match") { matchLeft -= amount; pool -= amount * mult; }
+    else if (best === "rrsp") pool -= amount;
+    else room[best] -= amount;
+
     allocated[best] += amount;
-    room[best] -= amount;
     remaining -= amount;
+    if (sequence.indexOf(best) < 0) sequence.push(best);
     if (best === "rrsp" || best === "fhsa" || best === "employer_match") deducted += amount;
     steps.push({ account: best, amount, emr_at_step: emr });
   }
@@ -203,15 +229,16 @@ function optimize(profile, cfg, chunk = 250) {
   for (const [k, v] of Object.entries(allocated)) if (v > 0) allocation[k] = v;
 
   return {
-    allocation, total_deducted: deducted,
+    allocation, sequence, total_deducted: deducted,
+    rrsp_room_used: rrspRoom - pool, rrsp_room_left: pool,
     tax_refund: before.tax - after.tax,
     benefit_restored: after.benefits - before.benefits,
     employer_match_earned: allocated.employer_match * (profile.employer_match_rate || 0),
-    warnings: guardrails(profile, cfg), steps,
+    warnings: guardrails(profile, cfg, allocated, pool), steps,
   };
 }
 
-function guardrails(profile, cfg) {
+function guardrails(profile, cfg, allocated, rrspLeft) {
   const w = [];
   const emr = effectiveMarginalRate(profile.income, profile.household, cfg).effective_rate;
   if (emr < profile.expected_retirement_rate)
@@ -220,6 +247,14 @@ function guardrails(profile, cfg) {
     w.push("At this income, RRSP or RRIF withdrawals in retirement may trigger GIS clawback of roughly 50 cents on the dollar. TFSA withdrawals do not affect GIS.");
   if (profile.fhsa_eligible && (profile.fhsa_room ?? cfg.accounts.fhsa.annual_limit) > 0)
     w.push("FHSA room is unused. It is the only account that is both deductible going in and tax-free coming out.");
+  // An employer match larger than the room available to absorb it is not
+  // free money; the CRA penalises the over-contribution at 1% a month.
+  // Only when room is what ran out -- someone saving less than their
+  // employer would match has a different problem.
+  if (allocated && (profile.employer_match_cap || 0) > 0 &&
+      rrspLeft != null && rrspLeft <= 0.01 &&
+      allocated.employer_match < profile.employer_match_cap - 0.01)
+    w.push(`Your RRSP room only covers $${Math.round(allocated.employer_match).toLocaleString("en-CA")} of the $${Math.round(profile.employer_match_cap).toLocaleString("en-CA")} your employer will match. The match uses the same room your own contributions do. Check your room in CRA My Account before topping up.`);
   return w;
 }
 

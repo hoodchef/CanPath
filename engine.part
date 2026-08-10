@@ -1,0 +1,115 @@
+const TAX_2026={tax_year:2026,
+federal:{brackets:[{floor:0,rate:.14},{floor:58523,rate:.205},{floor:117045,rate:.26},{floor:181440,rate:.29},{floor:258482,rate:.33}],
+credit_rate:.14,bpa:{base:14829,additional:1623,phaseout_start:181440,phaseout_end:258482}},
+provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:50363,rate:.077},{floor:100728,rate:.105},{floor:115648,rate:.1229},{floor:140430,rate:.147},{floor:190405,rate:.168},{floor:265545,rate:.205}],
+credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}}},
+benefits:{ccb:{max_under_6:8157,max_6_to_17:6883,threshold_1:38237,threshold_2:82847,
+phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}}},
+accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000}}};
+
+function bracketTax(ti,br){if(ti<=0)return 0;let t=0;
+  for(let i=0;i<br.length;i++){const f=br[i].floor;if(ti<=f)break;
+    const c=i+1<br.length?br[i+1].floor:Infinity;t+=(Math.min(ti,c)-f)*br[i].rate;}return t;}
+function federalBPA(ni,cfg){const b=cfg.federal.bpa;let a;
+  if(ni<=b.phaseout_start)a=b.additional;else if(ni>=b.phaseout_end)a=0;
+  else a=b.additional*((b.phaseout_end-ni)/(b.phaseout_end-b.phaseout_start));return b.base+a;}
+function federalTax(ti,cfg){if(ti<=0)return 0;
+  return Math.max(0,bracketTax(ti,cfg.federal.brackets)-federalBPA(ti,cfg)*cfg.federal.credit_rate);}
+function provincialTax(ti,pr,cfg){if(ti<=0)return 0;const p=cfg.provinces[pr];
+  let t=Math.max(0,bracketTax(ti,p.brackets)-p.bpa*p.credit_rate);const tr=p.tax_reduction;
+  if(tr){let r=tr.max_credit;if(ti>tr.threshold)r-=(ti-tr.threshold)*tr.phaseout_rate;
+    t=Math.max(0,t-Math.max(0,r));}return t;}
+const combinedTax=(ti,pr,cfg)=>federalTax(ti,cfg)+provincialTax(ti,pr,cfg);
+function ccbMax(ages,cfg){const c=cfg.benefits.ccb;
+  return ages.reduce((t,a)=>t+(a<6?c.max_under_6:a<18?c.max_6_to_17:0),0);}
+const rateFor=(n,tb)=>tb[String(Math.min(Math.max(n,1),4))];
+function canadaChildBenefit(afni,ages,cfg){const c=cfg.benefits.ccb;
+  const n=ages.filter(a=>a<18).length;if(n===0)return 0;
+  const mx=ccbMax(ages,cfg),t1=c.threshold_1,t2=c.threshold_2;let red;
+  if(afni<=t1)red=0;else if(afni<=t2)red=rateFor(n,c.phase1_rates)*(afni-t1);
+  else red=rateFor(n,c.phase1_rates)*(t2-t1)+rateFor(n,c.phase2_rates)*(afni-t2);
+  return Math.max(0,mx-red);}
+function netPosition(inc,h,cfg,ded=0){const taxable=Math.max(0,inc-ded);
+  const partner=Math.max(0,h.partner_income||0);const afni=taxable+partner;
+  const tax=combinedTax(taxable,h.province,cfg);
+  const ptax=partner?combinedTax(partner,h.province,cfg):0;
+  const ben=canadaChildBenefit(afni,h.child_ages,cfg);
+  return{taxable_income:taxable,afni,tax,partner_tax:ptax,benefits:ben,
+    net_cash:inc+partner-ded-tax-ptax+ben};}
+function effectiveMarginalRate(inc,h,cfg,d=100){const lo=netPosition(inc,h,cfg),hi=netPosition(inc+d,h,cfg);
+  const s=(hi.tax-lo.tax)/d,c=(lo.benefits-hi.benefits)/d;
+  return{income:inc,statutory_rate:s,clawback_rate:c,effective_rate:s+c};}
+function valueOfContribution(inc,con,h,cfg){const b=netPosition(inc,h,cfg,0),a=netPosition(inc,h,cfg,con);
+  const rf=b.tax-a.tax,bg=a.benefits-b.benefits;
+  return{tax_refund:rf,benefit_restored:bg,total_value:rf+bg,blended_rate:con?(rf+bg)/con:0};}
+function optimize(p,cfg,chunk=250){const A=cfg.accounts;
+  /* FHSA is lifetime-capped ($40k), not merely annual: granting $8k/yr
+     forever projects a deduction that cannot legally exist. */
+  const life=p.fhsa_lifetime_remaining==null?A.fhsa.lifetime_limit:p.fhsa_lifetime_remaining;
+  const room={fhsa:p.fhsa_eligible?Math.min(A.fhsa.annual_limit,Math.max(0,life)):0,
+    tfsa:A.tfsa.annual_limit};
+  /* Employer match and RRSP draw on ONE pool. A group-RRSP match consumes
+     the same contribution room the employee's own dollars do, and every
+     matched dollar costs (1+rate) of room. Two separate pools let this
+     recommend a penalty-taxed over-contribution. */
+  const rrspRoom=Math.min(p.income*A.rrsp.earned_income_rate,A.rrsp.dollar_limit);
+  let pool=rrspRoom,matchLeft=p.employer_match_cap||0;
+  const mult=1+(p.employer_match_rate||0);
+  const alloc={employer_match:0,fhsa:0,rrsp:0,tfsa:0,non_registered:0};
+  /* Order accounts were FIRST funded in: the allocation object is unordered,
+     and a panel headed "funding order" must not invent its own ranking. */
+  const seq=[];
+  let rem=p.savings_capacity,ded=0,guard=0;
+  while(rem>.01&&guard++<10000){let amt=Math.min(chunk,rem);
+    const emr=effectiveMarginalRate(p.income-ded,p.household,cfg).effective_rate;
+    const matchRoom=Math.min(matchLeft,pool/mult);
+    const sc={};
+    if(matchRoom>0)sc.employer_match=(p.employer_match_rate||0)+emr;
+    if(room.fhsa>0)sc.fhsa=emr;
+    if(pool>0)sc.rrsp=emr-p.expected_retirement_rate;
+    if(room.tfsa>0)sc.tfsa=0;
+    const keys=Object.keys(sc);let best;
+    /* Registered room beats a taxable account even at a negative score:
+       this scores YEAR ONE, and a taxable account's cost is the tax on
+       every year of growth after it. 19.6% in / 25% out scores -5.4 but
+       still returns 7.10 per after-tax dollar over 30y at 7% against 6.79
+       taxable -- the shelter outlives the rate gap. */
+    if(!keys.length||Math.max(...keys.map(k=>sc[k]))<0){
+      if(room.tfsa>0)best="tfsa";
+      else if(pool>0)best="rrsp";
+      else{alloc.non_registered+=amt;rem-=amt;continue;}
+    }else best=keys.reduce((x,y)=>sc[y]>sc[x]?y:x);
+    if(best==="employer_match")amt=Math.min(amt,matchRoom);
+    else if(best==="rrsp")amt=Math.min(amt,pool);
+    else amt=Math.min(amt,room[best]);
+    if(amt<=1e-9){alloc.non_registered+=rem;rem=0;continue;}
+    if(best==="employer_match"){matchLeft-=amt;pool-=amt*mult;}
+    else if(best==="rrsp")pool-=amt;
+    else room[best]-=amt;
+    alloc[best]+=amt;rem-=amt;
+    if(seq.indexOf(best)<0)seq.push(best);
+    if(best==="rrsp"||best==="fhsa"||best==="employer_match")ded+=amt;}
+  const b=netPosition(p.income,p.household,cfg,0),a=netPosition(p.income,p.household,cfg,ded);
+  const out={};for(const[k,v]of Object.entries(alloc))if(v>0)out[k]=v;
+  return{allocation:out,sequence:seq,total_deducted:ded,
+    rrsp_room_used:rrspRoom-pool,rrsp_room_left:pool,
+    tax_refund:b.tax-a.tax,
+    benefit_restored:a.benefits-b.benefits,
+    employer_match_earned:alloc.employer_match*(p.employer_match_rate||0),
+    warnings:guardrails(p,cfg,alloc,pool)};}
+function guardrails(p,cfg,alloc,rrspLeft){const w=[];
+  const emr=effectiveMarginalRate(p.income,p.household,cfg).effective_rate;
+  if(p.savings_capacity>0&&emr<p.expected_retirement_rate)
+    w.push("An RRSP would destroy value here. Your effective rate now ("+(emr*100).toFixed(1)+
+      "%) is below the rate you expect to withdraw at ("+(p.expected_retirement_rate*100).toFixed(0)+
+      "%), so you would pay more tax later than you save today. Fill the TFSA first.");
+  if(p.income<45000)
+    w.push("At this income, money in an RRSP or RRIF can trigger Guaranteed Income Supplement clawback in retirement — roughly 50 cents on the dollar. TFSA withdrawals do not count against GIS.");
+  if(p.fhsa_eligible&&!(p.savings_capacity>0))
+    w.push("You have FHSA room. It is the only account that is both deductible going in and tax-free coming out.");
+  if(alloc&&(p.employer_match_cap||0)>0&&rrspLeft!=null&&rrspLeft<=0.01&&alloc.employer_match<p.employer_match_cap-0.01)
+    w.push("Your RRSP room only covers $"+Math.round(alloc.employer_match).toLocaleString("en-CA")+
+      " of the $"+Math.round(p.employer_match_cap).toLocaleString("en-CA")+
+      " your employer will match — the match uses the same room your own contributions do. "+
+      "Contributing past it is penalised at 1% a month. Check your room in CRA My Account.");
+  return w;}

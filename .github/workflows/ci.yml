@@ -23,6 +23,31 @@ jobs:
       - name: Python reference — projection engine
         run: python3 tests/test_projection.py
 
+      # fixtures.json is the contract the two JS ports are checked against.
+      # If it is stale, every downstream parity test is verifying last
+      # week's engine and passing while the shipped app is wrong.
+      - name: Fixtures are regenerated from the reference
+        run: |
+          python3 tools/gen_fixtures.py
+          git diff --exit-code fixtures.json
+
+      # index.html and learn.html are generated. A hand-edit, or a .part
+      # change someone forgot to build, must not reach users.
+      - name: built pages match their sources
+        run: |
+          python3 build.py
+          git diff --exit-code index.html learn.html
+
+      # Prose is where stale numbers hide: no parity suite covers an
+      # explanation that quotes last year's contribution limit.
+      - name: Learn page matches the tax data
+        run: python3 tests/test_learn_page.py
+
+      # A renamed element id breaks the screen while every engine test
+      # still passes. Catch it at build time instead.
+      - name: UI contract
+        run: python3 tests/test_ui_contract.py
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"

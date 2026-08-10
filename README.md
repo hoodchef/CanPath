@@ -13,22 +13,42 @@ CanPath surfaces it, then tells you where your savings should actually go.
 Built for people who have never been told how any of this works — not for
 the financially fluent.
 
-- **What your savings become**, in today's dollars, split into your money,
-  growth, and government help reinvested
+- **A six-metric KPI strip** — balance, effective marginal rate, government
+  help, target coverage, crossover year and registered room used
+- **Four analysis tabs** — Projection, Marginal rate, Allocation, Schedule
+  (keys `1`–`4`)
+- **The marginal-rate curve**, income tax and benefit clawback stacked across
+  the whole income range, with your own position marked
 - **Growth over 5–40 years**, showing the year growth overtakes contributions
 - **Are you on track** — CPP and OAS counted first, so the target isn't inflated
-- **Ranked funding order** across employer match, FHSA, RRSP and TFSA, in plain
-  English rather than acronyms
+- **Ranked funding order** across employer match, FHSA, RRSP and TFSA, in the
+  order the solver actually funded them
+- **Every assumption is yours to set** — growth, expected withdrawal tax rate,
+  sustainable withdrawal rate, CPP relative to average, and the reporting basis
+- **Scenario A/B compare** with the delta between them
+- **Year-by-year schedule**, CSV export, print report, and a permalink that
+  encodes the whole scenario in the URL
 - **The cost of waiting** — what a five-year delay actually costs
-- **Effective marginal rate** — income tax *plus* benefit clawback
 - Guardrails that refuse to recommend an RRSP when it would destroy value
-- Runs entirely in your browser. Nothing you type is transmitted or stored.
+- A **Learn** page covering every account, credit, clawback and pension the
+  calculator touches, plus budgeting, emergency funds and debt
+- Light and dark themes, following the operating system until you pick one
+- Runs entirely in your browser. Nothing you type is transmitted or stored;
+  the sole `localStorage` key is the theme preference.
 
 ### Two decisions that make the numbers differ from other calculators
 
-**Today's dollars by default.** A projection promising seven figures in forty
-years is technically true and practically misleading. Every figure here is
-inflation-adjusted so it can be compared to what things cost now.
+**Nominal dollars by default.** Balances are future dollars, with no inflation
+adjustment. The reporting basis is a control in the Assumptions group, so
+today's dollars are one click away: the engine supports both bases — `real_rate`
+implements the Fisher equation and `retirement_readiness` takes an `inflation`
+argument — and the nominal default simply passes `inflation: 0`, which makes the
+conversion a no-op.
+
+Note the consequence in *Are you on track?*: CPP and OAS are quoted at today's
+payment rates while the projected balance is in future dollars, so the two
+sides of that comparison are on different footings. Both are indexed in
+reality. The panel says so.
 
 **Average CPP, not maximum.** The maximum ($1,507.65/mo) assumes ~39 years of
 contributions at the earnings ceiling. The average new pension at 65 is
@@ -39,6 +59,7 @@ for an ordinary earner.
 ## Run it
 
 **Locally:** open `index.html`. No build, no server, no dependencies.
+`learn.html` sits beside it and is reachable from the header.
 
 **As an installable app:** serve the folder over HTTPS (or `localhost`) and the
 service worker activates. On iOS, Safari → Share → *Add to Home Screen*. On
@@ -59,7 +80,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  54 golden tests                       174 assertions     158 assertions
+  143 assertions    tools/gen_fixtures.py   200 assertions   184 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a
@@ -72,16 +93,42 @@ open is *provably* identical to the verified reference, not merely similar.
 CI runs all three stages on every push.
 
 ```bash
+python3 tools/gen_fixtures.py       # regenerate fixtures from the reference
 python3 tests/test_engine.py        # tax reference
 python3 tests/test_projection.py    # growth + retirement reference
+python3 tests/test_learn_page.py    # Learn page prose vs the tax data
+python3 tests/test_ui_contract.py   # every id the app reads exists in the page
 node web/parity.js                  # JS tax port vs reference
 node web/parity_projection.js       # JS projection port vs reference
 node tests/shipped_parity.js        # shipped index.html vs reference
 python3 validate.py                 # readable scenario output
 ```
 
-`index.html` is **generated**. Edit `head.part`, `body.part` or `app.part`,
-then rebuild — never edit the built file directly, or the next build discards it.
+`fixtures.json` is **generated** by `tools/gen_fixtures.py`. Change the engine
+and you must regenerate it, or the two ports are being verified against the
+previous engine and will pass while the shipped app is wrong. CI fails on a
+stale file.
+
+`index.html` and `learn.html` are **generated** by `build.py`. Edit
+`head.part`, `body.part`, `app.part`, `learn.part`, `theme.part`, `engine.part`
+or `web/projection.js`, then rebuild — never edit a built file directly, or the
+next build discards it. CI fails if either committed page does not match its
+sources.
+
+Both pages share `head.part` (palette, styles, masthead, theme bootstrap) and
+`theme.part` (the toggle). Page-specific values — title, description, header
+link — are `{{TOKEN}}` substitutions filled by `build.py`.
+
+**Every figure quoted in Learn-page prose is substituted from
+`data/taxyear_<year>.json` at build time**, never typed. A hard-coded
+"$8,000 a year" is invisible to the parity suites and silently becomes wrong
+the year a limit moves; `tests/test_learn_page.py` asserts the built page
+matches the current data file, so a data edit without a rebuild fails CI.
+
+The shipped tax engine lives in `engine.part`. `web/engine.js` is a second,
+readable port of the same reference; both are parity-checked, but only
+`engine.part` reaches users. Behaviour changes go in `engine/` (the reference),
+then both ports.
 
 ## Data sources
 
@@ -105,8 +152,14 @@ returning users keep running last year's brackets from cache.
   product (own return, QPP, abatement, French-language obligations).
 - GIS and OAS clawback are flagged by guardrails but not yet modelled, so
   retirement-age scenarios are incomplete.
-- The solver optimizes first-year value; the growth projection assumes the
-  government help is reinvested each year at the same rate, without recursion.
+- **The BC Family Benefit and the GST/HST credit are not modelled.** Both are
+  income-tested with their own phase-out bands, so the effective marginal rate
+  shown here is a floor, not the whole picture — for a BC family in the
+  overlapping bands the real figure is higher than the headline 47.2¢. This is
+  the largest remaining gap in the number the product exists to surface.
+- The solver optimizes first-year value. The growth projection reinvests the
+  government help, in two phases: while FHSA room lasts, and after it is gone.
+  Within a phase the rate is held flat, without recursion.
 - Investment growth is a flat assumed rate. No sequence-of-returns risk, no
   Monte Carlo — a 30-year average hides a great deal of variability.
 - CPP and EI are excluded from the marginal rate **by design**: they are levied

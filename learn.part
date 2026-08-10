@@ -1,0 +1,724 @@
+<div class="prose">
+
+<div class="panel">
+  <div class="panel-body">
+    <span class="eyebrow">Learn</span>
+    <h1 style="font-size:26px;letter-spacing:-.02em;margin:6px 0 12px">
+      The things nobody sat you down and explained</h1>
+    <div class="lead">
+      The calculator gives you a number. This page explains every idea behind it —
+      what each account actually does, why your tax bracket is not what you lose on
+      the next dollar, and the unglamorous groundwork (an emergency fund, expensive
+      debt) that comes <b>before</b> any of it. Written for people who have never
+      been told how this works, not for the financially fluent.
+    </div>
+    <div class="toc">
+      <a href="#order">Order of operations</a>
+      <a href="#accounts">The accounts</a>
+      <a href="#room">Contribution room</a>
+      <a href="#investing">What goes inside</a>
+      <a href="#stockrisk">Individual stocks</a>
+      <a href="#marginal">Your real marginal rate</a>
+      <a href="#credits">Credits &amp; deductions</a>
+      <a href="#pensions">CPP, OAS &amp; GIS</a>
+      <a href="#budget">Budgeting</a>
+      <a href="#emergency">Emergency fund</a>
+      <a href="#debt">Debt</a>
+      <a href="#growth">Compound growth</a>
+      <a href="#dollars">Future dollars</a>
+      <a href="#limits">What this does not model</a>
+    </div>
+  </div>
+</div>
+
+<!-- ORDER -->
+<div class="panel sec" id="order">
+  <div class="panel-head"><span class="eyebrow">Order of operations</span></div>
+  <div class="panel-body ltext">
+    <p>Almost every question of the form <em>"should I put money in X or Y?"</em> has the
+    same answer, and it is an order rather than a single account:</p>
+    <ul>
+      <li><b>1. Cover your minimum debt payments.</b> Missing them costs more than any
+      account earns, in interest and in credit damage.</li>
+      <li><b>2. Build a small starter emergency fund.</b> Without one, the first
+      unexpected bill goes on a credit card and undoes everything else.</li>
+      <li><b>3. Take the full employer match.</b> A 50% match is an immediate 50%
+      return. Nothing else on this page competes with that.</li>
+      <li><b>4. Clear high-interest debt.</b> Paying off a card charging 20% is a
+      guaranteed 20% return. No investment offers a guaranteed 20%.</li>
+      <li><b>5. Finish the emergency fund</b> — three to six months of essential
+      spending.</li>
+      <li><b>6. Fill registered accounts</b> in whatever order your own marginal rate
+      justifies. That is the part the calculator works out for you.</li>
+    </ul>
+    <div class="callout">
+      <span class="t">Why the calculator can skip steps 1–5</span>
+      It assumes you have already handled them, because it cannot see your debts or
+      your cash cushion. If you have a credit card balance, the honest answer is that
+      paying it off beats every allocation the calculator will suggest.
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNTS -->
+<div class="panel sec" id="accounts">
+  <div class="panel-head"><span class="eyebrow">The registered accounts</span></div>
+  <div class="panel-body ltext">
+    <p>"Registered" means registered with the Canada Revenue Agency for special tax
+    treatment. None of them is an investment. Each is a <b>container</b> you put
+    investments inside, and the container decides how the money is taxed. A TFSA
+    holding only cash is the most common and most expensive misunderstanding in
+    Canadian personal finance.</p>
+
+    <div class="tablewrap">
+      <table class="lt">
+        <thead><tr>
+          <th>Account</th><th>Tax going in</th><th>Tax coming out</th><th>{{PAGE_YEAR}} limit</th>
+        </tr></thead>
+        <tbody>
+          <tr><td><b>TFSA</b></td><td>No deduction</td><td>Nothing, ever</td>
+              <td class="n">{{$accounts.tfsa.annual_limit}}/yr</td></tr>
+          <tr><td><b>RRSP</b></td><td>Deductible</td><td>Taxed as income</td>
+              <td class="n">{{%accounts.rrsp.earned_income_rate}} of earned income,<br>max {{$accounts.rrsp.dollar_limit}}</td></tr>
+          <tr><td><b>FHSA</b></td><td>Deductible</td><td>Nothing, for a first home</td>
+              <td class="n">{{$accounts.fhsa.annual_limit}}/yr,<br>{{$accounts.fhsa.lifetime_limit}} lifetime</td></tr>
+          <tr><td><b>RESP</b></td><td>No deduction</td><td>Taxed to the student</td>
+              <td class="n">{{$accounts.resp.lifetime_contribution}} lifetime<br>per child</td></tr>
+          <tr><td><b>Non-registered</b></td><td>No deduction</td><td>Tax on gains and income</td>
+              <td class="n">No limit</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>TFSA — Tax-Free Savings Account</h3>
+    <p>Money goes in after tax; everything it earns is yours permanently. You can
+    withdraw any amount, any time, for any reason, and the room comes back — but only
+    on <b>January 1 of the following year</b>, which is where people accidentally
+    over-contribute. Withdrawals do not count as income, so they never reduce
+    income-tested benefits. That makes the TFSA the most flexible account in the
+    system and the right default when you are unsure.</p>
+    <div class="keyfacts">
+      <div class="kf"><div class="k">{{PAGE_YEAR}} room</div><div class="v">{{$accounts.tfsa.annual_limit}}</div></div>
+      <div class="kf"><div class="k">Total since 2009</div><div class="v">{{$accounts.tfsa.cumulative_since_2009}}</div></div>
+    </div>
+    <p>That cumulative figure applies if you were 18 or older in 2009 and have never
+    contributed. If you turned 18 later, your room starts accumulating from that year.</p>
+
+    <h3>RRSP — Registered Retirement Savings Plan</h3>
+    <p>A contribution is a <b>deduction</b>: it comes off your taxable income, so you
+    get back your marginal rate on every dollar. You pay tax later, when you withdraw.
+    The RRSP is therefore a bet that your rate in retirement will be lower than your
+    rate today — and when it is not, the account actively loses you money.</p>
+    <p>At 71 an RRSP must be converted, usually to a RRIF, which forces a minimum
+    withdrawal every year whether you want the income or not. Two withdrawal
+    programmes let you take money out early without tax: the Home Buyers' Plan
+    (up to <span class="num">{{$accounts.hbp_withdrawal_limit}}</span> toward a first
+    home, repayable) and the Lifelong Learning Plan for education.</p>
+    <div class="callout warnbox">
+      <span class="t">Where an RRSP backfires</span>
+      On a modest income, RRSP and RRIF withdrawals in retirement count as income for
+      the Guaranteed Income Supplement, which claws back roughly 50 cents on the
+      dollar. Someone who contributed at a 20% marginal rate can face an effective
+      50%+ rate on the way out. The calculator refuses to recommend an RRSP in that
+      situation, and says so.
+    </div>
+
+    <h3>FHSA — First Home Savings Account</h3>
+    <p>The only account that is deductible going in <b>and</b> tax-free coming out,
+    provided the money buys a qualifying first home. It is strictly better than an
+    RRSP for anyone eligible, and badly under-used.</p>
+    <div class="keyfacts">
+      <div class="kf"><div class="k">Per year</div><div class="v">{{$accounts.fhsa.annual_limit}}</div></div>
+      <div class="kf"><div class="k">Lifetime</div><div class="v">{{$accounts.fhsa.lifetime_limit}}</div></div>
+      <div class="kf"><div class="k">Max in one year</div><div class="v">{{$accounts.fhsa.max_single_year_with_carryforward}}</div></div>
+    </div>
+    <p>Unused room carries forward one year, which is why a single year can take
+    {{$accounts.fhsa.max_single_year_with_carryforward}}. The account has a limited
+    life: it must be closed by the end of the 15th year after opening, or the year you
+    turn 71, or the year after your first qualifying withdrawal — whichever comes
+    first. If you never buy a home, the balance can be rolled into an RRSP without
+    using RRSP room, so opening one early costs you very little.</p>
+    <div class="callout">
+      <span class="t">Why the projection changes after a few years</span>
+      At {{$accounts.fhsa.annual_limit}} a year the lifetime cap is reached in five
+      full years. The calculator's chart shows government help stepping down when that
+      happens, rather than pretending the deduction continues to retirement.
+    </div>
+
+    <h3>RESP — Registered Education Savings Plan</h3>
+    <p>For a child's post-secondary education. Contributions are not deductible, but
+    the government adds a grant — the Canada Education Savings Grant — worth
+    <span class="num">{{%accounts.resp.cesg_match_rate}}</span> of what you put in.</p>
+    <div class="keyfacts">
+      <div class="kf"><div class="k">Grant rate</div><div class="v">{{%accounts.resp.cesg_match_rate}}</div></div>
+      <div class="kf"><div class="k">Grant per year</div><div class="v">{{$accounts.resp.cesg_annual_max}}</div></div>
+      <div class="kf"><div class="k">Grant lifetime</div><div class="v">{{$accounts.resp.cesg_lifetime_max}}</div></div>
+      <div class="kf"><div class="k">Contribution lifetime</div><div class="v">{{$accounts.resp.lifetime_contribution}}</div></div>
+    </div>
+    <p>Contributing {{$accounts.resp.cesg_matched_contribution}} in a year captures the
+    full {{$accounts.resp.cesg_annual_max}} grant. Beyond that the grant stops, though
+    contributions still grow tax-sheltered. Withdrawals of growth and grant are taxed
+    in the <b>student's</b> hands, which usually means little or no tax. Lower-income
+    families may also qualify for the Canada Learning Bond, which pays into an RESP
+    without any contribution at all.</p>
+
+    <h3>Employer match and workplace pensions</h3>
+    <p>If your employer contributes when you do, that is an immediate return no
+    investment can match — a 50-cent match is 50% before the money is even invested.
+    Take all of it first.</p>
+    <div class="callout warnbox">
+      <span class="t">The match is not free of limits</span>
+      A group RRSP match uses the <b>same</b> contribution room your own deposits use,
+      and both the employee and employer portions count. A defined-contribution pension
+      instead generates a pension adjustment that reduces next year's RRSP room.
+      Either way, room is consumed. Contributing past your limit is penalised at
+      <b>1% per month</b> on the excess above a {{PAGE_RRSP_CUSHION}} lifetime cushion,
+      and the CRA charges the employee, not the employer.
+    </div>
+
+    <h3>Non-registered ("taxable") accounts</h3>
+    <p>Once registered room is full, an ordinary investment account is still worth
+    using — you simply pay tax on what it earns, and different income types are taxed
+    differently. Capital gains are only partly taxable and only when you sell, eligible
+    Canadian dividends receive a credit, and interest is taxed at your full rate. That
+    ranking is why interest-paying investments are usually the first thing to shelter
+    inside a TFSA or RRSP.</p>
+  </div>
+</div>
+
+<!-- ROOM -->
+<div class="panel sec" id="room">
+  <div class="panel-head"><span class="eyebrow">Contribution room</span></div>
+  <div class="panel-body ltext">
+    <p>Every registered account has a limit, and the limits work differently:</p>
+    <ul>
+      <li><b>RRSP room</b> is earned. Each year you accumulate
+      {{%accounts.rrsp.earned_income_rate}} of your previous year's earned income, up
+      to {{$accounts.rrsp.dollar_limit}}, less any pension adjustment. Unused room
+      carries forward indefinitely.</li>
+      <li><b>TFSA room</b> is granted. Everyone 18 or older gets the same
+      {{$accounts.tfsa.annual_limit}} regardless of income, it carries forward
+      indefinitely, and withdrawals are restored the following calendar year.</li>
+      <li><b>FHSA room</b> starts only when you <em>open</em> the account, which is why
+      opening one early matters even if you cannot fund it yet.</li>
+    </ul>
+    <div class="callout">
+      <span class="t">Check before you contribute</span>
+      Your real numbers are in <b>CRA My Account</b>, and they are the only ones that
+      count. The calculator estimates RRSP room from the income you type, which ignores
+      carried-forward room and any pension adjustment — it can easily be out by
+      thousands in either direction.
+    </div>
+  </div>
+</div>
+
+<!-- INVESTING -->
+<div class="panel sec" id="investing">
+  <div class="panel-head"><span class="eyebrow">What goes inside the accounts</span></div>
+  <div class="panel-body ltext">
+    <p>A TFSA is not an investment and neither is an RRSP. They are containers, and
+    they grow at whatever you put inside them. Choosing the container is a tax
+    decision; choosing the contents is an investment decision. The calculator handles
+    the first and assumes the second.</p>
+
+    <h3>The main things you can hold</h3>
+    <ul>
+      <li><b>Cash and GICs.</b> Predictable, principal protected, and over long periods
+      they have historically struggled to beat inflation. Right for money you need
+      within a few years — an emergency fund, a down payment eighteen months out.</li>
+      <li><b>Bonds.</b> Lending to a government or a company for interest. Steadier than
+      stocks, lower expected return, and they lose value when interest rates rise.</li>
+      <li><b>Stocks (equities).</b> Part-ownership of businesses. The highest expected
+      long-run return and the highest short-run volatility. Falls of 30–50% have
+      happened repeatedly and will happen again.</li>
+      <li><b>Everything else</b> — real estate, commodities, crypto — carries its own
+      risks and, in the case of crypto, no cash flow and no long history to reason
+      from.</li>
+    </ul>
+
+    <h3>Risk is not one thing</h3>
+    <p>Two different ideas share the word. <b>Volatility</b> is how much a price moves
+    around; it is uncomfortable but it recovers. <b>Permanent loss</b> is capital that
+    does not come back — a single company failing, or selling at the bottom and never
+    buying back in. Broad diversification does very little about the first and a great
+    deal about the second.</p>
+    <p>Your time horizon decides how much volatility you can carry. Money needed next
+    year does not belong in stocks. Money for a retirement three decades away has time
+    to sit through several full market cycles.</p>
+
+    <h3>Index funds and ETFs</h3>
+    <p>An <b>index fund</b> holds every company in a market in proportion to size,
+    rather than trying to pick winners. An <b>ETF</b> — exchange-traded fund — is a
+    fund that trades on an exchange like a stock; most of the widely held ones are
+    index funds. A single broad ETF can hold thousands of companies across dozens of
+    countries, which is diversification you could not assemble yourself at any
+    reasonable cost.</p>
+    <p><b>Asset-allocation ETFs</b> go one step further: a single fund holding a fixed
+    mix of global stocks and bonds, rebalanced for you. One purchase, one ongoing
+    decision, no spreadsheet. For most people the realistic alternative is not a
+    better portfolio — it is no portfolio.</p>
+
+    <h3>Fees compound exactly like returns</h3>
+    <p>A fund's <b>MER</b> (management expense ratio) is charged every year on your
+    whole balance, whether the fund gains or loses. It sounds trivial and is not.</p>
+    <div class="callout">
+      <span class="t">{{FEE_MONTHLY}} a month for {{FEE_YEARS}} years at {{FEE_GROSS}} before fees</span>
+      At a <b>{{MER_LOW}}</b> MER you would finish with <b>{{FEE_LOW}}</b>.
+      At <b>{{MER_HIGH}}</b> — ordinary for an actively managed Canadian mutual fund —
+      you would finish with <b>{{FEE_HIGH}}</b>.
+      The difference is <b>{{FEE_GAP}}</b>, on {{FEE_CONTRIB}} of contributions.
+      The fee gap is larger than a third of everything you put in.
+      <em>Computed with the same compounding the calculator uses.</em>
+    </div>
+    <p>Canada has historically had some of the highest mutual fund fees in the
+    developed world. Ask what you are paying — the MER, plus any advice or trading fee
+    on top. It is the one variable here you control completely.</p>
+
+    <h3>Diversification, and the home-country trap</h3>
+    <p>Canada is a small slice of the world's stock market — a low single-digit
+    percentage — and it is heavily concentrated in financials and energy. A portfolio
+    of only Canadian stocks is a bet on two sectors of one economy. Holding global
+    equities is not exotic; it is the default that Canadian-only is a deviation
+    from.</p>
+
+    <h3>Asset location: which account holds what</h3>
+    <p>Once you hold more than one account, <em>where</em> an investment sits changes
+    its after-tax return.</p>
+    <ul>
+      <li>The United States withholds tax on dividends paid to foreign investors. Under
+      the Canada–US treaty an <b>RRSP</b> is exempt for US-listed US equities; a
+      <b>TFSA</b> is not, and the withholding cannot be recovered.</li>
+      <li>Interest is taxed at your full marginal rate, so interest-paying investments
+      benefit most from being sheltered.</li>
+      <li>Capital gains and eligible Canadian dividends are taxed more lightly, so they
+      are the most tolerable things to hold in a non-registered account.</li>
+    </ul>
+    <div class="callout">
+      <span class="t">Worth knowing, not worth contorting for</span>
+      These rules are specific and depend on how a fund is listed and structured.
+      Getting the contribution made matters far more than getting the location perfect.
+      Check the details before restructuring anything.
+    </div>
+
+    <h3>Boring habits that do most of the work</h3>
+    <ul>
+      <li><b>Automate the contribution</b> so it does not depend on how you feel that
+      month.</li>
+      <li><b>Rebalance occasionally</b> — once a year is plenty — back to your intended
+      mix.</li>
+      <li><b>Do not try to time the market.</b> Missing a handful of the best days,
+      which cluster inside the worst periods, does lasting damage to a long-run
+      return.</li>
+      <li><b>Expect declines and plan not to sell into them.</b> The largest avoidable
+      risk in a long-horizon portfolio is the investor's own behaviour in a bad
+      year.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STOCK RISK -->
+<div class="panel sec" id="stockrisk">
+  <div class="panel-head"><span class="eyebrow">The risks of picking individual stocks</span></div>
+  <div class="panel-body ltext">
+    <p>Buying shares in individual companies is the version of investing that gets
+    talked about, and it carries risks that a broad fund does not.</p>
+
+    <h3>Company-specific risk pays you nothing</h3>
+    <p>Risk splits into two parts. <b>Market risk</b> is the whole market moving; you
+    cannot diversify it away, and bearing it is what long-run returns compensate you
+    for. <b>Company-specific risk</b> is one firm losing a lawsuit, a patent, or a
+    chief executive. It <em>can</em> be diversified away almost for free — so the
+    market does not pay you a premium for carrying it. Holding five stocks instead of
+    five thousand adds risk without adding expected return.</p>
+
+    <h3>Most stocks are not the market</h3>
+    <p>Long-run studies of stock returns keep finding the same shape: a small minority
+    of companies account for nearly all of the market's gain over decades, while the
+    typical stock underperforms and a large share lose money outright. An index owns
+    the winners automatically. A concentrated portfolio has to find them, and the base
+    rate for doing so is unfavourable.</p>
+    <p>This is also why hindsight is so misleading. Every enormous winner is obvious
+    afterwards, and the companies that looked equally promising and failed are not the
+    ones anybody writes about.</p>
+
+    <div class="callout warnbox">
+      <span class="t">Employer shares are a double exposure</span>
+      If your savings are concentrated in your employer's stock, your income and your
+      portfolio depend on one company. The bad scenario takes both at once, which is
+      exactly when you can least afford it. Discounted share-purchase plans can still
+      be worth taking — selling and diversifying afterwards is usually the point.
+    </div>
+
+    <h3>Who is on the other side of your trade</h3>
+    <p>Every time you buy, somebody with a view is selling. Often that somebody is a
+    full-time institution with faster data and lower costs. That does not make picking
+    stocks impossible, but it should set expectations: you are competing, not simply
+    participating.</p>
+
+    <h3>Speculation is a separate category</h3>
+    <ul>
+      <li><b>Leverage and margin</b> magnify losses as well as gains and can force a
+      sale at the worst possible moment.</li>
+      <li><b>Options</b> can expire worthless — a total loss on that position is a
+      normal outcome, not a freak one.</li>
+      <li><b>Crypto and meme stocks</b> have no earnings to anchor a valuation; prices
+      rest on what the next buyer will pay.</li>
+      <li><b>Anything promoted to you</b> — a hot tip, a message from a stranger, a
+      guaranteed return — deserves the assumption that you are the exit. Check
+      registration through the CSA's National Registration Search before sending money
+      anywhere.</li>
+    </ul>
+
+    <div class="callout warnbox">
+      <span class="t">Two Canadian traps</span>
+      <b>Frequent trading inside a TFSA</b> can be treated by the CRA as carrying on a
+      business, making the profits fully taxable — the shelter is not unconditional.
+      And <b>capital losses in a TFSA or RRSP cannot be claimed</b> against gains
+      elsewhere, so a losing position in a registered account loses twice.
+    </div>
+
+    <h3>If you want to do it anyway</h3>
+    <p>Plenty of people find individual stocks genuinely interesting, and interest is
+    worth something if it keeps you engaged with your own finances. The common
+    compromise is to keep the long-term plan in broad, low-cost funds and to size
+    individual positions as a small, deliberately capped share of the total — an amount
+    you could lose entirely without changing your retirement.</p>
+    <div class="callout">
+      <span class="t">Where the calculator stands</span>
+      It assumes a single steady rate of return and takes no view on what you hold. It
+      cannot tell you whether your portfolio is diversified, what you are paying in
+      fees, or whether an 8% assumption is reasonable for your mix. Those are yours to
+      check.
+    </div>
+  </div>
+</div>
+
+<!-- MARGINAL -->
+<div class="panel sec" id="marginal">
+  <div class="panel-head"><span class="eyebrow">Your real marginal rate</span></div>
+  <div class="panel-body ltext">
+    <p>Canada taxes income in brackets, and only the income inside each bracket is
+    taxed at that bracket's rate. Earning one dollar into a higher bracket never
+    reduces your take-home pay — the "I got a raise and lost money" story is almost
+    always about something else on this page.</p>
+    <p>Your <b>marginal rate</b> is what you lose on the next dollar. Your posted
+    bracket is only part of it, because income-tested benefits shrink as income rises,
+    and a shrinking benefit is indistinguishable from a tax.</p>
+
+    <h3>The Canada Child Benefit</h3>
+    <p>The CCB pays up to {{$benefits.ccb.max_under_6}} a year for a child under 6 and
+    {{$benefits.ccb.max_6_to_17}} for a child aged 6 to 17. It is reduced once adjusted
+    family net income passes {{$benefits.ccb.threshold_1}}, at a rate that depends on
+    how many children you have, then at a lower rate above
+    {{$benefits.ccb.threshold_2}}.</p>
+    <div class="tablewrap">
+      <table class="lt">
+        <thead><tr><th>Children</th>
+          <th>Reduction above {{$benefits.ccb.threshold_1}}</th>
+          <th>Reduction above {{$benefits.ccb.threshold_2}}</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td class="n">{{%benefits.ccb.phase1_rates.1}}</td><td class="n">{{%benefits.ccb.phase2_rates.1}}</td></tr>
+          <tr><td>2</td><td class="n">{{%benefits.ccb.phase1_rates.2}}</td><td class="n">{{%benefits.ccb.phase2_rates.2}}</td></tr>
+          <tr><td>3</td><td class="n">{{%benefits.ccb.phase1_rates.3}}</td><td class="n">{{%benefits.ccb.phase2_rates.3}}</td></tr>
+          <tr><td>4 or more</td><td class="n">{{%benefits.ccb.phase1_rates.4}}</td><td class="n">{{%benefits.ccb.phase2_rates.4}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Those percentages stack on top of income tax. A three-child family in the first
+    band loses {{%benefits.ccb.phase1_rates.3}} of every extra dollar in benefit
+    <em>plus</em> their income tax — which is how a household whose posted bracket says
+    28.2% actually keeps barely half of a raise.</p>
+
+    <h3>The BC tax reduction</h3>
+    <p>British Columbia has a low-income credit worth up to
+    {{$provinces.BC.tax_reduction.max_credit}} that phases out at
+    {{%provinces.BC.tax_reduction.phaseout_rate}} of income above
+    {{$provinces.BC.tax_reduction.threshold}}. That adds
+    {{%provinces.BC.tax_reduction.phaseout_rate}} to the effective marginal rate of
+    everyone in the phase-out band, and it appears in no bracket table anywhere.</p>
+
+    <h3>Why this makes contributions worth more</h3>
+    <p>A deduction runs the whole mechanism in reverse. Lowering your taxable income
+    returns the tax <b>and</b> restores the benefit you were losing. For a family in a
+    clawback band, the benefit restored can exceed the tax refund itself — which is
+    exactly what the calculator's "what the government gives back" figure adds up.</p>
+    <div class="callout">
+      <span class="t">CPP and EI are deliberately excluded</span>
+      They are levied on gross employment income and an RRSP deduction does not reduce
+      them, so including them would overstate what a contribution is worth. For
+      reference, {{PAGE_YEAR}} rates are {{%payroll.cpp.rate}} CPP on earnings between
+      {{$payroll.cpp.basic_exemption}} and {{$payroll.cpp.ympe}},
+      {{%payroll.cpp2.rate}} on the slice up to {{$payroll.cpp2.yampe}}, and
+      {{%payroll.ei.rate}} EI up to {{$payroll.ei.max_insurable}}.
+    </div>
+  </div>
+</div>
+
+<!-- CREDITS -->
+<div class="panel sec" id="credits">
+  <div class="panel-head"><span class="eyebrow">Credits and deductions</span></div>
+  <div class="panel-body ltext">
+    <p>These two words get used interchangeably and mean different things.</p>
+    <ul>
+      <li>A <b>deduction</b> reduces the income you are taxed on. It is worth your
+      marginal rate — a {{$accounts.tfsa.annual_limit}} RRSP contribution saves more
+      for a high earner than a low earner.</li>
+      <li>A <b>non-refundable credit</b> reduces the tax you owe, calculated at the
+      lowest rate — federally {{%federal.credit_rate}}, and
+      {{%provinces.BC.credit_rate}} in BC. It is worth the same to everyone, and it
+      cannot take your tax below zero.</li>
+      <li>A <b>refundable credit</b> is paid to you even if you owe no tax at all.
+      The GST/HST credit and the Canada Workers Benefit work this way, which is why
+      filing a return matters even on a very low income.</li>
+    </ul>
+
+    <h3>The basic personal amount</h3>
+    <p>Everyone gets a slice of income effectively tax-free through a non-refundable
+    credit. Federally the amount is {{$federal.bpa.base}}, plus a supplement of up to
+    {{$federal.bpa.additional}} that phases out between {{$federal.bpa.phaseout_start}}
+    and {{$federal.bpa.phaseout_end}}. British Columbia's is
+    {{$provinces.BC.bpa}}.</p>
+
+    <h3>Credits worth knowing about</h3>
+    <ul>
+      <li><b>Canada Workers Benefit</b> — refundable, for lower-income workers.</li>
+      <li><b>GST/HST credit</b> — refundable, paid quarterly, income-tested. Like the
+      CCB it phases out, so it adds to the effective marginal rate in its band.</li>
+      <li><b>Disability tax credit</b> — substantial, transferable to a supporting
+      relative, and a gateway to the Registered Disability Savings Plan.</li>
+      <li><b>Medical expenses</b> — claimable above a threshold based on your income,
+      and usually best claimed by the lower-income spouse.</li>
+      <li><b>Tuition</b> — carried forward or transferred to a parent or grandparent.</li>
+      <li><b>Charitable donations, pension income, age amount, caregiver amounts</b> —
+      each with its own rules.</li>
+      <li><b>Spousal transfers</b> — many credits move to a partner when the first
+      person cannot use them.</li>
+    </ul>
+    <div class="callout">
+      <span class="t">Dollar amounts deliberately omitted</span>
+      Only the figures this project sources and version-controls are quoted with
+      numbers on this page. The credits above change most years and several are
+      province-specific; check current amounts on canada.ca rather than trusting a
+      figure memorised from a blog post.
+    </div>
+  </div>
+</div>
+
+<!-- PENSIONS -->
+<div class="panel sec" id="pensions">
+  <div class="panel-head"><span class="eyebrow">CPP, OAS and GIS</span></div>
+  <div class="panel-body ltext">
+    <p>Government retirement income covers the first slice of what you need, so your
+    savings only have to cover the rest. Calculators that ignore it make the target
+    look terrifying; calculators that assume the maximum make it look too easy.</p>
+    <h3>CPP — Canada Pension Plan</h3>
+    <p>A pension you build by working and contributing. The <b>maximum</b> at 65
+    assumes roughly 39 years of contributions at the earnings ceiling, which is why the
+    average new pension is far below it — the calculator uses the average deliberately.
+    Starting before 65 permanently reduces it; starting later permanently increases it.
+    CPP is taxable income.</p>
+    <h3>OAS — Old Age Security</h3>
+    <p>Paid from 65 based on how long you have lived in Canada, not on whether you
+    worked. Full residency is 40 years after 18; less is prorated. Payments increase at
+    75. OAS is taxable and is clawed back above an income threshold — one of the few
+    places where a high retirement income genuinely reduces a benefit.</p>
+    <h3>GIS — Guaranteed Income Supplement</h3>
+    <p>A non-taxable top-up for low-income seniors receiving OAS, reduced sharply as
+    other income rises — roughly 50 cents per dollar. Because RRSP and RRIF withdrawals
+    count as income and <b>TFSA withdrawals do not</b>, the choice between those two
+    accounts matters enormously for anyone likely to receive GIS.</p>
+  </div>
+</div>
+
+<!-- BUDGET -->
+<div class="panel sec" id="budget">
+  <div class="panel-head"><span class="eyebrow">Budgeting</span></div>
+  <div class="panel-body ltext">
+    <p>The calculator asks what you can save each month. Working that out honestly is
+    the hardest input on the page, and the one with the most leverage.</p>
+    <h3>Start from what actually left your account</h3>
+    <p>Not what you think you spend — three months of statements. Almost everyone
+    discovers a subscription they forgot and a category twice the size they assumed.</p>
+    <h3>Three buckets</h3>
+    <ul>
+      <li><b>Fixed</b> — rent or mortgage, insurance, utilities, transit, debt
+      minimums. Hard to change quickly, and the biggest wins hide here.</li>
+      <li><b>Variable</b> — groceries, fuel, everything discretionary. Easy to change,
+      usually smaller than people expect.</li>
+      <li><b>Savings</b> — treated as a bill you pay yourself, not as whatever is left
+      over. Nothing is ever left over.</li>
+    </ul>
+    <p>A common starting split is roughly half your take-home to needs, thirty percent
+    to wants, twenty percent to savings and debt. Treat it as a sanity check, not a
+    rule — it is unreachable in an expensive housing market, and unambitious on a high
+    income.</p>
+    <h3>Automate it</h3>
+    <p>Move savings the day you are paid. A transfer that happens automatically
+    survives a bad week; one that depends on willpower at month-end does not. Increase
+    the amount whenever your pay rises, before you adjust to the higher income.</p>
+    <div class="callout">
+      <span class="t">Irregular income</span>
+      If you are self-employed or on variable hours, budget from your <em>lowest</em>
+      recent month and treat anything above it as a windfall to allocate deliberately.
+      Also set aside tax and CPP as the money arrives — nobody withholds it for you.
+    </div>
+  </div>
+</div>
+
+<!-- EMERGENCY -->
+<div class="panel sec" id="emergency">
+  <div class="panel-head"><span class="eyebrow">The emergency fund</span></div>
+  <div class="panel-body ltext">
+    <p>Cash you can reach today, for the things that actually happen: a job loss, a
+    car repair, a flight home. Its job is not to earn — it is to stop a bad month
+    becoming credit card debt that takes years to clear.</p>
+    <h3>How much</h3>
+    <ul>
+      <li><b>Starter:</b> one month of essential spending, or around a thousand
+      dollars. Enough to absorb an ordinary shock.</li>
+      <li><b>Full:</b> three to six months of <em>essential</em> spending — the fixed
+      bucket, not your whole lifestyle.</li>
+      <li><b>More</b> if your income is variable, you are the only earner, or you work
+      in a field where finding the next job takes months.</li>
+    </ul>
+    <h3>Where to keep it</h3>
+    <p>Somewhere boring and immediately accessible: a high-interest savings account, or
+    a TFSA holding cash or a money-market fund. This is the one case where cash in a
+    TFSA is the right answer. Do not put it in stocks — the moment you need it is
+    disproportionately likely to be a moment when markets are also down.</p>
+    <div class="callout">
+      <span class="t">Using a TFSA for this</span>
+      Withdrawing restores your room, but not until January 1 of the following year.
+      If you empty it in March and refill it in November, you have over-contributed and
+      will be charged 1% a month on the excess.
+    </div>
+  </div>
+</div>
+
+<!-- DEBT -->
+<div class="panel sec" id="debt">
+  <div class="panel-head"><span class="eyebrow">Debt</span></div>
+  <div class="panel-body ltext">
+    <p>Paying off debt is an investment with a guaranteed, tax-free return equal to its
+    interest rate. Compare that rate against what you could reasonably expect to earn —
+    the calculator defaults to 8% a year, before tax, and with no guarantee whatsoever.
+    A credit card at 20% wins that comparison every time.</p>
+    <h3>A rough ranking</h3>
+    <ul>
+      <li><b>Above ~10%</b> — payday loans, credit cards, most store cards. Clear these
+      before investing anything beyond an employer match.</li>
+      <li><b>Roughly 5–10%</b> — car loans, unsecured lines of credit, some student
+      debt. A close call. Splitting between the debt and investing is defensible.</li>
+      <li><b>Below ~5%</b> — most mortgages, subsidised student loans. Paying the
+      minimum and investing the difference is usually the better expected outcome,
+      though paying down debt is the certain one.</li>
+    </ul>
+    <h3>Two ways to attack multiple debts</h3>
+    <ul>
+      <li><b>Highest rate first (avalanche)</b> — mathematically optimal; costs the
+      least in total interest.</li>
+      <li><b>Smallest balance first (snowball)</b> — costs slightly more, but clears
+      individual debts sooner. The method you actually stick with beats the one that is
+      theoretically better.</li>
+    </ul>
+    <h3>Canadian specifics</h3>
+    <ul>
+      <li>Interest on student loans may qualify for a non-refundable credit; interest
+      on consumer debt does not.</li>
+      <li>Interest on money borrowed to earn investment income can be deductible, with
+      strict tracing rules. Get advice before relying on that.</li>
+      <li>Consolidating debt only helps if the new rate is genuinely lower <em>and</em>
+      the freed-up room does not get spent again.</li>
+      <li>A mortgage is not an emergency fund. Money paid into it is difficult to get
+      back at exactly the moment you would need it most.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- GROWTH -->
+<div class="panel sec" id="growth">
+  <div class="panel-head"><span class="eyebrow">Compound growth</span></div>
+  <div class="panel-body ltext">
+    <p>Growth earns growth. That is the entire idea, and it is why the calculator's
+    chart bends upward instead of running straight.</p>
+    <p>The chart splits the balance into what you contributed, the government help
+    reinvested, and the growth on both. Early on, almost all of it is your own money —
+    which is why the first years feel like nothing is happening. The point where the
+    growth band overtakes everything you have put in is marked on the chart, and after
+    it your investments are contributing more each year than you are.</p>
+    <p>This is why starting earlier beats saving harder later: a dollar invested at 25
+    has forty years to compound, and a dollar invested at 55 has ten. The calculator's
+    "cost of waiting" figure is that difference, and it is always larger than people
+    expect, because the years you skip are the ones with the most compounding left.</p>
+    <div class="callout warnbox">
+      <span class="t">A flat rate is a simplification</span>
+      Real returns arrive unevenly. A 30-year average of 8% can contain several years
+      of losses, and the order in which good and bad years arrive matters a great deal
+      near retirement. This model uses one steady rate and no market crashes.
+    </div>
+  </div>
+</div>
+
+<!-- DOLLARS -->
+<div class="panel sec" id="dollars">
+  <div class="panel-head"><span class="eyebrow">Future dollars</span></div>
+  <div class="panel-body ltext">
+    <p>The calculator reports balances in <b>future dollars</b> — the actual number
+    that would appear on a statement, with no inflation adjustment.</p>
+    <p>Keep in mind what that means. Prices rise, so a sum decades away will not buy
+    what the same sum buys now. At 2% inflation, purchasing power roughly halves over
+    35 years. A seven-figure balance in forty years is a real number, but it is not a
+    forty-year-from-now fortune in today's terms.</p>
+    <div class="callout">
+      <span class="t">One comparison to treat carefully</span>
+      In <em>Are you on track?</em>, CPP and OAS are shown at today's payment rates
+      while your projected portfolio income is in future dollars. Both pensions are
+      indexed in reality, so the two sides of that comparison sit on different
+      footings. Read the split between them as indicative rather than exact.
+    </div>
+  </div>
+</div>
+
+<!-- LIMITS -->
+<div class="panel sec" id="limits">
+  <div class="panel-head"><span class="eyebrow">What this does not model</span></div>
+  <div class="panel-body ltext">
+    <p>Being clear about the edges is part of being trustworthy about the middle.</p>
+    <ul>
+      <li><b>British Columbia only.</b> Other provinces have their own brackets,
+      credits and child benefits. Quebec is a separate system entirely.</li>
+      <li><b>The BC Family Benefit and the GST/HST credit are not included.</b> Both
+      are income-tested with their own phase-out bands, so the effective marginal rate
+      shown is a floor, not the whole picture.</li>
+      <li><b>GIS and the OAS clawback</b> are flagged by the guardrails but not
+      modelled, so retirement-age scenarios are incomplete.</li>
+      <li><b>One flat rate of return</b>, no market volatility, no sequence-of-returns
+      risk.</li>
+      <li><b>Contribution room is estimated</b> from the income you type. Your real
+      room is in CRA My Account.</li>
+      <li><b>No self-employment, rental, capital-gains or dividend income</b>, and none
+      of the credits listed above beyond the basic personal amounts.</li>
+    </ul>
+    <p>All rates come from <span class="num">data/taxyear_{{PAGE_YEAR}}.json</span>, and
+    every figure on this page is substituted from that file when the site is built, so
+    the explanations cannot drift away from the engine.</p>
+    <div class="callout warnbox">
+      <span class="t">Not advice</span>
+      This is an educational model. It is not tax, financial, or investment advice, and
+      it does not account for every credit, deduction, or personal circumstance.
+      Confirm your own contribution room in CRA My Account, and consider speaking to a
+      qualified professional before acting. "Financial Planner" and "Financial Adviser"
+      are protected titles in Ontario and Saskatchewan; this project is a calculator and
+      a model, and describes itself as nothing more.
+    </div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  Federal brackets: CRA {{PAGE_YEAR}}. British Columbia brackets: Province of B.C. Canada Child Benefit: 2026–27 benefit year.
+  CPP and OAS: Canada.ca, January 2026 — average, not maximum. Balances are shown in future dollars, without an inflation adjustment.
+  Everything runs in your browser; nothing you type is sent anywhere or stored. The only thing kept on
+  your device is whether you prefer the light or dark theme.
+</footer>

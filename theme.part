@@ -1,0 +1,44 @@
+/* ================================================================
+   THEME — shared by index.html and learn.html
+   ================================================================
+   Self-contained: the calculator page loads this after its own app code,
+   the Learn page loads it alone, so it declares no globals either page
+   might already own. Pages that need to react (the chart bakes gradients
+   into markup at draw time) set window.onThemeChange. */
+(function(){
+  var el=function(id){return document.getElementById(id);};
+  var TINT={light:"#0E1B2C",dark:"#0A121C"};
+
+  function apply(mode,remember){
+    document.documentElement.dataset.theme=mode;
+    var dark=mode==="dark", btn=el("themeBtn"), label=el("themeLabel");
+    if(label)label.textContent=dark?"Dark":"Light";
+    if(btn){
+      btn.setAttribute("aria-pressed",String(dark));
+      btn.setAttribute("aria-label","Switch to "+(dark?"light":"dark")+" theme");
+    }
+    var meta=document.querySelector('meta[name="theme-color"]');
+    if(meta)meta.setAttribute("content",TINT[mode]);
+    if(remember){
+      window.__theme.explicit=true;
+      try{localStorage.setItem(window.__theme.key,mode);}catch(e){}
+    }
+    if(window.onThemeChange)window.onThemeChange();
+  }
+
+  var btn=el("themeBtn");
+  if(btn)btn.addEventListener("click",function(){
+    apply(document.documentElement.dataset.theme==="dark"?"light":"dark",true);
+  });
+
+  /* Follow the OS only while the user has not made a choice of their own. */
+  if(window.matchMedia){
+    var mq=window.matchMedia("(prefers-color-scheme:dark)");
+    var onSys=function(e){if(!window.__theme.explicit)apply(e.matches?"dark":"light",false);};
+    if(mq.addEventListener)mq.addEventListener("change",onSys);
+    else if(mq.addListener)mq.addListener(onSys);
+  }
+
+  /* Sync the button label and tint to whatever the head script resolved. */
+  apply(document.documentElement.dataset.theme==="dark"?"dark":"light",false);
+})();

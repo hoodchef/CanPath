@@ -1,30 +1,65 @@
-<div class="shell">
+<div class="app">
 
-<aside>
-  <div class="panel">
-    <div class="panel-head"><span class="eyebrow">About you</span></div>
-    <div class="panel-body">
+<!-- ============ KPI STRIP ============ -->
+<div class="kpis" id="kpis">
+  <div class="kpi hero">
+    <div class="k">Projected balance <span id="kpiAgeLbl"></span></div>
+    <div class="v" id="kBalance">$0</div>
+    <div class="s" id="kBalanceSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k"><span class="dot" style="background:var(--claw)"></span>Effective marginal rate</div>
+    <div class="v" id="kEmr">0%</div>
+    <div class="s" id="kEmrSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k"><span class="dot" style="background:var(--gold)"></span>Government help, year 1</div>
+    <div class="v" id="kGov">$0</div>
+    <div class="s" id="kGovSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k">Target coverage</div>
+    <div class="v" id="kCover">—</div>
+    <div class="s" id="kCoverSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k">Growth overtakes</div>
+    <div class="v" id="kCross">—</div>
+    <div class="s" id="kCrossSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k">Registered room used</div>
+    <div class="v" id="kRoom">—</div>
+    <div class="s" id="kRoomSub">—</div>
+  </div>
+</div>
 
+<div class="workspace">
+
+<!-- ============ INPUT RAIL ============ -->
+<aside class="rail">
+
+  <details class="grp" open>
+    <summary>Profile</summary>
+    <div class="grpbody">
       <div class="field">
-        <label for="prov">Where you live</label>
+        <label>Province</label>
         <div class="seg-ctl" id="prov">
           <button type="button" data-v="BC" aria-pressed="true">British&nbsp;Columbia</button>
           <button type="button" data-v="soon" aria-pressed="false" disabled title="Coming soon">Other&nbsp;— soon</button>
         </div>
       </div>
-
       <div class="field">
-        <label>Your household</label>
+        <label>Household</label>
         <div class="seg-ctl" id="marital">
           <button type="button" data-v="single" aria-pressed="true">Single</button>
-          <button type="button" data-v="couple" aria-pressed="false">Married or common-law</button>
+          <button type="button" data-v="couple" aria-pressed="false">Partnered</button>
         </div>
       </div>
-
       <div class="field">
         <label>Children under 18</label>
         <div class="seg-ctl" id="haskids">
-          <button type="button" data-v="no" aria-pressed="true">No children</button>
+          <button type="button" data-v="no" aria-pressed="true">None</button>
           <button type="button" data-v="yes" aria-pressed="false">I have children</button>
         </div>
         <div id="kidsWrap" hidden>
@@ -32,127 +67,195 @@
           <div class="hint">Under 6 carries a larger benefit than 6–17.</div>
         </div>
       </div>
-
-      <div class="divider"></div>
-
       <div class="field">
-        <label for="income">Your income before tax</label>
-        <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
-        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
-      </div>
-
-      <div class="field" id="partnerField" hidden>
-        <label for="partner">Your partner's income before tax</label>
-        <input type="number" id="partner" value="55000" min="0" max="500000" step="1000">
-      </div>
-
-      <div class="field">
-        <label for="save">What you can save each month</label>
-        <input type="number" id="save" value="500" min="0" max="20000" step="50">
-        <div class="hint">Even small amounts matter far more than most people expect.</div>
-      </div>
-
-      <div class="field">
-        <label for="have">What you've already saved or invested</label>
-        <input type="number" id="have" value="10000" min="0" max="5000000" step="1000">
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
-        <label>Your age, and when you want to stop working</label>
+        <label for="age">Age, and when you stop working</label>
         <div class="row">
           <input type="number" id="age" value="32" min="16" max="80" step="1" aria-label="Current age">
           <span class="hint" style="margin:0;white-space:nowrap">→ retire at</span>
-          <input type="number" id="retage" value="65" min="45" max="75" step="1" aria-label="Retirement age">
+          <input type="number" id="retage" value="65" min="45" max="100" step="1" aria-label="Retirement age">
         </div>
       </div>
+    </div>
+  </details>
 
+  <details class="grp" open>
+    <summary>Income &amp; savings</summary>
+    <div class="grpbody">
       <div class="field">
-        <label for="target">Yearly income you'd want in retirement</label>
-        <input type="number" id="target" value="50000" min="0" max="300000" step="1000">
-        <div class="hint">In today's money. Many people aim for roughly 60–70% of what they earn now.</div>
+        <label for="income">Employment income</label>
+        <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
+        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
       </div>
-
+      <div class="field" id="partnerField" hidden>
+        <label for="partner">Partner's income</label>
+        <input type="number" id="partner" value="55000" min="0" max="500000" step="1000">
+      </div>
       <div class="field">
-        <label for="growth">Yearly investment growth you assume</label>
+        <label for="save">Monthly savings</label>
+        <input type="number" id="save" value="500" min="0" max="20000" step="50">
+      </div>
+      <div class="field">
+        <label for="have">Already invested</label>
+        <input type="number" id="have" value="10000" min="0" max="5000000" step="1000">
+      </div>
+      <div class="field">
+        <label for="target">Target retirement income</label>
+        <input type="number" id="target" value="50000" min="0" max="300000" step="1000">
+        <div class="hint">Many people aim for roughly 60–70% of what they earn now.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>Accounts available</summary>
+    <div class="grpbody">
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="fhsa" checked style="accent-color:var(--stat)">
+          <span>I could buy a first home someday</span>
+        </label>
+        <div class="hint">Unlocks the FHSA — deductible going in and tax-free coming out.</div>
+      </div>
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="hasMatch" style="accent-color:var(--stat)">
+          <span>My employer matches my retirement contributions</span>
+        </label>
+        <div class="hint">Check your benefits handbook. This is free money and it is routinely left unclaimed.</div>
+        <div id="matchWrap" hidden>
+          <div class="row" style="margin-top:9px">
+            <input type="number" id="matchRate" value="50" min="0" max="200" step="5" aria-label="Cents matched per dollar">
+            <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
+            <input type="number" id="matchCap" value="3000" min="0" max="50000" step="500" aria-label="Most the employer will match per year">
+          </div>
+          <div class="hint">A 50¢ match up to $3,000 is a common plan. Replace both with yours.</div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Assumptions</summary>
+    <div class="grpbody">
+      <div class="field">
+        <label for="growth">Annual investment growth</label>
         <div class="row">
           <input type="range" id="growth" value="8" min="0" max="12" step="0.5" style="flex:1">
           <span class="num" id="growthOut" style="width:52px;text-align:right;font-weight:600">8.0%</span>
         </div>
         <div class="hint" id="realHint"></div>
       </div>
-
       <div class="field">
-        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
-          <input type="checkbox" id="fhsa" checked style="accent-color:var(--stat)">
-          <span>I could buy a first home someday</span>
-        </label>
-        <div class="hint">Unlocks the FHSA — the single best account most Canadians have never opened.</div>
-      </div>
-
-      <div class="field">
-        <label for="matchRate">Employer retirement match, if any</label>
+        <label for="retrate">Expected tax rate when you withdraw</label>
         <div class="row">
-          <input type="number" id="matchRate" value="0" min="0" max="200" step="5" aria-label="Match cents">
-          <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
-          <input type="number" id="matchCap" value="0" min="0" max="50000" step="500" aria-label="Match cap">
+          <input type="range" id="retrate" value="25" min="0" max="55" step="1" style="flex:1">
+          <span class="num" id="retrateOut" style="width:52px;text-align:right;font-weight:600">25%</span>
         </div>
-        <div class="hint">Check your benefits handbook. This is free money and it is routinely left unclaimed.</div>
+        <div class="hint">The RRSP decision turns entirely on this. Below your current
+        effective rate, an RRSP gains; above it, an RRSP loses.</div>
       </div>
-
+      <div class="field">
+        <label for="wdraw">Sustainable withdrawal rate</label>
+        <div class="row">
+          <input type="range" id="wdraw" value="4" min="2" max="8" step="0.25" style="flex:1">
+          <span class="num" id="wdrawOut" style="width:52px;text-align:right;font-weight:600">4.0%</span>
+        </div>
+        <div class="hint">Sets the nest egg your target income implies.</div>
+      </div>
+      <div class="field">
+        <label for="cppshare">CPP relative to the average</label>
+        <div class="row">
+          <input type="range" id="cppshare" value="100" min="0" max="163" step="1" style="flex:1">
+          <span class="num" id="cppshareOut" style="width:52px;text-align:right;font-weight:600">100%</span>
+        </div>
+        <div class="hint">100% is the average new pension at 65, not the maximum.</div>
+      </div>
+      <div class="field">
+        <label>Reporting basis</label>
+        <div class="seg-ctl" id="basis">
+          <button type="button" data-v="nominal" aria-pressed="true">Future dollars</button>
+          <button type="button" data-v="real" aria-pressed="false">Today's dollars</button>
+        </div>
+        <div class="hint" id="basisHint"></div>
+      </div>
     </div>
-  </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>Scenarios</summary>
+    <div class="grpbody">
+      <div class="scn">
+        <div class="scnslot" id="slotA">
+          <div class="t"><span>Scenario A</span><button type="button" id="clrA" title="Clear" hidden>&times;</button></div>
+          <div class="v" id="valA">—</div>
+          <div class="d" id="desA">Not saved</div>
+        </div>
+        <div class="scnslot" id="slotB">
+          <div class="t"><span>Scenario B</span><button type="button" id="clrB" title="Clear" hidden>&times;</button></div>
+          <div class="v" id="valB">—</div>
+          <div class="d" id="desB">Not saved</div>
+        </div>
+      </div>
+      <div class="btnrow" style="margin-top:9px">
+        <button class="btn" type="button" id="saveA">Save as A</button>
+        <button class="btn" type="button" id="saveB">Save as B</button>
+      </div>
+      <div class="assum" id="scnDelta" hidden></div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Share &amp; export</summary>
+    <div class="grpbody">
+      <div class="btnrow">
+        <button class="btn" type="button" id="copyLink">Copy link to these inputs</button>
+        <button class="btn" type="button" id="dlCsv">Download schedule (CSV)</button>
+        <button class="btn" type="button" id="doPrint">Print report</button>
+      </div>
+      <div class="assum" id="shareMsg">Every input is encoded in the address bar, so a
+      link reproduces this exact scenario. Nothing is uploaded.</div>
+    </div>
+  </details>
+
 </aside>
 
-<main>
+<!-- ============ WORKSPACE ============ -->
+<main style="min-width:0">
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabbtn-proj" aria-controls="tab-proj" aria-selected="true">Projection</button>
+    <button class="tab" role="tab" id="tabbtn-marg" aria-controls="tab-marg" aria-selected="false">Marginal rate</button>
+    <button class="tab" role="tab" id="tabbtn-alloc" aria-controls="tab-alloc" aria-selected="false">Allocation</button>
+    <button class="tab" role="tab" id="tabbtn-sched" aria-controls="tab-sched" aria-selected="false">Schedule</button>
+  </div>
 
-  <!-- HERO: growth first. Tax comes later. -->
-  <div class="panel">
-    <div class="hero">
-      <div class="eyebrow" id="heroLabel">What you'd have when you retire</div>
-      <div class="hero-num" id="heroNum">$0</div>
-      <div class="hero-sub" id="heroSub"></div>
-      <div class="split" role="img" id="splitBar">
+  <!-- PROJECTION -->
+  <section class="tabpanel" id="tab-proj" role="tabpanel" aria-labelledby="tabbtn-proj">
+    <div class="block">
+      <div class="block-h">
+        <h3>Balance over time</h3>
+        <span class="pills" id="horizons"></span>
+      </div>
+      <div class="chartwrap" style="padding:0"><svg id="growthChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+    <div class="statline" id="growthRead"></div>
+    <div class="block">
+      <div class="block-h">
+        <h3>Composition at the horizon</h3>
+        <span class="sub">What builds the balance</span>
+      </div>
+      <div class="split" role="img" id="splitBar" style="margin-top:0">
         <div class="sp-you" id="spYou"></div>
         <div class="sp-grow" id="spGrow"></div>
         <div class="sp-gov" id="spGov"></div>
       </div>
       <div class="splitkey">
-        <span class="spk"><i style="background:var(--stat)"></i><span><b id="kYou">$0</b>you put in</span></span>
-        <span class="spk"><i style="background:var(--keep)"></i><span><b id="kGrow">$0</b>growth on top</span></span>
-        <span class="spk"><i style="background:var(--gold)"></i><span><b id="kGov">$0</b>government help, invested</span></span>
+        <span class="spk"><i style="background:var(--stat)"></i><span><b id="kYou">$0</b>you contribute</span></span>
+        <span class="spk"><i style="background:var(--keep)"></i><span><b id="kGrow">$0</b>growth</span></span>
+        <span class="spk"><i style="background:var(--gold)"></i><span><b id="kGovFV">$0</b>government help, reinvested</span></span>
       </div>
     </div>
-    <details>
-      <summary>Why is this smaller than other calculators show me?</summary>
-      <div class="panel-body">
-        Because this is in <b>today's money</b>. A calculator that promises you a
-        seven-figure balance in forty years is not lying, but that number will not buy
-        what it sounds like — inflation quietly eats most of it. Everything here is
-        adjusted so you can compare it directly to what things cost now.
-      </div>
-    </details>
-  </div>
-
-  <!-- GROWTH CHART -->
-  <div class="panel">
-    <div class="panel-head">
-      <span class="eyebrow">How it grows over time</span>
-      <span class="pills" id="horizons"></span>
-    </div>
-    <div class="chartwrap"><svg id="growthChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
-    <div class="readout" id="growthRead"></div>
-    <details>
-      <summary>The part almost nobody is told</summary>
-      <div class="panel-body" id="crossoverText"></div>
-    </details>
-  </div>
-
-  <!-- RETIREMENT TRACK -->
-  <div class="panel">
-    <div class="panel-head"><span class="eyebrow">Are you on track?</span></div>
-    <div class="track">
+    <div class="block">
+      <div class="block-h"><h3>Retirement readiness</h3><span class="sub" id="readySub"></span></div>
       <div class="meter" id="meter">
         <i class="m-gov" id="mGov"></i><i class="m-port" id="mPort"></i>
         <span class="target" id="mTarget"></span>
@@ -164,70 +267,24 @@
       </div>
       <div class="verdict" id="verdict"></div>
     </div>
-    <details>
-      <summary>What are CPP and OAS, and why do they matter here?</summary>
-      <div class="panel-body">
-        <dl>
-          <dt>CPP — Canada Pension Plan</dt>
-          <dd>A pension you build up by working. The average person starting at 65 gets about
-          <b>$925 a month</b>, not the $1,508 maximum you'll see quoted — that maximum assumes
-          almost 40 years of contributions at the highest income level. We use the average, because
-          it's closer to most people.</dd>
-          <dt>OAS — Old Age Security</dt>
-          <dd>Paid from age 65 based on how long you've lived in Canada, not on whether you worked.
-          Roughly <b>$742 a month</b> at full residency.</dd>
-          <dt>Why it changes the answer</dt>
-          <dd>These cover the first slice of your retirement income, so your savings only need to
-          cover the rest. Calculators that ignore them make the target look terrifying and put
-          people off starting at all.</dd>
-        </dl>
-      </div>
-    </details>
-  </div>
-
-  <!-- ALLOCATION -->
-  <div class="panel">
-    <div class="panel-head"><span class="eyebrow">Where to put your money, in order</span></div>
-    <div id="alloc"></div>
-    <div class="total">
-      <span class="k">What the government gives back in year one</span>
-      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+    <div class="block">
+      <div class="block-h"><h3>The cost of waiting</h3><span class="sub">A five-year delay</span></div>
+      <div id="waitBox"></div>
     </div>
-    <div class="bd" id="breakdown"></div>
-    <div id="warnings"></div>
-    <details>
-      <summary>Plain-English guide to these accounts</summary>
-      <div class="panel-body">
-        <dl>
-          <dt>TFSA — Tax-Free Savings Account</dt>
-          <dd>Money goes in after tax. Everything it earns is yours, forever, tax-free. You can take
-          it out any time for any reason. It is not a savings account — you can hold investments in it,
-          and most people should.</dd>
-          <dt>RRSP — Registered Retirement Savings Plan</dt>
-          <dd>You get a tax refund for putting money in, then pay tax when you take it out in
-          retirement. It works when you earn more now than you will later.</dd>
-          <dt>FHSA — First Home Savings Account</dt>
-          <dd>The best of both: a refund going in, <em>and</em> tax-free coming out if you buy a first
-          home. $8,000 a year, $40,000 lifetime. Introduced in 2023, and badly under-used.</dd>
-          <dt>Employer match</dt>
-          <dd>If your employer adds money when you contribute, that is an instant return no
-          investment can match. Always take all of it first.</dd>
-        </dl>
-      </div>
-    </details>
-  </div>
-
-  <!-- COST OF WAITING -->
-  <div class="panel">
-    <div class="panel-head"><span class="eyebrow">The cost of waiting</span></div>
-    <div class="panel-body" id="waitBox"></div>
-  </div>
+  </section>
 
   <!-- MARGINAL RATE -->
-  <div class="panel">
-    <div class="panel-head"><span class="eyebrow">Why saving is worth more than you think</span></div>
-    <div class="panel-body">
-      <div style="font-size:13.5px;color:var(--muted);margin-bottom:14px" id="dollarIntro"></div>
+  <section class="tabpanel" id="tab-marg" role="tabpanel" aria-labelledby="tabbtn-marg" hidden>
+    <div class="block">
+      <div class="block-h">
+        <h3>Effective marginal rate across income</h3>
+        <span class="sub">Income tax plus benefit clawback, at your household</span>
+      </div>
+      <div class="chartwrap" style="padding:0"><svg id="emrChart" viewBox="0 0 760 300" preserveAspectRatio="xMidYMid meet"></svg></div>
+    </div>
+    <div class="statline" id="emrRead"></div>
+    <div class="block">
+      <div class="block-h"><h3>Your next dollar</h3><span class="sub" id="dollarIntro"></span></div>
       <div class="dollar" role="img" id="dollarBar">
         <div class="d-tax" id="dTax"></div><div class="d-claw" id="dClaw"></div><div class="d-keep" id="dKeep"></div>
       </div>
@@ -238,15 +295,61 @@
       </div>
       <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>
     </div>
-  </div>
+  </section>
 
+  <!-- ALLOCATION -->
+  <section class="tabpanel" id="tab-alloc" role="tabpanel" aria-labelledby="tabbtn-alloc" hidden>
+    <div class="block" style="padding:0">
+      <div class="block-h" style="padding:16px 18px 0;margin-bottom:8px">
+        <h3>Funding order</h3><span class="sub">Highest marginal value first</span>
+      </div>
+      <div id="alloc"></div>
+      <div class="bd" id="allocNote" hidden></div>
+    </div>
+    <div class="total">
+      <span class="k">What the government gives back in year one</span>
+      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+    </div>
+    <div class="bd" id="breakdown"></div>
+    <div id="warnings"></div>
+    <div class="block">
+      <div class="block-h"><h3>Contribution room</h3><span class="sub">Estimated from the income above</span></div>
+      <div class="dt-wrap" style="max-height:none">
+        <table class="dt" style="min-width:420px"><thead><tr>
+          <th>Account</th><th>Room</th><th>Used</th><th>Left</th>
+        </tr></thead><tbody id="roomTable"></tbody></table>
+      </div>
+      <div class="assum">Room is estimated from the income you entered and ignores
+      carry-forward and any pension adjustment. Your real figures are in CRA My Account.</div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="tabpanel" id="tab-sched" role="tabpanel" aria-labelledby="tabbtn-sched" hidden>
+    <div class="block">
+      <div class="block-h">
+        <h3>Year-by-year schedule</h3>
+        <span class="btnrow"><button class="btn" type="button" id="dlCsv2">Download CSV</button></span>
+      </div>
+      <div class="dt-wrap">
+        <table class="dt"><thead><tr>
+          <th>Year</th><th>Age</th><th>Contributed</th><th>Gov't help</th>
+          <th>Growth</th><th>Balance</th><th>Drawdown at target rate</th>
+        </tr></thead><tbody id="schedBody"></tbody></table>
+      </div>
+      <div class="assum" id="schedNote"></div>
+    </div>
+  </section>
 </main>
+
+</div>
 </div>
 
 <footer>
   Federal brackets: CRA 2026. British Columbia brackets: Province of B.C. Canada Child Benefit: 2026–27 benefit year.
-  CPP and OAS: Canada.ca, January 2026 — average, not maximum. Growth figures are shown in today's dollars, adjusted for 2% inflation.
-  Everything runs in your browser; nothing you type is sent anywhere or stored.
+  CPP and OAS: Canada.ca, January 2026 — average, not maximum. <span id="basisFoot"></span>
+  Everything runs in your browser; nothing you type is sent anywhere or stored. The only thing kept on
+  your device is whether you prefer the light or dark theme.
   <br><br>
   This is an educational model, not tax, financial, or investment advice. Investment returns are not guaranteed and past performance does not predict future results.
   It does not account for every credit, deduction, or personal circumstance. Confirm your contribution room in CRA My Account, and consider speaking to a qualified professional before acting.

@@ -38,6 +38,13 @@ for (const c of fx.allocation_cases) {
   for (const [k, v] of Object.entries(c.allocation)) check(`${tag} ${k}`, r.allocation[k] || 0, v);
   check(`${tag} refund`, r.tax_refund, c.tax_refund);
   check(`${tag} benefit`, r.benefit_restored, c.benefit_restored);
+  check(`${tag} deducted`, r.total_deducted, c.total_deducted);
+  // Invariant, not just a fixture match: the solver may never recommend more
+  // deductible contribution than the RRSP room can absorb. Derived from the
+  // allocation, not from the solver's own room accounting -- checking the
+  // internals against themselves would pass with the accounting deleted.
+  const consumed = (r.allocation.employer_match || 0) * (1 + c.match_rate) + (r.allocation.rrsp || 0);
+  check(`${tag} within RRSP room`, Math.max(0, consumed - c.rrsp_room), 0);
 }
 console.log("-".repeat(62));
 console.log(`  ${pass} assertions passed, ${fail} failed`);
