@@ -16,9 +16,16 @@ class Household:
     province: str = "BC"
     child_ages: List[int] = field(default_factory=list)
     partner_income: float = 0.0
+    # Explicit, because it is no longer cosmetic. It selects the CGEB couple
+    # amount and the BCFB single-parent supplement, so inferring it from
+    # partner_income alone would treat a couple with one non-earning partner
+    # as a single parent and hand them a supplement they cannot claim.
+    partnered_flag: bool = None
 
     @property
     def partnered(self) -> bool:
+        if self.partnered_flag is not None:
+            return self.partnered_flag
         return self.partner_income > 0
 
     @property
@@ -77,7 +84,77 @@ def canada_child_benefit(afni: float, child_ages: List[int], cfg: dict) -> float
     return max(0.0, maximum - reduction)
 
 
+def bc_family_benefit(afni: float, child_ages: List[int], cfg: dict,
+                      single_parent: bool = False) -> float:
+    """
+    BC Family Benefit.
+
+    Two 4% clawback bands with a FLAT PLATEAU between them, which is the
+    part that matters for the marginal rate. The benefit reduces at 4% of
+    AFNI above threshold_1 but never below a per-child floor; the floor
+    then holds -- costing nothing at the margin -- until threshold_2, above
+    which it reduces at 4% again. So a BC family crosses 4%, then 0%, then
+    4% as income rises. Modelling it as a single continuous phase-out would
+    put the clawback in the wrong income bands entirely.
+    """
+    b = cfg["benefits"].get("bc_family_benefit")
+    if not b:
+        return 0.0
+    n = len([a for a in child_ages if a < 18])
+    if n == 0:
+        return 0.0
+
+    maximum = b["max_first_child"]
+    if n >= 2:
+        maximum += b["max_second_child"]
+    if n > 2:
+        maximum += b["max_additional_child"] * (n - 2)
+
+    floor = b["floor_first_child"]
+    if n >= 2:
+        floor += b["floor_second_child"]
+    if n > 2:
+        floor += b["floor_additional_child"] * (n - 2)
+
+    if single_parent:
+        maximum += b["single_parent_supplement"]
+
+    rate, t1, t2 = b["phaseout_rate"], b["threshold_1"], b["threshold_2"]
+
+    # Band 1: reduce toward the floor, never past it.
+    reduced = maximum - rate * max(0.0, min(afni, t2) - t1)
+    benefit = max(floor, reduced)
+    # Band 2: the residual itself now phases out.
+    if afni > t2:
+        benefit -= rate * (afni - t2)
+    return max(0.0, benefit)
+
+
+def canada_groceries_essentials_benefit(afni: float, household: Household,
+                                        cfg: dict) -> float:
+    """
+    Canada Groceries and Essentials Benefit -- the renamed GST/HST credit.
+
+    Note the age limit is under 19, NOT the under-18 the CCB uses. Reusing
+    the CCB's child count here would silently underpay every household with
+    an 18-year-old.
+    """
+    c = cfg["benefits"].get("cgeb")
+    if not c:
+        return 0.0
+    kids = len([a for a in household.child_ages if a < c["child_age_limit"]])
+    maximum = (c["max_couple"] if household.partnered else c["max_single"])
+    maximum += c["max_per_child"] * kids
+    reduction = c["phaseout_rate"] * max(0.0, afni - c["threshold"])
+    return max(0.0, maximum - reduction)
+
+
 def total_benefits(afni: float, household: Household, cfg: dict) -> dict:
     """All income-tested benefits for a household. Extend as coverage grows."""
     ccb = canada_child_benefit(afni, household.child_ages, cfg)
-    return {"ccb": ccb, "total": ccb}
+    bcfb = (bc_family_benefit(afni, household.child_ages, cfg,
+                              single_parent=not household.partnered)
+            if household.province == "BC" else 0.0)
+    cgeb = canada_groceries_essentials_benefit(afni, household, cfg)
+    return {"ccb": ccb, "bcfb": bcfb, "cgeb": cgeb,
+            "total": ccb + bcfb + cgeb}

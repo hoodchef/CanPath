@@ -302,7 +302,7 @@
       </div>
       <div class="splitkey">
         <span class="spk"><i style="background:var(--stat)"></i><span><b id="cTax">0¢</b>income tax</span></span>
-        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost child benefit</span></span>
+        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost benefits</span></span>
         <span class="spk"><i style="background:var(--keep)"></i><span><b id="cKeep">0¢</b>you keep</span></span>
       </div>
       <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>

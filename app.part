@@ -99,7 +99,11 @@ function read(){
   const partner=state.marital==="couple"?(+$("partner").value||0):0;
   return{
     income:+$("income").value||0, partner,
-    household:{province:state.prov,child_ages:kids,partner_income:partner},
+    household:{province:state.prov,child_ages:kids,partner_income:partner,
+      /* Explicit: it selects the CGEB couple amount and the BCFB
+         single-parent supplement. Inferring it from partner_income would
+         treat a couple with one non-earning partner as a single parent. */
+      partnered:state.marital==="couple"},
     monthly:+$("save").value||0, have:+$("have").value||0,
     age:+$("age").value||30,
     /* max="100" only constrains the stepper and form validation; a typed
@@ -730,7 +734,7 @@ function update(){
   $("totalPct").textContent=i.monthly>0?"on "+money(i.monthly*12)+" saved":"";
   $("breakdown").innerHTML=
     "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
-    (alloc.benefit_restored>1?"Child benefit you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
+    (alloc.benefit_restored>1?"Benefits you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
     (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
 
   const w=$("warnings");w.innerHTML="";
@@ -815,12 +819,12 @@ function update(){
   $("cClaw").textContent=cents(me.clawback_rate);
   $("cKeep").textContent=cents(keep);
   $("dollarBar").setAttribute("aria-label",
-    `Of your next dollar earned: ${cents(me.statutory_rate)} income tax, ${cents(me.clawback_rate)} lost child benefit, ${cents(keep)} kept.`);
+    `Of your next dollar earned: ${cents(me.statutory_rate)} income tax, ${cents(me.clawback_rate)} lost benefits, ${cents(keep)} kept.`);
   $("dollarIntro").textContent="What happens to the next dollar you earn";
   $("dollarWhy").innerHTML=me.clawback_rate>1e-6
     ? `You lose <b class="num">${pct(me.effective_rate)}</b> of it — well above the
        <b class="num">${pct(me.statutory_rate)}</b> your bracket suggests, because earning more also
-       shrinks your Canada Child Benefit. An RRSP or FHSA contribution runs that in reverse: you get
+       shrinks your income-tested benefits. An RRSP or FHSA contribution runs that in reverse: you get
        the tax back <em>and</em> stop losing the child benefit, which is why every dollar contributed
        is worth about <b class="num">${pct(me.effective_rate)}</b> to you.`
     : `You lose <b class="num">${pct(me.effective_rate)}</b> of it to income tax. An RRSP or FHSA

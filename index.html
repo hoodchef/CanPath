@@ -709,7 +709,7 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
       </div>
       <div class="splitkey">
         <span class="spk"><i style="background:var(--stat)"></i><span><b id="cTax">0¢</b>income tax</span></span>
-        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost child benefit</span></span>
+        <span class="spk"><i style="background:var(--claw)"></i><span><b id="cClaw">0¢</b>lost benefits</span></span>
         <span class="spk"><i style="background:var(--keep)"></i><span><b id="cKeep">0¢</b>you keep</span></span>
       </div>
       <div style="margin-top:14px;font-size:13px;line-height:1.55" id="dollarWhy"></div>
@@ -798,7 +798,11 @@ credit_rate:.14,bpa:{base:14829,additional:1623,phaseout_start:181440,phaseout_e
 provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:50363,rate:.077},{floor:100728,rate:.105},{floor:115648,rate:.1229},{floor:140430,rate:.147},{floor:190405,rate:.168},{floor:265545,rate:.205}],
 credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}}},
 benefits:{ccb:{max_under_6:8157,max_6_to_17:6883,threshold_1:38237,threshold_2:82847,
-phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}}},
+phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}},
+bc_family_benefit:{max_first_child:1750,max_second_child:1100,max_additional_child:900,
+single_parent_supplement:500,threshold_1:30176,threshold_2:96562,phaseout_rate:.04,
+floor_first_child:775,floor_second_child:750,floor_additional_child:725},
+cgeb:{max_single:679,max_couple:890,max_per_child:234,child_age_limit:19,threshold:46432,phaseout_rate:.05}},
 accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000}},
 payroll:{cpp:{rate:.0595,basic_exemption:3500,ympe:74600},cpp2:{rate:.04,yampe:85000},ei:{rate:.0163,max_insurable:68900}}};
 
@@ -833,11 +837,39 @@ function canadaChildBenefit(afni,ages,cfg){const c=cfg.benefits.ccb;
   if(afni<=t1)red=0;else if(afni<=t2)red=rateFor(n,c.phase1_rates)*(afni-t1);
   else red=rateFor(n,c.phase1_rates)*(t2-t1)+rateFor(n,c.phase2_rates)*(afni-t2);
   return Math.max(0,mx-red);}
+
+/* BC Family Benefit: two 4% clawback bands with a FLAT PLATEAU between.
+   The benefit reduces at 4% above threshold_1 but never below a per-child
+   floor; the floor holds (costing nothing at the margin) until threshold_2,
+   then reduces at 4% again. Modelling it as one continuous phase-out puts
+   the clawback in the wrong income bands entirely. */
+function bcFamilyBenefit(afni,ages,cfg,singleParent){const b=cfg.benefits.bc_family_benefit;
+  if(!b)return 0;const n=ages.filter(a=>a<18).length;if(!n)return 0;
+  let mx=b.max_first_child,fl=b.floor_first_child;
+  if(n>=2){mx+=b.max_second_child;fl+=b.floor_second_child;}
+  if(n>2){mx+=b.max_additional_child*(n-2);fl+=b.floor_additional_child*(n-2);}
+  if(singleParent)mx+=b.single_parent_supplement;
+  const r=b.phaseout_rate,t1=b.threshold_1,t2=b.threshold_2;
+  let v=Math.max(fl,mx-r*Math.max(0,Math.min(afni,t2)-t1));
+  if(afni>t2)v-=r*(afni-t2);
+  return Math.max(0,v);}
+/* CGEB (the renamed GST/HST credit). Age limit is under 19, NOT the CCB's 18. */
+function cgeb(afni,h,cfg){const c=cfg.benefits.cgeb;if(!c)return 0;
+  const kids=(h.child_ages||[]).filter(a=>a<c.child_age_limit).length;
+  const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
+  const mx=(partnered?c.max_couple:c.max_single)+c.max_per_child*kids;
+  return Math.max(0,mx-c.phaseout_rate*Math.max(0,afni-c.threshold));}
+function totalBenefits(afni,h,cfg){
+  const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
+  const ccb=canadaChildBenefit(afni,h.child_ages,cfg);
+  const bcfb=h.province==="BC"?bcFamilyBenefit(afni,h.child_ages,cfg,!partnered):0;
+  const g=cgeb(afni,h,cfg);
+  return{ccb,bcfb,cgeb:g,total:ccb+bcfb+g};}
 function netPosition(inc,h,cfg,ded=0){const taxable=Math.max(0,inc-ded);
   const partner=Math.max(0,h.partner_income||0);const afni=taxable+partner;
   const tax=combinedTax(taxable,h.province,cfg);
   const ptax=partner?combinedTax(partner,h.province,cfg):0;
-  const ben=canadaChildBenefit(afni,h.child_ages,cfg);
+  const ben=totalBenefits(afni,h,cfg).total;
   return{taxable_income:taxable,afni,tax,partner_tax:ptax,benefits:ben,
     net_cash:inc+partner-ded-tax-ptax+ben};}
 function effectiveMarginalRate(inc,h,cfg,d=100){const lo=netPosition(inc,h,cfg),hi=netPosition(inc+d,h,cfg);
@@ -1117,7 +1149,11 @@ function read(){
   const partner=state.marital==="couple"?(+$("partner").value||0):0;
   return{
     income:+$("income").value||0, partner,
-    household:{province:state.prov,child_ages:kids,partner_income:partner},
+    household:{province:state.prov,child_ages:kids,partner_income:partner,
+      /* Explicit: it selects the CGEB couple amount and the BCFB
+         single-parent supplement. Inferring it from partner_income would
+         treat a couple with one non-earning partner as a single parent. */
+      partnered:state.marital==="couple"},
     monthly:+$("save").value||0, have:+$("have").value||0,
     age:+$("age").value||30,
     /* max="100" only constrains the stepper and form validation; a typed
@@ -1748,7 +1784,7 @@ function update(){
   $("totalPct").textContent=i.monthly>0?"on "+money(i.monthly*12)+" saved":"";
   $("breakdown").innerHTML=
     "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
-    (alloc.benefit_restored>1?"Child benefit you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
+    (alloc.benefit_restored>1?"Benefits you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
     (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
 
   const w=$("warnings");w.innerHTML="";
@@ -1833,12 +1869,12 @@ function update(){
   $("cClaw").textContent=cents(me.clawback_rate);
   $("cKeep").textContent=cents(keep);
   $("dollarBar").setAttribute("aria-label",
-    `Of your next dollar earned: ${cents(me.statutory_rate)} income tax, ${cents(me.clawback_rate)} lost child benefit, ${cents(keep)} kept.`);
+    `Of your next dollar earned: ${cents(me.statutory_rate)} income tax, ${cents(me.clawback_rate)} lost benefits, ${cents(keep)} kept.`);
   $("dollarIntro").textContent="What happens to the next dollar you earn";
   $("dollarWhy").innerHTML=me.clawback_rate>1e-6
     ? `You lose <b class="num">${pct(me.effective_rate)}</b> of it — well above the
        <b class="num">${pct(me.statutory_rate)}</b> your bracket suggests, because earning more also
-       shrinks your Canada Child Benefit. An RRSP or FHSA contribution runs that in reverse: you get
+       shrinks your income-tested benefits. An RRSP or FHSA contribution runs that in reverse: you get
        the tax back <em>and</em> stop losing the child benefit, which is why every dollar contributed
        is worth about <b class="num">${pct(me.effective_rate)}</b> to you.`
     : `You lose <b class="num">${pct(me.effective_rate)}</b> of it to income tax. An RRSP or FHSA

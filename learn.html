@@ -836,6 +836,41 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
     <em>plus</em> their income tax — which is how a household whose posted bracket says
     28.2% actually keeps barely half of a raise.</p>
 
+    <h3>The BC Family Benefit</h3>
+    <p>A provincial benefit on top of the CCB: up to
+    $1,750 for a first child,
+    $1,100 for a second and
+    $900 for each additional one, plus
+    up to $500 for a single parent.
+    It reduces at 4% of AFNI above
+    $30,176 — but only down to a floor
+    ($775 for the first child). The floor
+    then holds, costing nothing at the margin, until
+    $96,562, above which it reduces at
+    4% again.</p>
+    <div class="callout">
+      <span class="t">Why the shape matters</span>
+      That is two clawback bands with a flat plateau between them. Your BCFB marginal
+      cost is 4%, then nothing, then
+      4% again. A raise that feels identical
+      can cost very different amounts depending on which band you are in.
+    </div>
+
+    <h3>The Canada Groceries and Essentials Benefit</h3>
+    <p>The renamed GST/HST credit: up to $679 for a single
+    person, $890 for a couple, plus
+    $234 per child. Note the age limit is
+    <b>under 19</b>, not the CCB's under-18. It reduces at
+    5% of AFNI above $46,432, so it
+    adds 5% to the effective marginal rate across
+    that band.</p>
+    <div class="callout warnbox">
+      <span class="t">Not independently verified</span>
+      The BCFB and CGEB figures on this page were supplied to the project rather than
+      taken from a CRA publication the maintainers checked. Confirm them before relying
+      on the numbers.
+    </div>
+
     <h3>The BC tax reduction</h3>
     <p>British Columbia has a low-income credit worth up to
     $690 that phases out at
@@ -1094,9 +1129,9 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
     <ul>
       <li><b>British Columbia only.</b> Other provinces have their own brackets,
       credits and child benefits. Quebec is a separate system entirely.</li>
-      <li><b>The BC Family Benefit and the GST/HST credit are not included.</b> Both
-      are income-tested with their own phase-out bands, so the effective marginal rate
-      shown is a floor, not the whole picture.</li>
+      <li><b>BCFB and CGEB parameters are not independently verified.</b> They are
+      modelled, and recorded in the tax-data file as user-supplied. Confirm them against
+      CRA and BC publications before relying on the output.</li>
       <li><b>GIS and the OAS clawback</b> are flagged by the guardrails but not
       modelled, so retirement-age scenarios are incomplete.</li>
       <li><b>One flat rate of return</b>, no market volatility, no sequence-of-returns

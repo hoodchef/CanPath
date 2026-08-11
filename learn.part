@@ -429,6 +429,41 @@
     <em>plus</em> their income tax — which is how a household whose posted bracket says
     28.2% actually keeps barely half of a raise.</p>
 
+    <h3>The BC Family Benefit</h3>
+    <p>A provincial benefit on top of the CCB: up to
+    {{$benefits.bc_family_benefit.max_first_child}} for a first child,
+    {{$benefits.bc_family_benefit.max_second_child}} for a second and
+    {{$benefits.bc_family_benefit.max_additional_child}} for each additional one, plus
+    up to {{$benefits.bc_family_benefit.single_parent_supplement}} for a single parent.
+    It reduces at {{%benefits.bc_family_benefit.phaseout_rate}} of AFNI above
+    {{$benefits.bc_family_benefit.threshold_1}} — but only down to a floor
+    ({{$benefits.bc_family_benefit.floor_first_child}} for the first child). The floor
+    then holds, costing nothing at the margin, until
+    {{$benefits.bc_family_benefit.threshold_2}}, above which it reduces at
+    {{%benefits.bc_family_benefit.phaseout_rate}} again.</p>
+    <div class="callout">
+      <span class="t">Why the shape matters</span>
+      That is two clawback bands with a flat plateau between them. Your BCFB marginal
+      cost is {{%benefits.bc_family_benefit.phaseout_rate}}, then nothing, then
+      {{%benefits.bc_family_benefit.phaseout_rate}} again. A raise that feels identical
+      can cost very different amounts depending on which band you are in.
+    </div>
+
+    <h3>The Canada Groceries and Essentials Benefit</h3>
+    <p>The renamed GST/HST credit: up to {{$benefits.cgeb.max_single}} for a single
+    person, {{$benefits.cgeb.max_couple}} for a couple, plus
+    {{$benefits.cgeb.max_per_child}} per child. Note the age limit is
+    <b>under {{PAGE_CGEB_AGE}}</b>, not the CCB's under-18. It reduces at
+    {{%benefits.cgeb.phaseout_rate}} of AFNI above {{$benefits.cgeb.threshold}}, so it
+    adds {{%benefits.cgeb.phaseout_rate}} to the effective marginal rate across
+    that band.</p>
+    <div class="callout warnbox">
+      <span class="t">Not independently verified</span>
+      The BCFB and CGEB figures on this page were supplied to the project rather than
+      taken from a CRA publication the maintainers checked. Confirm them before relying
+      on the numbers.
+    </div>
+
     <h3>The BC tax reduction</h3>
     <p>British Columbia has a low-income credit worth up to
     {{$provinces.BC.tax_reduction.max_credit}} that phases out at
@@ -687,9 +722,9 @@
     <ul>
       <li><b>British Columbia only.</b> Other provinces have their own brackets,
       credits and child benefits. Quebec is a separate system entirely.</li>
-      <li><b>The BC Family Benefit and the GST/HST credit are not included.</b> Both
-      are income-tested with their own phase-out bands, so the effective marginal rate
-      shown is a floor, not the whole picture.</li>
+      <li><b>BCFB and CGEB parameters are not independently verified.</b> They are
+      modelled, and recorded in the tax-data file as user-supplied. Confirm them against
+      CRA and BC publications before relying on the output.</li>
       <li><b>GIS and the OAS clawback</b> are flagged by the guardrails but not
       modelled, so retirement-age scenarios are incomplete.</li>
       <li><b>One flat rate of return</b>, no market volatility, no sequence-of-returns

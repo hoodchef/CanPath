@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from engine.tax import load_year, payroll_deductions                # noqa: E402
-from engine.benefits import Household                               # noqa: E402
+from engine.benefits import Household, total_benefits              # noqa: E402
 from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E402
                              value_of_contribution)
 from engine.accounts import Profile, optimize                       # noqa: E402
@@ -45,6 +45,17 @@ MARGINAL = [
     # ineligible one is the only shape that tests the `age < 18` band edge --
     # widening it to `age < 19` inflated ccb_max by $6,883 and no suite noticed.
     (50000, 0, [5, 18]), (50000, 0, [17, 18]), (60000, 0, [3, 7, 18, 22]),
+    # BCFB / CGEB band edges. BCFB reduces 4% from 30,176 to a per-child floor,
+    # holds flat (zero marginal clawback), then reduces 4% again above 96,562.
+    # CGEB reduces 5% from 46,432. These straddle every one of those edges.
+    (30176, 0, [4]), (45000, 0, [4]), (54551, 0, [4]), (70000, 0, [4]),
+    (96562, 0, [4]), (110000, 0, [4]), (46432, 0, []), (53000, 0, []),
+    (60012, 0, []), (75000, 40000, [3, 7]),
+    # Partnered households BELOW the point where the BCFB floor binds. Above
+    # it both single and couple collapse to the same floor, so every earlier
+    # partnered case made the single-parent supplement invisible -- making it
+    # unconditional passed the whole suite.
+    (30000, 15000, [3, 7]), (25000, 20000, [4]), (35000, 10000, [2, 5, 9]),
 ]
 
 # (income, capacity, child_ages, fhsa_eligible, match_rate, match_cap, retirement_rate)
@@ -107,7 +118,12 @@ def build(cfg):
         marginal.append({
             "income": income, "partner_income": partner, "child_ages": kids,
             "afni": r(np_["afni"], 2), "tax": r(np_["tax"], 2),
-            "ccb": r(np_["benefits"], 2),
+            # netPosition.benefits is now CCB + BCFB + CGEB, so the old
+            # field name lied. Split it out so a regression in any one
+            # benefit is attributable rather than buried in a total.
+            "benefits_total": r(np_["benefits"], 2),
+            "benefit_split": {k: r(v, 2) for k, v in
+                              total_benefits(np_["afni"], h, cfg).items()},
             "statutory_rate": r(emr["statutory_rate"], 6),
             "clawback_rate": r(emr["clawback_rate"], 6),
             "effective_rate": r(emr["effective_rate"], 6),

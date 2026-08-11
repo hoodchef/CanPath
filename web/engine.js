@@ -45,6 +45,16 @@ const TAX_2026 = {
       phase1_rates: { 1: 0.07, 2: 0.135, 3: 0.19, 4: 0.23 },
       phase2_rates: { 1: 0.032, 2: 0.057, 3: 0.08, 4: 0.095 },
     },
+    bc_family_benefit: {
+      max_first_child: 1750, max_second_child: 1100, max_additional_child: 900,
+      single_parent_supplement: 500, threshold_1: 30176, threshold_2: 96562,
+      phaseout_rate: 0.04,
+      floor_first_child: 775, floor_second_child: 750, floor_additional_child: 725,
+    },
+    cgeb: {
+      max_single: 679, max_couple: 890, max_per_child: 234,
+      child_age_limit: 19, threshold: 46432, phaseout_rate: 0.05,
+    },
   },
   accounts: {
     rrsp: { earned_income_rate: 0.18, dollar_limit: 33810 },
@@ -138,13 +148,42 @@ function canadaChildBenefit(afni, childAges, cfg) {
   return Math.max(0, maximum - reduction);
 }
 
+
+/* BC Family Benefit: two 4% clawback bands with a FLAT PLATEAU between.
+   The benefit reduces at 4% above threshold_1 but never below a per-child
+   floor; the floor holds (costing nothing at the margin) until threshold_2,
+   then reduces at 4% again. Modelling it as one continuous phase-out puts
+   the clawback in the wrong income bands entirely. */
+function bcFamilyBenefit(afni,ages,cfg,singleParent){const b=cfg.benefits.bc_family_benefit;
+  if(!b)return 0;const n=ages.filter(a=>a<18).length;if(!n)return 0;
+  let mx=b.max_first_child,fl=b.floor_first_child;
+  if(n>=2){mx+=b.max_second_child;fl+=b.floor_second_child;}
+  if(n>2){mx+=b.max_additional_child*(n-2);fl+=b.floor_additional_child*(n-2);}
+  if(singleParent)mx+=b.single_parent_supplement;
+  const r=b.phaseout_rate,t1=b.threshold_1,t2=b.threshold_2;
+  let v=Math.max(fl,mx-r*Math.max(0,Math.min(afni,t2)-t1));
+  if(afni>t2)v-=r*(afni-t2);
+  return Math.max(0,v);}
+/* CGEB (the renamed GST/HST credit). Age limit is under 19, NOT the CCB's 18. */
+function cgeb(afni,h,cfg){const c=cfg.benefits.cgeb;if(!c)return 0;
+  const kids=(h.child_ages||[]).filter(a=>a<c.child_age_limit).length;
+  const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
+  const mx=(partnered?c.max_couple:c.max_single)+c.max_per_child*kids;
+  return Math.max(0,mx-c.phaseout_rate*Math.max(0,afni-c.threshold));}
+function totalBenefits(afni,h,cfg){
+  const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
+  const ccb=canadaChildBenefit(afni,h.child_ages,cfg);
+  const bcfb=h.province==="BC"?bcFamilyBenefit(afni,h.child_ages,cfg,!partnered):0;
+  const g=cgeb(afni,h,cfg);
+  return{ccb,bcfb,cgeb:g,total:ccb+bcfb+g};}
+
 function netPosition(income, household, cfg, deduction = 0) {
   const taxable = Math.max(0, income - deduction);
   const partner = Math.max(0, household.partner_income || 0);
   const afni = taxable + partner; // BOTH partners' net incomes
   const tax = combinedTax(taxable, household.province, cfg);
   const partnerTax = partner ? combinedTax(partner, household.province, cfg) : 0;
-  const benefits = canadaChildBenefit(afni, household.child_ages, cfg);
+  const benefits = totalBenefits(afni, household, cfg).total;
   return {
     gross_income: income, partner_income: partner, deduction,
     taxable_income: taxable, afni, tax, partner_tax: partnerTax,
@@ -277,6 +316,6 @@ function guardrails(profile, cfg, allocated, rrspLeft) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { TAX_2026, bracketTax, federalBPA, federalTax, provincialTax, combinedTax,
-    canadaChildBenefit, netPosition, effectiveMarginalRate, valueOfContribution, optimize,
+    canadaChildBenefit, bcFamilyBenefit, cgeb, totalBenefits, netPosition, effectiveMarginalRate, valueOfContribution, optimize,
     payrollDeductions };
 }

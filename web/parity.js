@@ -20,7 +20,10 @@ for (const c of fx.marginal_cases) {
   const tag = `${c.income}/${c.partner_income}/${c.child_ages.length}kids`;
   check(`${tag} afni`, np.afni, c.afni);
   check(`${tag} tax`, np.tax, c.tax);
-  check(`${tag} ccb`, np.benefits, c.ccb);
+  check(`${tag} benefits_total`, np.benefits, c.benefits_total);
+  check(`${tag} bcfb`, E.totalBenefits(np.afni,h,cfg).bcfb, c.benefit_split.bcfb);
+  check(`${tag} cgeb`, E.totalBenefits(np.afni,h,cfg).cgeb, c.benefit_split.cgeb);
+  check(`${tag} ccb`, E.totalBenefits(np.afni,h,cfg).ccb, c.benefit_split.ccb);
   check(`${tag} statutory`, r.statutory_rate, c.statutory_rate, 1e-6);
   check(`${tag} clawback`, r.clawback_rate, c.clawback_rate, 1e-6);
   check(`${tag} effective`, r.effective_rate, c.effective_rate, 1e-6);

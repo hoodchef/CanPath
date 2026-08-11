@@ -92,6 +92,7 @@ _fee_hi = future_value(0, FEE_MONTHLY, FEE_GROSS - MER_HIGH, FEE_YEARS)
 PAGE_COMMON = {
     "PAGE_YEAR": str(YEAR),
     "PAGE_RRSP_CUSHION": "$2,000",
+    "PAGE_CGEB_AGE": str(CFG["benefits"]["cgeb"]["child_age_limit"]),
     "FEE_MONTHLY": _money(FEE_MONTHLY),
     "FEE_YEARS": str(FEE_YEARS),
     "FEE_GROSS": _pct(FEE_GROSS),

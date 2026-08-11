@@ -3,10 +3,14 @@
 **What your next dollar is actually worth — in Canada.**
 
 Your tax bracket is not your marginal rate. Once income-tested benefits start
-clawing back, a BC family with three kids earning between roughly $58,500 and
-$82,800 loses **47.2¢** of the next dollar earned, while their posted bracket
-advertises 28.2¢. That 19-point gap is real money and appears nowhere on a tax
+clawing back, a BC couple with three kids earning between roughly $58,600 and
+$67,500 loses **56.2¢** of the next dollar earned, while their posted bracket
+advertises 28.2¢. That 28-point gap is real money and appears nowhere on a tax
 return.
+
+It comes from four programs at once: federal and BC income tax, the Canada
+Child Benefit, the BC Family Benefit and the Canada Groceries and Essentials
+Benefit. Each is documented on its own page; nothing adds them up for you.
 
 CanPath surfaces it, then tells you where your savings should actually go.
 
@@ -90,7 +94,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  147 assertions    tools/gen_fixtures.py   239 assertions   223 assertions
+  150 assertions    tools/gen_fixtures.py   418 assertions   389 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a
@@ -147,6 +151,8 @@ then both ports.
 | Federal brackets, BPA | CRA 2026, indexed 2.0%, lowest rate 14% |
 | BC brackets, BPA, tax reduction | Province of B.C., indexed 2.2%, bottom rate 5.60% |
 | Canada Child Benefit | 2026–27 benefit year, indexed 2.0% |
+| BC Family Benefit | 2026–27, **user-supplied, unverified** |
+| Canada Groceries and Essentials Benefit | July 2026 on, **user-supplied, unverified** |
 | RRSP / TFSA / FHSA limits | CRA 2026 |
 | CPP and OAS | Canada.ca, January 2026 (average and maximum) |
 
@@ -162,11 +168,12 @@ returning users keep running last year's brackets from cache.
   product (own return, QPP, abatement, French-language obligations).
 - GIS and OAS clawback are flagged by guardrails but not yet modelled, so
   retirement-age scenarios are incomplete.
-- **The BC Family Benefit and the GST/HST credit are not modelled.** Both are
-  income-tested with their own phase-out bands, so the effective marginal rate
-  shown here is a floor, not the whole picture — for a BC family in the
-  overlapping bands the real figure is higher than the headline 47.2¢. This is
-  the largest remaining gap in the number the product exists to surface.
+- **BCFB and CGEB figures are user-supplied and NOT independently verified.**
+  They are recorded as such in `data/taxyear_2026.json`. The BC Family Benefit
+  and the Canada Groceries and Essentials Benefit are now modelled, but confirm
+  the parameters against CRA/BC publications before relying on the output.
+- GIS and the OAS clawback are still flagged by guardrails rather than modelled,
+  so retirement-age scenarios remain incomplete.
 - The solver optimizes first-year value. The growth projection reinvests the
   government help, in two phases: while FHSA room lasts, and after it is gone.
   Within a phase the rate is held flat, without recursion.

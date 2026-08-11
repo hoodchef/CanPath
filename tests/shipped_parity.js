@@ -19,7 +19,7 @@ const pm = [block("projection")];
 
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
-  "\nmodule.exports={TAX_2026,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
+  "\nmodule.exports={TAX_2026,totalBenefits,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
   "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,payrollDeductions};");
 const E = require(tmp);
 const fx = JSON.parse(fs.readFileSync(path.join(root, "fixtures.json"), "utf8"));
@@ -35,7 +35,10 @@ for (const c of fx.marginal_cases) {
   const t = `${c.income}/${c.partner_income}/${c.child_ages.length}kids`;
   chk(t + " afni", np.afni, c.afni);
   chk(t + " tax", np.tax, c.tax);
-  chk(t + " ccb", np.benefits, c.ccb);
+  chk(t + " benefits_total", np.benefits, c.benefits_total);
+  chk(t + " bcfb", E.totalBenefits(np.afni,h,E.TAX_2026).bcfb, c.benefit_split.bcfb);
+  chk(t + " cgeb", E.totalBenefits(np.afni,h,E.TAX_2026).cgeb, c.benefit_split.cgeb);
+  chk(t + " ccb", E.totalBenefits(np.afni,h,E.TAX_2026).ccb, c.benefit_split.ccb);
   chk(t + " effective", r.effective_rate, c.effective_rate, 1e-6);
   chk(t + " clawback", r.clawback_rate, c.clawback_rate, 1e-6);
   chk(t + " refund", v.tax_refund, c.value_10k_tax_refund);
