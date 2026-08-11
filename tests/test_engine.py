@@ -9,7 +9,7 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine.tax import load_year, bracket_tax, federal_tax, provincial_tax, federal_bpa
-from engine.benefits import canada_child_benefit, Household
+from engine.benefits import canada_child_benefit, ccb_max, Household
 from engine.marginal import effective_marginal_rate, value_of_contribution
 from engine.accounts import Profile, optimize
 
@@ -49,6 +49,17 @@ check("CCB 2 children @ 90,000 AFNI (zone 2)", canada_child_benefit(90000, [3, 8
 check("CCB no children", canada_child_benefit(50000, [], cfg), 0.0)
 check("CCB fully clawed back @ 300,000", canada_child_benefit(300000, [10], cfg), 0.0)
 check("CCB child aged 18 excluded", canada_child_benefit(35000, [18], cfg), 0.0)
+# A lone 18-year-old is rejected by the n==0 early return, never by ccb_max's
+# own age bands. Only a MIXED household reaches that boundary, so widening
+# `age < 18` to `age < 19` survived the whole suite until these were added.
+check("CCB max ignores the 18-year-old in a mixed household",
+      ccb_max([5, 18], cfg), ccb_max([5], cfg))
+check("CCB mixed household pays only for the eligible child",
+      canada_child_benefit(50000, [5, 18], cfg),
+      canada_child_benefit(50000, [5], cfg))
+check("CCB ignores an adult child entirely",
+      canada_child_benefit(60000, [3, 7, 18, 22], cfg),
+      canada_child_benefit(60000, [3, 7], cfg))
 
 print("\n--- Effective marginal rate: the whole point ---")
 single = Household(province="BC", child_ages=[])

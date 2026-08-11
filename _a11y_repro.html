@@ -1,0 +1,24 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+:root{--ink:#0E1B2C;--paper:#EEF1F5;--surface:#FFF;--rule:#D5DCE5;--muted:#5C6B7F;--stat:#3D6B99;--on-ink:#FFF;--sans:system-ui}
+body{font-family:var(--sans);padding:30px;background:var(--surface)}
+/* EXACT rules copied from head.part */
+.seg-ctl{display:flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;background:var(--paper)}
+.seg-ctl button{flex:1;border:0;background:none;padding:8px 6px;font-family:var(--sans);
+  font-size:12.5px;font-weight:500;cursor:pointer;color:var(--muted);transition:.15s}
+.seg-ctl button+button{border-left:1px solid var(--rule)}
+.seg-ctl button[aria-pressed=true]{background:var(--ink);color:var(--on-ink)}
+input:focus-visible,button:focus-visible{outline:2px solid var(--stat);outline-offset:2px}
+.fixed .seg-ctl{overflow:visible}
+h4{font:600 12px var(--sans);margin:24px 0 6px;color:#333}
+</style></head><body>
+<h4>AS SHIPPED — .seg-ctl{overflow:hidden}, focus is on "Partnered"</h4>
+<div style="width:270px"><div class="seg-ctl" id="a">
+<button type="button" aria-pressed="true">Single</button><button type="button" aria-pressed="false" id="target">Partnered</button></div></div>
+<h4>SAME, but overflow:visible (what the ring should look like)</h4>
+<div class="fixed" style="width:270px"><div class="seg-ctl">
+<button type="button" aria-pressed="true">Single</button><button type="button" aria-pressed="false" id="target2">Partnered</button></div></div>
+<script>
+// force :focus-visible by simulating keyboard nav
+document.addEventListener('DOMContentLoaded',()=>{});
+</script>
+</body></html>

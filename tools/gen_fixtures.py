@@ -39,6 +39,12 @@ MARGINAL = [
     (95000, 45000, [3, 6, 9]), (70000, 0, [2]), (38000, 0, [4]),
     (125000, 0, []), (200000, 0, [5, 10]), (25000, 0, []),
     (82847, 0, [1, 3]), (58523, 0, [1, 3, 5, 7]), (300000, 0, [8]),
+    # Age-boundary regression. Every case above is either all-eligible or a
+    # lone 18-year-old, and a lone 18-year-old is caught by the n==0 early
+    # return rather than by ccb_max itself. Mixing an eligible child with an
+    # ineligible one is the only shape that tests the `age < 18` band edge --
+    # widening it to `age < 19` inflated ccb_max by $6,883 and no suite noticed.
+    (50000, 0, [5, 18]), (50000, 0, [17, 18]), (60000, 0, [3, 7, 18, 22]),
 ]
 
 # (income, capacity, child_ages, fhsa_eligible, match_rate, match_cap, retirement_rate)
