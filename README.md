@@ -39,6 +39,8 @@ the financially fluent.
 - **Depletion analysis** — how long the balance funds your draw, in years and
   to an age, since a 4% coverage figure never says when the money runs out
 - **Take-home breakdown** — gross to net through federal tax, BC tax, CPP and EI
+- **OAS recovery tax** — the retirement-side clawback: 15¢ of every dollar of
+  individual net income above $95,323, netted out of the readiness verdict
 - **Linear or log scale**, because forty years of compounding hides the first ten
 - **Year-by-year schedule**, CSV export, print report, and a permalink that
   encodes the whole scenario in the URL
@@ -94,7 +96,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  150 assertions    tools/gen_fixtures.py   418 assertions   389 assertions
+  150 assertions    tools/gen_fixtures.py   492 assertions   463 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a
@@ -172,8 +174,12 @@ returning users keep running last year's brackets from cache.
   They are recorded as such in `data/taxyear_2026.json`. The BC Family Benefit
   and the Canada Groceries and Essentials Benefit are now modelled, but confirm
   the parameters against CRA/BC publications before relying on the output.
-- GIS and the OAS clawback are still flagged by guardrails rather than modelled,
-  so retirement-age scenarios remain incomplete.
+- The OAS recovery tax is now modelled; GIS is still flagged by guardrails
+  rather than modelled, so retirement-age scenarios remain incomplete.
+- The recovery tax is assessed against the **stated target income**, not a
+  solved fixed point. Retirement net income depends on the portfolio, which
+  depends on the gap, which depends on the clawback — the target breaks that
+  circularity and is what the user intends to live on.
 - The solver optimizes first-year value. The growth projection reinvests the
   government help, in two phases: while FHSA room lasts, and after it is gone.
   Within a phase the rate is held flat, without recursion.

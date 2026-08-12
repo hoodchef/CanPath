@@ -894,6 +894,78 @@
       "years": 0
     }
   ],
+  "oas_recovery_cases": [
+    {
+      "years_in_canada": 40,
+      "net_income": 80000,
+      "oas_gross": 8907.72,
+      "recovery": 0.0,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 95323,
+      "oas_gross": 8907.72,
+      "recovery": 0.0,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 95423,
+      "oas_gross": 8907.72,
+      "recovery": 15.0,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 110000,
+      "oas_gross": 8907.72,
+      "recovery": 2201.55,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 154707.8,
+      "oas_gross": 8907.72,
+      "recovery": 8907.72,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 200000,
+      "oas_gross": 8907.72,
+      "recovery": 8907.72,
+      "full_recovery_income": 154707.8
+    },
+    {
+      "years_in_canada": 20,
+      "net_income": 110000,
+      "oas_gross": 4453.86,
+      "recovery": 2201.55,
+      "full_recovery_income": 125015.4
+    },
+    {
+      "years_in_canada": 20,
+      "net_income": 125015.4,
+      "oas_gross": 4453.86,
+      "recovery": 4453.86,
+      "full_recovery_income": 125015.4
+    },
+    {
+      "years_in_canada": 10,
+      "net_income": 100000,
+      "oas_gross": 2226.93,
+      "recovery": 701.55,
+      "full_recovery_income": 110169.2
+    },
+    {
+      "years_in_canada": 40,
+      "net_income": 0,
+      "oas_gross": 8907.72,
+      "recovery": 0.0,
+      "full_recovery_income": 154707.8
+    }
+  ],
   "pension_cases": [
     {
       "age": 60,
@@ -930,6 +1002,8 @@
       "monthly": 600,
       "rate": 0.08,
       "government": 20011.92,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 0.0,
       "nest_egg": 874702.0,
       "projected_real": 655775.5699,
       "required_monthly": 829.4642,
@@ -944,6 +1018,8 @@
       "monthly": 300,
       "rate": 0.07,
       "government": 16014.408,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 0.0,
       "nest_egg": 724639.8,
       "projected_real": 325722.5363,
       "required_monthly": 667.4145,
@@ -958,6 +1034,8 @@
       "monthly": 1200,
       "rate": 0.08,
       "government": 20011.92,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 0.0,
       "nest_egg": 1249702.0,
       "projected_real": 787953.7158,
       "required_monthly": 2231.8042,
@@ -972,11 +1050,61 @@
       "monthly": 200,
       "rate": 0.06,
       "government": 20011.92,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 0.0,
       "nest_egg": 499702.0,
       "projected_real": 196329.3828,
       "required_monthly": 542.575,
       "coverage": 0.392893,
       "wait_cost": 45250.1661
+    },
+    {
+      "current_age": 45,
+      "retirement_age": 65,
+      "target": 120000,
+      "savings": 400000,
+      "monthly": 2000,
+      "rate": 0.07,
+      "government": 16310.37,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 3701.55,
+      "nest_egg": 2592240.75,
+      "projected_real": 1844578.0844,
+      "required_monthly": 3862.3976,
+      "coverage": 0.711577,
+      "wait_cost": 499046.9121
+    },
+    {
+      "current_age": 50,
+      "retirement_age": 65,
+      "target": 160000,
+      "savings": 600000,
+      "monthly": 3000,
+      "rate": 0.07,
+      "government": 11104.2,
+      "oas_gross": 8907.72,
+      "oas_recovery_tax": 8907.72,
+      "nest_egg": 3722395.0,
+      "projected_real": 2018296.7585,
+      "required_monthly": 9485.2466,
+      "coverage": 0.542204,
+      "wait_cost": 589270.3671
+    },
+    {
+      "current_age": 40,
+      "retirement_age": 70,
+      "target": 100000,
+      "savings": 250000,
+      "monthly": 1500,
+      "rate": 0.06,
+      "government": 27180.9132,
+      "oas_gross": 12114.4992,
+      "oas_recovery_tax": 701.55,
+      "nest_egg": 1820477.17,
+      "projected_real": 1806892.1589,
+      "required_monthly": 1520.0924,
+      "coverage": 0.992538,
+      "wait_cost": 397888.8879
     }
   ]
 }

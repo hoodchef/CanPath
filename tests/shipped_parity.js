@@ -20,7 +20,7 @@ const pm = [block("projection")];
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
   "\nmodule.exports={TAX_2026,totalBenefits,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
-  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,payrollDeductions};");
+  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,payrollDeductions,oasRecoveryTax,oasFullRecoveryIncome};");
 const E = require(tmp);
 const fx = JSON.parse(fs.readFileSync(path.join(root, "fixtures.json"), "utf8"));
 
@@ -76,6 +76,8 @@ for (const c of fx.readiness_cases) {
   const r = E.retirementReadiness(p), w = E.costOfWaiting(p, 5);
   const t = `ready@${c.current_age}->${c.retirement_age}`;
   chk(t + " gov", r.government_annual, c.government);
+  chk(t + " oasgross", r.oas_gross, c.oas_gross);
+  chk(t + " oasrecovery", r.oas_recovery_tax, c.oas_recovery_tax);
   chk(t + " nest", r.nest_egg_needed, c.nest_egg);
   chk(t + " projreal", r.projected_real, c.projected_real);
   chk(t + " reqmonthly", r.required_monthly, c.required_monthly);
@@ -90,6 +92,12 @@ for (const c of fx.payroll_cases) {
 }
 for (const c of fx.depletion_cases) {
   chk(`deplete ${c.balance}@${c.draw}`, E.depletionYears(c.balance, c.draw, c.rate), c.years, 0);
+}
+for(const c of fx.oas_recovery_cases){
+  const o=E.oasEstimate(65,c.years_in_canada);
+  chk(`oasgross ${c.years_in_canada}y`,o,c.oas_gross);
+  chk(`oasrecovery ${c.years_in_canada}y@${c.net_income}`,E.oasRecoveryTax(o,c.net_income),c.recovery);
+  chk(`oasfullrec ${c.years_in_canada}y`,E.oasFullRecoveryIncome(o),c.full_recovery_income);
 }
 console.log(`shipped index.html vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

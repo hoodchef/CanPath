@@ -278,6 +278,7 @@
       </div>
       <div class="verdict" id="verdict"></div>
       <div class="assum" id="depletion"></div>
+      <div class="assum" id="oasClaw" hidden></div>
     </div>
     <div class="block">
       <div class="block-h"><h3>The cost of waiting</h3><span class="sub">A five-year delay</span></div>

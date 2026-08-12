@@ -21,6 +21,8 @@ for(const c of fx.readiness_cases){
   const r=P.retirementReadiness(p),w=P.costOfWaiting(p,5);
   const t=`ready@${c.current_age}->${c.retirement_age}`;
   chk(t+" gov",r.government_annual,c.government);
+  chk(t+" oasgross",r.oas_gross,c.oas_gross);
+  chk(t+" oasrecovery",r.oas_recovery_tax,c.oas_recovery_tax);
   chk(t+" nest",r.nest_egg_needed,c.nest_egg);
   chk(t+" projreal",r.projected_real,c.projected_real);
   chk(t+" reqmonthly",r.required_monthly,c.required_monthly);
@@ -30,6 +32,12 @@ for(const c of fx.readiness_cases){
 for(const c of fx.depletion_cases){
   chk(`deplete ${c.balance}@${c.draw}/${c.rate}`,
       P.depletionYears(c.balance,c.draw,c.rate),c.years,0);
+}
+for(const c of fx.oas_recovery_cases){
+  const o=P.oasEstimate(65,c.years_in_canada);
+  chk(`oasgross ${c.years_in_canada}y`,o,c.oas_gross);
+  chk(`oasrecovery ${c.years_in_canada}y@${c.net_income}`,P.oasRecoveryTax(o,c.net_income),c.recovery);
+  chk(`oasfullrec ${c.years_in_canada}y`,P.oasFullRecoveryIncome(o),c.full_recovery_income);
 }
 console.log(`projection JS port vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

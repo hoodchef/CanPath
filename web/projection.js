@@ -3,7 +3,8 @@
    default reporting basis throughout; nominal figures flatter and mislead. */
 const CPP_2026={average_monthly_at_65:925.35,maximum_monthly_at_65:1507.65,
   early_reduction_per_month:.006,late_increase_per_month:.007};
-const OAS_2026={maximum_monthly_at_65:742.31,late_increase_per_month:.006};
+const OAS_2026={maximum_monthly_at_65:742.31,late_increase_per_month:.006,
+  bump_at_75:.10,clawback_threshold:95323,clawback_rate:.15};
 const DEFAULT_INFLATION=.02, DEFAULT_WITHDRAWAL=.04;
 
 /* Fisher equation, not nominal minus inflation. */
@@ -49,11 +50,29 @@ function oasEstimate(startAge=65,yearsInCanada=40){
   const months=Math.max(0,(startAge-65)*12);
   return base*(1+months*OAS_2026.late_increase_per_month)*12;
 }
+
+/* The OAS recovery tax, universally called the clawback. 15 cents of every
+   dollar of INDIVIDUAL net income above the threshold, capped at the pension
+   itself. Individual, not family: unlike CCB/BCFB/CGEB, which test against
+   adjusted FAMILY net income, OAS is recovered per person. Adds 15 points to
+   the effective marginal rate across the recovery band. */
+function oasRecoveryTax(oasAnnual,netIncome){
+  const t=OAS_2026.clawback_threshold;
+  if(netIncome<=t||oasAnnual<=0)return 0;
+  return Math.min(oasAnnual,OAS_2026.clawback_rate*(netIncome-t));}
+function oasAfterRecovery(oasAnnual,netIncome){
+  return Math.max(0,oasAnnual-oasRecoveryTax(oasAnnual,netIncome));}
+function oasFullRecoveryIncome(oasAnnual){
+  return oasAnnual<=0?OAS_2026.clawback_threshold
+    :OAS_2026.clawback_threshold+oasAnnual/OAS_2026.clawback_rate;}
 function retirementReadiness(p){
   const years=Math.max(0,p.retirement_age-p.current_age);
   const wr=p.withdrawal_rate??DEFAULT_WITHDRAWAL;
   const cpp=cppEstimate(p.retirement_age,p.cpp_share??1);
-  const oas=oasEstimate(Math.max(p.retirement_age,65),p.years_in_canada??40);
+  const oasGross=oasEstimate(Math.max(p.retirement_age,65),p.years_in_canada??40);
+  /* Break the circularity at the stated target income -- see the reference. */
+  const oasRecovery=oasRecoveryTax(oasGross,p.target_annual_income);
+  const oas=oasGross-oasRecovery;
   const government=cpp+oas;
   const gap=Math.max(0,p.target_annual_income-government);
   const nest=wr>0?gap/wr:0;
@@ -61,7 +80,8 @@ function retirementReadiness(p){
   const projReal=futureValue(p.current_savings,p.monthly_contribution,rr,years);
   const projNom=futureValue(p.current_savings,p.monthly_contribution,p.annual_rate,years);
   const need=requiredMonthly(nest,p.current_savings,rr,years);
-  return{years_to_retirement:years,cpp_annual:cpp,oas_annual:oas,government_annual:government,
+  return{years_to_retirement:years,cpp_annual:cpp,oas_annual:oas,
+    oas_gross:oasGross,oas_recovery_tax:oasRecovery,government_annual:government,
     income_gap:gap,nest_egg_needed:nest,projected_real:projReal,projected_nominal:projNom,
     total_contributed:p.current_savings+p.monthly_contribution*12*years,
     required_monthly:need,monthly_shortfall:Math.max(0,need-p.monthly_contribution),
@@ -94,4 +114,5 @@ function costOfWaiting(p,delay=5){
 }
 if(typeof module!=="undefined"&&module.exports)module.exports={CPP_2026,OAS_2026,realRate,
   monthlyRate,futureValue,requiredMonthly,projectionSeries,cppEstimate,oasEstimate,
-  retirementReadiness,costOfWaiting,depletionYears};
+  retirementReadiness,costOfWaiting,depletionYears,
+  oasRecoveryTax,oasAfterRecovery,oasFullRecoveryIncome};

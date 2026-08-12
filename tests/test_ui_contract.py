@@ -52,6 +52,7 @@ check("both charts present", 'id="growthChart"' in html and 'id="emrChart"' in h
 check("chart view controls present", 'id="chartview"' in html and 'id="showBand"' in html)
 check("milestones readout present", 'id="milestones"' in html)
 check("depletion readout present", 'id="depletion"' in html)
+check("OAS recovery readout present", 'id="oasClaw"' in html)
 check("take-home table present", 'id="takehome"' in html)
 check("schedule table body present", 'id="schedBody"' in html)
 check("scenario slots present", 'id="slotA"' in html and 'id="slotB"' in html)

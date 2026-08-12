@@ -30,7 +30,8 @@ from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E40
 from engine.accounts import Profile, optimize                       # noqa: E402
 from engine.projection import (RetirementPlan, cost_of_waiting,     # noqa: E402
                                cpp_estimate, depletion_years, future_value,
-                               oas_estimate, real_rate, required_monthly,
+                               oas_estimate, oas_full_recovery_income,
+                               oas_recovery_tax, real_rate, required_monthly,
                                retirement_readiness)
 
 # (income, partner_income, child_ages)
@@ -85,6 +86,13 @@ PROJECTION = [
 
 PENSION_AGES = [60, 62, 65, 67, 70]
 
+# (years_in_canada, net_income) -- straddles the threshold, the middle of the
+# recovery band, the exact full-recovery point, and well past it.
+OAS_RECOVERY = [
+    (40, 80000), (40, 95323), (40, 95423), (40, 110000), (40, 154707.8),
+    (40, 200000), (20, 110000), (20, 125015.4), (10, 100000), (40, 0),
+]
+
 # Gross employment income for the take-home breakdown.
 PAYROLL_INCOMES = [0, 3500, 30000, 68000, 74600, 80000, 85000, 150000]
 
@@ -101,6 +109,12 @@ READINESS = [
     (25, 60, 45000, 0, 300, 0.07),
     (45, 65, 70000, 80000, 1200, 0.08),
     (30, 65, 40000, 5000, 200, 0.06),
+    # Targets ABOVE the $95,323 OAS recovery threshold. Every case above sits
+    # below it, so oas_recovery_tax is 0.0 in all of them and dropping the
+    # recovery from retirement_readiness entirely passed the whole suite.
+    (45, 65, 120000, 400000, 2000, 0.07),
+    (50, 65, 160000, 600000, 3000, 0.07),
+    (40, 70, 100000, 250000, 1500, 0.06),
 ]
 
 
@@ -170,6 +184,13 @@ def build(cfg):
     depletion = [{"balance": b, "draw": d, "rate": rt,
                   "years": depletion_years(b, d, rt)} for b, d, rt in DEPLETION]
 
+    oas_recovery = []
+    for yrs, ni in OAS_RECOVERY:
+        o = oas_estimate(65, yrs)
+        oas_recovery.append({"years_in_canada": yrs, "net_income": ni,
+                             "oas_gross": r(o), "recovery": r(oas_recovery_tax(o, ni)),
+                             "full_recovery_income": r(oas_full_recovery_income(o))})
+
     pension = [{"age": a, "cpp": r(cpp_estimate(a)),
                 "oas": r(oas_estimate(max(a, 65)))} for a in PENSION_AGES]
 
@@ -185,6 +206,8 @@ def build(cfg):
             "current_age": age, "retirement_age": retage, "target": target,
             "savings": savings, "monthly": monthly, "rate": rate,
             "government": r(ready["government_annual"]),
+            "oas_gross": r(ready["oas_gross"]),
+            "oas_recovery_tax": r(ready["oas_recovery_tax"]),
             "nest_egg": r(ready["nest_egg_needed"]),
             "projected_real": r(ready["projected_real"]),
             "required_monthly": r(ready["required_monthly"]),
@@ -200,6 +223,7 @@ def build(cfg):
         "projection_cases": projection,
         "payroll_cases": payroll,
         "depletion_cases": depletion,
+        "oas_recovery_cases": oas_recovery,
         "pension_cases": pension,
         "readiness_cases": readiness,
     }

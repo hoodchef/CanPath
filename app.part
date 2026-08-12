@@ -753,6 +753,23 @@ function update(){
     `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
     `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
 
+  /* ---- OAS recovery tax ----
+     The one hidden rate on the retirement side. Its constants sat unread in
+     the projection module since the first commit. */
+  const oc=$("oasClaw");
+  if(years<=0||!(ready.oas_recovery_tax>0.5)){
+    oc.hidden=true;
+  }else{
+    oc.hidden=false;
+    const fullAt=oasFullRecoveryIncome(ready.oas_gross);
+    oc.innerHTML=`At a <b>${money(i.target)}</b> retirement income the OAS recovery tax
+      takes <b style="color:var(--claw)">${money(ready.oas_recovery_tax)}</b> of your
+      <b>${money(ready.oas_gross)}</b> OAS — 15¢ of every dollar above
+      <b>${money(95323)}</b>, and all of it above <b>${money(fullAt)}</b>. That is
+      15 points on your marginal rate in retirement, assessed on your income alone,
+      not your household's.`;
+  }
+
   /* ---- take-home pay ----
      payrollDeductions has existed in the reference since the first commit
      and nothing ever showed it. CPP and EI are excluded from the marginal

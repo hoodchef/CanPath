@@ -180,7 +180,15 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
     years = max(0.0, plan.retirement_age - plan.current_age)
 
     cpp = cpp_estimate(plan.retirement_age, plan.cpp_share)
-    oas = oas_estimate(max(plan.retirement_age, 65), plan.years_in_canada)
+    oas_gross = oas_estimate(max(plan.retirement_age, 65), plan.years_in_canada)
+    # The recovery tax depends on retirement net income, which depends on the
+    # portfolio, which depends on the gap -- circular. Break it at the user's
+    # stated TARGET income: that is what they intend to live on, so it is the
+    # income the clawback would actually be assessed against. Stated rather
+    # than solved, because an iterated fixed point would be less explicable
+    # and no more accurate than the target itself.
+    oas_recovery = oas_recovery_tax(oas_gross, plan.target_annual_income)
+    oas = oas_gross - oas_recovery
     government = cpp + oas
 
     gap = max(0.0, plan.target_annual_income - government)
@@ -197,6 +205,8 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
         "years_to_retirement": years,
         "cpp_annual": cpp,
         "oas_annual": oas,
+        "oas_gross": oas_gross,
+        "oas_recovery_tax": oas_recovery,
         "government_annual": government,
         "income_gap": gap,
         "nest_egg_needed": nest_egg_needed,
@@ -210,6 +220,41 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
         "projected_retirement_income": government + portfolio_income,
         "portfolio_income": portfolio_income,
     }
+
+
+def oas_recovery_tax(oas_annual: float, net_income: float) -> float:
+    """
+    The OAS recovery tax, universally called the clawback.
+
+    15 cents of every dollar of INDIVIDUAL net income above the threshold,
+    capped at the pension itself -- you cannot be clawed back more than you
+    receive. Individual, not family: unlike the CCB, BCFB and CGEB, which all
+    test against adjusted FAMILY net income, OAS is recovered per person.
+    Testing it against a couple's combined income would overstate the
+    clawback for most retired households.
+
+    This adds 15 percentage points to the effective marginal rate across the
+    recovery band, which is the highest hidden rate in the Canadian system
+    outside benefit phase-outs -- and the constants for it have been sitting
+    unused in this module since the first commit.
+    """
+    threshold = OAS_2026["clawback_threshold"]
+    if net_income <= threshold or oas_annual <= 0:
+        return 0.0
+    return min(oas_annual, OAS_2026["clawback_rate"] * (net_income - threshold))
+
+
+def oas_after_recovery(oas_annual: float, net_income: float) -> float:
+    """OAS actually received, after the recovery tax."""
+    return max(0.0, oas_annual - oas_recovery_tax(oas_annual, net_income))
+
+
+def oas_full_recovery_income(oas_annual: float) -> float:
+    """The net income at which OAS is entirely recovered."""
+    if oas_annual <= 0:
+        return OAS_2026["clawback_threshold"]
+    return (OAS_2026["clawback_threshold"]
+            + oas_annual / OAS_2026["clawback_rate"])
 
 
 def depletion_years(balance: float, annual_draw: float, annual_rate: float,
