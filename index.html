@@ -66,6 +66,7 @@ header{border-bottom:1px solid var(--rule);background:var(--surface)}
   text-transform:uppercase;color:var(--stat);text-decoration:none;border-bottom:1px solid transparent;
   padding-bottom:1px}
 .navlink:hover{border-bottom-color:var(--stat)}
+.navlink[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
 
 /* --- learn page --- */
 .prose{max-width:1180px;margin:0 auto;padding:22px 24px}
@@ -133,6 +134,12 @@ table.lt td.n{font-family:var(--mono);white-space:nowrap}
   overflow:hidden;margin:16px 0}
 @media(max-width:1240px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Four-up variant for the Allocate page. A class, not an inline style: an
+   inline grid-template-columns outranks the media queries above, so the
+   columns never collapse and every label clips at narrow widths. */
+.kpis.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){.kpis.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.kpis.four{grid-template-columns:1fr}}
 .kpi{background:var(--surface);padding:11px 14px 12px;min-width:0}
 .kpi .k{font-family:var(--cond);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap;
@@ -397,6 +404,8 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
   <div class="wordmark">Can<span>Path</span></div>
   <span class="badge">2026</span>
   <span class="badge">British Columbia</span>
+  <a class="navlink" href="index.html" aria-current="page">Calculator</a>
+  <a class="navlink" href="allocate.html">Allocate</a>
   <a class="navlink" href="learn.html">Learn</a>
   <span class="eyebrow">Educational model — not financial advice</span>
   <button class="themebtn" id="themeBtn" type="button" aria-pressed="false">
@@ -631,7 +640,6 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabbtn-proj" aria-controls="tab-proj" aria-selected="true">Projection</button>
     <button class="tab" role="tab" id="tabbtn-marg" aria-controls="tab-marg" aria-selected="false">Marginal rate</button>
-    <button class="tab" role="tab" id="tabbtn-alloc" aria-controls="tab-alloc" aria-selected="false">Allocation</button>
     <button class="tab" role="tab" id="tabbtn-sched" aria-controls="tab-sched" aria-selected="false">Schedule</button>
   </div>
 
@@ -732,32 +740,8 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
     </div>
   </section>
 
-  <!-- ALLOCATION -->
-  <section class="tabpanel" id="tab-alloc" role="tabpanel" aria-labelledby="tabbtn-alloc" hidden>
-    <div class="block" style="padding:0">
-      <div class="block-h" style="padding:16px 18px 0;margin-bottom:8px">
-        <h3>Funding order</h3><span class="sub">Highest marginal value first</span>
-      </div>
-      <div id="alloc"></div>
-      <div class="bd" id="allocNote" hidden></div>
-    </div>
-    <div class="total">
-      <span class="k">What the government gives back in year one</span>
-      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
-    </div>
-    <div class="bd" id="breakdown"></div>
-    <div id="warnings"></div>
-    <div class="block">
-      <div class="block-h"><h3>Contribution room</h3><span class="sub">Estimated from the income above</span></div>
-      <div class="dt-wrap" style="max-height:none">
-        <table class="dt" style="min-width:420px"><thead><tr>
-          <th>Account</th><th>Room</th><th>Used</th><th>Left</th>
-        </tr></thead><tbody id="roomTable"></tbody></table>
-      </div>
-      <div class="assum">Room is estimated from the income you entered and ignores
-      carry-forward and any pension adjustment. Your real figures are in CRA My Account.</div>
-    </div>
-  </section>
+  <!-- Allocation now lives on allocate.html: it is a question in its own
+       right (income in, funding order out) and was buried as tab three. -->
 
   <!-- SCHEDULE -->
   <section class="tabpanel" id="tab-sched" role="tabpanel" aria-labelledby="tabbtn-sched" hidden>
@@ -1633,7 +1617,7 @@ function renderScenarios(){
 /* ---- tabs ---- */
 function showTab(name){
   state.tab=name;
-  ["proj","marg","alloc","sched"].forEach(t=>{
+  ["proj","marg","sched"].forEach(t=>{
     $("tab-"+t).hidden=(t!==name);
     $("tabbtn-"+t).setAttribute("aria-selected",String(t===name));
   });
@@ -1641,7 +1625,7 @@ function showTab(name){
      hidden panel come out collapsed. Redraw on reveal. */
   update();
 }
-["proj","marg","alloc","sched"].forEach(t=>{
+["proj","marg","sched"].forEach(t=>{
   $("tabbtn-"+t).addEventListener("click",()=>showTab(t));
 });
 
@@ -1763,66 +1747,8 @@ function update(){
       month would close the gap. Retiring later, or trimming the target, does much of the same work.`;
   }
 
-  /* ---- allocation ---- */
-  /* The real funding sequence from the solver, not a hardcoded list. A
-     panel headed "funding order" that sorts by a fixed array showed RRSP
-     above the TFSA that was actually funded first. */
-  const fallback=["employer_match","fhsa","rrsp","tfsa","non_registered"];
-  const seq=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
-  const rows=seq.concat(fallback.filter(k=>alloc.allocation[k]>0&&seq.indexOf(k)<0));
-  const el=$("alloc");el.innerHTML="";
-  if(!rows.length){
-    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter a monthly amount to see where it should go.</span><span></span></div>';
-  } else rows.forEach((k,n)=>{
-    const d=document.createElement("div");d.className="arow";
-    d.innerHTML='<span class="rank">'+(n+1)+'</span><span><div class="aname">'+ACCOUNTS[k].name+
-      ' <span class="full">'+ACCOUNTS[k].full+'</span></div><div class="awhy">'+ACCOUNTS[k].why+
-      '</div></span><span class="aamt">'+money(alloc.allocation[k]/12)+'<span style="font-size:11px;color:var(--muted)">/mo</span></span>';
-    el.appendChild(d);
-  });
-
-  /* Say why an account someone expected to see is missing. */
-  const note=$("allocNote");
-  const roomLeft=alloc.rrsp_room_left||0;
-  let msg="";
-  if(i.monthly>0&&!(alloc.allocation.rrsp>0)&&roomLeft>1){
-    if(alloc.allocation.fhsa>0)
-      msg="<span>No RRSP in the list because the <b>FHSA beats it</b> — both give you the "+
-        "same deduction, but the FHSA also comes out tax-free for a first home. You still have "+
-        "about <b>"+money(roomLeft)+"</b> of RRSP room, and it becomes the next stop once your "+
-        "FHSA room runs out.</span>";
-    else if(me.effective_rate<i.retrate)
-      msg="<span>No RRSP in the list because at <b>"+pct(me.effective_rate)+"</b> you would be "+
-        "contributing at a lower rate than the "+pct(i.retrate)+" you expect to withdraw at. "+
-        "About <b>"+money(roomLeft)+"</b> of room is going unused on purpose.</span>";
-    else
-      msg="<span>About <b>"+money(roomLeft)+"</b> of RRSP room is unused — you are saving less "+
-        "than the accounts above it can hold.</span>";
-  }
-  note.hidden=!msg;note.innerHTML=msg;
-
-  $("totalVal").textContent=money(govYear1);
-  $("totalPct").textContent=i.monthly>0?"on "+money(i.monthly*12)+" saved":"";
-  $("breakdown").innerHTML=
-    "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
-    (alloc.benefit_restored>1?"Benefits you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
-    (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
-
-  const w=$("warnings");w.innerHTML="";
-  alloc.warnings.forEach(t=>{
-    const d=document.createElement("div");d.className="warn";
-    d.innerHTML='<span class="mark">!</span><span>'+t+'</span>';w.appendChild(d);
-  });
-
-  const rrspRoom=(alloc.rrsp_room_used||0)+(alloc.rrsp_room_left||0);
-  const roomRows=[
-    ["RRSP",rrspRoom,alloc.rrsp_room_used||0],
-    ["TFSA",7000,alloc.allocation.tfsa||0],
-    ["FHSA",i.fhsa?8000:0,alloc.allocation.fhsa||0]
-  ];
-  $("roomTable").innerHTML=roomRows.map(([n,room,used])=>
-    `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
-    `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
+  /* Allocation moved to allocate.html. The solver still runs here because
+     govYear1 feeds the projection's reinvested-government-help stream. */
 
   /* ---- OAS recovery tax ----
      The one hidden rate on the retirement side. Its constants sat unread in

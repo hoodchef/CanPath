@@ -1,0 +1,214 @@
+/* ================================================================
+   ALLOCATE — income in, funding order out
+   ================================================================
+   A focused page around one question. It shares the parity-verified tax
+   engine with the calculator; only the presentation is separate. Inputs are
+   URL-encoded with the same key names the calculator uses, so a link carries
+   a scenario between the two pages. */
+const $=id=>document.getElementById(id);
+const cfg=TAX_2026;
+const state={prov:"BC",marital:"single",haskids:"no",kids:[3,7]};
+
+const money=v=>"$"+Math.round(v).toLocaleString("en-CA");
+const pct=v=>(v*100).toFixed(1)+"%";
+
+const ACCOUNTS={
+  employer_match:{name:"Employer match",full:"free money from work",
+    why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
+  fhsa:{name:"FHSA",full:"First Home Savings Account",
+    why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
+    why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
+  tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
+    why:"No refund, but everything it earns is tax-free forever and you can withdraw any time."},
+  non_registered:{name:"Regular investment account",full:"no tax shelter left",
+    why:"Your registered room is full. Still worth investing — you just pay tax on the gains."}
+};
+
+function wireSeg(id,onPick){
+  const el=$(id);if(!el)return;
+  el.querySelectorAll("button").forEach(b=>{
+    b.addEventListener("click",()=>{
+      if(b.disabled)return;
+      el.querySelectorAll("button").forEach(o=>o.setAttribute("aria-pressed","false"));
+      b.setAttribute("aria-pressed","true");onPick(b.dataset.v);});
+  });
+}
+function setSeg(id,v){
+  const el=$(id);if(!el)return;
+  el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
+}
+wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
+wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
+  if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});
+
+function renderKids(){
+  const el=$("kids");el.innerHTML="";
+  state.kids.forEach((age,i)=>{
+    const d=document.createElement("span");d.className="kid";
+    d.innerHTML='<span class="num">'+age+'</span><span style="color:var(--muted);font-size:11px">yr</span>';
+    const b=document.createElement("button");b.type="button";b.innerHTML="&times;";
+    b.setAttribute("aria-label","Remove child aged "+age);
+    b.onclick=()=>{state.kids.splice(i,1);renderKids();update();};
+    d.appendChild(b);el.appendChild(d);});
+  const add=document.createElement("button");
+  add.className="addkid";add.type="button";add.textContent="+ Add a child";
+  add.onclick=()=>{if(state.kids.length<8){state.kids.push(5);renderKids();update();}};
+  el.appendChild(add);
+}
+
+/* Same key names as the calculator, so a permalink moves between pages. */
+const URLKEYS=["income","partner","save","matchRate","matchCap","retrate"];
+function encodeState(){
+  const p=new URLSearchParams();
+  URLKEYS.forEach(k=>p.set(k,$(k).value));
+  p.set("fhsa",$("fhsa").checked?"1":"0");
+  p.set("match",$("hasMatch").checked?"1":"0");
+  p.set("mar",state.marital);
+  if(state.haskids==="yes"&&state.kids.length)p.set("kids",state.kids.join("."));
+  return p.toString();
+}
+function applyState(qs){
+  const p=new URLSearchParams(qs);
+  if(![...p.keys()].length)return false;
+  URLKEYS.forEach(k=>{if(p.has(k))$(k).value=p.get(k);});
+  if(p.has("fhsa"))$("fhsa").checked=p.get("fhsa")==="1";
+  if(p.has("match"))$("hasMatch").checked=p.get("match")==="1";
+  if(p.has("mar")){state.marital=p.get("mar");setSeg("marital",state.marital);}
+  if(p.has("kids")){
+    state.kids=p.get("kids").split(".").map(Number)
+      .filter(n=>Number.isFinite(n)&&n>=0&&n<18).slice(0,8);
+    state.haskids=state.kids.length?"yes":"no";
+  }else{state.haskids="no";}
+  setSeg("haskids",state.haskids);
+  $("kidsWrap").hidden=state.haskids!=="yes";
+  $("partnerField").hidden=state.marital!=="couple";
+  $("matchWrap").hidden=!$("hasMatch").checked;
+  return true;
+}
+
+function read(){
+  const kids=state.haskids==="yes"?state.kids.slice():[];
+  const partner=state.marital==="couple"?(+$("partner").value||0):0;
+  return{
+    income:+$("income").value||0,
+    household:{province:state.prov,child_ages:kids,partner_income:partner,
+      partnered:state.marital==="couple"},
+    monthly:+$("save").value||0,
+    retrate:(+$("retrate").value||0)/100,
+    fhsa:$("fhsa").checked,
+    matchRate:$("hasMatch").checked?(+$("matchRate").value||0)/100:0,
+    matchCap:$("hasMatch").checked?(+$("matchCap").value||0):0
+  };
+}
+
+function update(){
+  const i=read();
+  $("retrateOut").textContent=(i.retrate*100).toFixed(0)+"%";
+  $("incomeRange").value=Math.min(Math.max(i.income,15000),250000);
+
+  const alloc=optimize({income:i.income,household:i.household,
+    savings_capacity:i.monthly*12,expected_retirement_rate:i.retrate,
+    fhsa_eligible:i.fhsa,employer_match_rate:i.matchRate,
+    employer_match_cap:i.matchCap},cfg);
+  const me=effectiveMarginalRate(i.income,i.household,cfg);
+  const back=alloc.tax_refund+alloc.benefit_restored+alloc.employer_match_earned;
+  const saved=i.monthly*12;
+
+  $("kSave").textContent=money(saved);
+  $("kSaveSub").textContent=money(i.monthly)+" a month";
+  $("kBack").textContent=money(back);
+  $("kEmr").textContent=pct(me.effective_rate);
+  $("kEmrSub").textContent=me.clawback_rate>1e-6
+    ? pct(me.statutory_rate)+" tax + "+pct(me.clawback_rate)+" clawback"
+    : "income tax only";
+  $("kRoi").textContent=saved>0?pct(back/saved):"—";
+
+  /* The real funding sequence from the solver, not a hardcoded list. */
+  const fallback=["employer_match","fhsa","rrsp","tfsa","non_registered"];
+  const seq=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
+  const rows=seq.concat(fallback.filter(k=>alloc.allocation[k]>0&&seq.indexOf(k)<0));
+  const el=$("alloc");el.innerHTML="";
+  if(!rows.length){
+    el.innerHTML='<div class="arow"><span></span><span class="awhy">Enter a monthly amount to see where it should go.</span><span></span></div>';
+  } else rows.forEach((k,n)=>{
+    const d=document.createElement("div");d.className="arow";
+    d.innerHTML='<span class="rank">'+(n+1)+'</span><span><div class="aname">'+ACCOUNTS[k].name+
+      ' <span class="full">'+ACCOUNTS[k].full+'</span></div><div class="awhy">'+ACCOUNTS[k].why+
+      '</div></span><span class="aamt">'+money(alloc.allocation[k]/12)+
+      '<span style="font-size:11px;color:var(--muted)">/mo</span></span>';
+    el.appendChild(d);});
+
+  const note=$("allocNote");
+  const roomLeft=alloc.rrsp_room_left||0;
+  let msg="";
+  if(i.monthly>0&&!(alloc.allocation.rrsp>0)&&roomLeft>1){
+    if(alloc.allocation.fhsa>0)
+      msg="<span>No RRSP in the list because the <b>FHSA beats it</b> — both give you the "+
+        "same deduction, but the FHSA also comes out tax-free for a first home. You still have "+
+        "about <b>"+money(roomLeft)+"</b> of RRSP room, and it becomes the next stop once your "+
+        "FHSA room runs out.</span>";
+    else if(me.effective_rate<i.retrate)
+      msg="<span>No RRSP in the list because at <b>"+pct(me.effective_rate)+"</b> you would be "+
+        "contributing at a lower rate than the "+pct(i.retrate)+" you expect to withdraw at. "+
+        "About <b>"+money(roomLeft)+"</b> of room is going unused on purpose.</span>";
+    else
+      msg="<span>About <b>"+money(roomLeft)+"</b> of RRSP room is unused — you are saving less "+
+        "than the accounts above it can hold.</span>";
+  }
+  note.hidden=!msg;note.innerHTML=msg;
+
+  $("totalVal").textContent=money(back);
+  $("totalPct").textContent=i.monthly>0?"on "+money(saved)+" saved":"";
+  $("breakdown").innerHTML=
+    "Tax refund <b>"+money(alloc.tax_refund)+"</b>"+
+    (alloc.benefit_restored>1?"Benefits you stop losing <b style='color:var(--claw)'>"+money(alloc.benefit_restored)+"</b>":"")+
+    (alloc.employer_match_earned>1?"Employer match <b>"+money(alloc.employer_match_earned)+"</b>":"");
+
+  const w=$("warnings");w.innerHTML="";
+  alloc.warnings.forEach(t=>{
+    const d=document.createElement("div");d.className="warn";
+    d.innerHTML='<span class="mark">!</span><span>'+t+'</span>';w.appendChild(d);});
+
+  const rrspRoom=(alloc.rrsp_room_used||0)+(alloc.rrsp_room_left||0);
+  const roomRows=[
+    ["RRSP",rrspRoom,alloc.rrsp_room_used||0],
+    ["TFSA",cfg.accounts.tfsa.annual_limit,alloc.allocation.tfsa||0],
+    ["FHSA",i.fhsa?cfg.accounts.fhsa.annual_limit:0,alloc.allocation.fhsa||0]
+  ];
+  $("roomTable").innerHTML=roomRows.map(([n,room,used])=>
+    `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
+    `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
+
+  history.replaceState(null,"","?"+encodeState());
+}
+
+["income","partner","save","matchRate","matchCap","retrate","fhsa","hasMatch"].forEach(id=>{
+  const el=$(id);if(!el)return;
+  el.addEventListener("input",()=>{
+    if(id==="hasMatch")$("matchWrap").hidden=!$("hasMatch").checked;
+    update();});
+});
+$("incomeRange").addEventListener("input",()=>{$("income").value=$("incomeRange").value;update();});
+
+/* A focused number input on a tall page: scrolling over a focused field
+   silently rewrites it in Chrome and Safari. Drop focus, let the page move. */
+document.addEventListener("wheel",e=>{
+  const el=document.activeElement;
+  if(el&&el===e.target&&el.tagName==="INPUT"&&el.type==="number")el.blur();
+},{passive:true});
+
+$("copyLink").onclick=()=>{
+  const url=location.origin+location.pathname+"?"+encodeState();
+  const done=ok=>{$("shareMsg").textContent=ok?"Link copied to the clipboard.":url;};
+  if(navigator.clipboard&&navigator.clipboard.writeText)
+    navigator.clipboard.writeText(url).then(()=>done(true)).catch(()=>done(false));
+  else done(false);
+};
+$("doPrint").onclick=()=>window.print();
+
+applyState(location.search.replace(/^\?/,""));
+$("matchWrap").hidden=!$("hasMatch").checked;
+renderKids();
+update();
+window.onThemeChange=update;

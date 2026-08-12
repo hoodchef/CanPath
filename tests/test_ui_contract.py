@@ -14,6 +14,7 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app = open(os.path.join(ROOT, "app.part")).read()
+allocapp = open(os.path.join(ROOT, "alloc-app.part")).read()
 theme = open(os.path.join(ROOT, "theme.part")).read()
 html = open(os.path.join(ROOT, "index.html")).read()
 
@@ -41,7 +42,7 @@ check(f"{len(looked_up)} ids looked up, all present", not missing,
       f"missing from index.html: {missing}")
 
 print("\n--- Structural contract ---")
-for tab in ("proj", "marg", "alloc", "sched"):
+for tab in ("proj", "marg", "sched"):
     check(f"tab '{tab}' has a panel and a button",
           f'id="tab-{tab}"' in html and f'id="tabbtn-{tab}"' in html)
 
@@ -55,6 +56,14 @@ check("depletion readout present", 'id="depletion"' in html)
 check("OAS recovery readout present", 'id="oasClaw"' in html)
 check("take-home table present", 'id="takehome"' in html)
 check("schedule table body present", 'id="schedBody"' in html)
+alloc = open(os.path.join(ROOT, "allocate.html")).read()
+for i in ("income", "save", "alloc", "totalVal", "breakdown", "warnings",
+          "roomTable", "allocNote", "retrate", "kBack", "kRoi"):
+    check(f"allocate.html has #{i}", f'id="{i}"' in alloc)
+check("allocate.html carries the engine", "@engine:start" in alloc)
+check("allocate.html is reachable from the calculator", 'href="allocate.html"' in html)
+check("allocate.html links back", 'href="index.html"' in alloc)
+check("the Allocation tab is gone from the calculator", 'id="tab-alloc"' not in html)
 check("scenario slots present", 'id="slotA"' in html and 'id="slotB"' in html)
 check("export controls present",
       'id="dlCsv"' in html and 'id="copyLink"' in html and 'id="doPrint"' in html)
@@ -74,3 +83,11 @@ check("KPI value modifier is not .warn", '.kpi .v.warn' not in html)
 
 print(f"\n{'=' * 72}\n  {PASS} passed, {FAIL} failed\n{'=' * 72}")
 sys.exit(1 if FAIL else 0)
+
+print("\n--- allocate.html: every id its script reads exists in the page ---")
+_alloc_html = open(os.path.join(ROOT, "allocate.html")).read()
+_missing = sorted({m for m in re.findall(r'\$\("([\w-]+)"\)', allocapp)
+                   if f'id="{m}"' not in _alloc_html})
+check("no id read by alloc-app.part is missing from the page", not _missing,
+      f"missing: {_missing}")
+

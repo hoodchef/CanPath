@@ -1,9 +1,9 @@
 /* Offline-first service worker.
    Bump CACHE when shipping a new tax year or an engine change, or users
    will keep running last year's brackets from cache. */
-const CACHE = "canpath-v4-2026";
+const CACHE = "canpath-v5-2026";
 const ASSETS = [
-  "./", "./index.html", "./learn.html", "./manifest.webmanifest",
+  "./", "./index.html", "./allocate.html", "./learn.html", "./manifest.webmanifest",
   "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png",
 ];
 
@@ -25,7 +25,7 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   const req = e.request;
   if (req.method !== "GET") return;
-  const isShell = req.mode === "navigate" || /\/(index|learn)\.html$/.test(req.url);
+  const isShell = req.mode === "navigate" || /\/(index|allocate|learn)\.html$/.test(req.url);
   if (isShell) {
     e.respondWith(
       fetch(req).then((res) => {

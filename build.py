@@ -61,6 +61,8 @@ BODY = open("body.part").read()
 APP = open("app.part").read()
 THEME = open("theme.part").read()
 LEARN = open("learn.part").read()
+ALLOC = open("allocate.part").read()
+ALLOCAPP = open("alloc-app.part").read()
 
 engine = open("engine.part").read()
 proj = open("web/projection.js").read()
@@ -105,6 +107,21 @@ PAGE_COMMON = {
 }
 
 
+PAGES = [("index.html", "Calculator"), ("allocate.html", "Allocate"),
+         ("learn.html", "Learn")]
+
+
+def nav(current):
+    """A real multi-page nav. With three pages a single NAV_HREF/NAV_TEXT
+    token could only ever point one way, and the page you were on had no
+    link back to the one you came from."""
+    out = []
+    for href, text in PAGES:
+        cur = ' aria-current="page"' if href == current else ""
+        out.append(f'  <a class="navlink" href="{href}"{cur}>{text}</a>')
+    return "\n".join(out)
+
+
 def page(extra):
     v = dict(PAGE_COMMON)
     v.update(extra)
@@ -115,7 +132,7 @@ write("index.html",
       page({"PAGE_TITLE": "CanPath — what your money could become",
             "PAGE_DESC": "See what your savings could become, and how much the "
                          "Canadian government will help you get there.",
-            "NAV_HREF": "learn.html", "NAV_TEXT": "Learn"}),
+            "NAV": nav("index.html")}),
       BODY,
       "\n<script>\n/* ENGINE — ported from Python reference, parity-verified in CI */\n"
       + "/* @engine:start */\n" + engine + "/* @engine:end */\n"
@@ -126,6 +143,16 @@ write("learn.html",
       page({"PAGE_TITLE": "Learn — CanPath",
             "PAGE_DESC": "Plain-English explanations of Canadian registered accounts, "
                          "tax credits, budgeting, emergency funds and debt.",
-            "NAV_HREF": "index.html", "NAV_TEXT": "← Calculator"}),
+            "NAV": nav("learn.html")}),
       LEARN,
       "\n<script>\n" + THEME + "\n</script>\n")
+
+write("allocate.html",
+      page({"PAGE_TITLE": "Allocate — CanPath",
+            "PAGE_DESC": "Enter your income and savings and see exactly how much "
+                         "belongs in each registered account, and why.",
+            "NAV": nav("allocate.html")}),
+      ALLOC,
+      "\n<script>\n/* ENGINE — ported from Python reference, parity-verified in CI */\n"
+      + "/* @engine:start */\n" + engine + "/* @engine:end */\n"
+      + "\n" + ALLOCAPP + "\n" + THEME + "\n</script>\n")

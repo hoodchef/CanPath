@@ -19,8 +19,9 @@ the financially fluent.
 
 - **A six-metric KPI strip** — balance, effective marginal rate, government
   help, target coverage, crossover year and registered room used
-- **Four analysis tabs** — Projection, Marginal rate, Allocation, Schedule
-  (keys `1`–`4`)
+- **A dedicated Allocate page** — income in, funding order out: exactly how
+  much belongs in each account this year, and why that order
+- **Three analysis tabs** on the calculator — Projection, Marginal rate, Schedule
 - **The marginal-rate curve**, income tax and benefit clawback stacked across
   the whole income range, with your own position marked
 - **Growth over 5–40 years**, showing the year growth overtakes contributions
@@ -75,7 +76,7 @@ for an ordinary earner.
 ## Run it
 
 **Locally:** open `index.html`. No build, no server, no dependencies.
-`learn.html` sits beside it and is reachable from the header.
+`allocate.html` and `learn.html` sit beside it, all three linked from the header.
 
 **As an installable app:** serve the folder over HTTPS (or `localhost`) and the
 service worker activates. On iOS, Safari → Share → *Add to Home Screen*. On
@@ -125,9 +126,9 @@ and you must regenerate it, or the two ports are being verified against the
 previous engine and will pass while the shipped app is wrong. CI fails on a
 stale file.
 
-`index.html` and `learn.html` are **generated** by `build.py`. Edit
-`head.part`, `body.part`, `app.part`, `learn.part`, `theme.part`, `engine.part`
-or `web/projection.js`, then rebuild — never edit a built file directly, or the
+`index.html`, `allocate.html` and `learn.html` are **generated** by `build.py`.
+Edit `head.part`, `body.part`, `app.part`, `allocate.part`, `alloc-app.part`,
+`learn.part`, `theme.part`, `engine.part` or `web/projection.js`, then rebuild — never edit a built file directly, or the
 next build discards it. CI fails if either committed page does not match its
 sources.
 

@@ -1,0 +1,201 @@
+<div class="app">
+
+<div class="kpis four" id="kpis">
+  <div class="kpi hero">
+    <div class="k">You're allocating</div>
+    <div class="v" id="kSave">$0</div>
+    <div class="s" id="kSaveSub">per year</div>
+  </div>
+  <div class="kpi">
+    <div class="k"><span class="dot" style="background:var(--gold)"></span>Government gives back</div>
+    <div class="v" id="kBack">$0</div>
+    <div class="s" id="kBackSub">in year one</div>
+  </div>
+  <div class="kpi">
+    <div class="k"><span class="dot" style="background:var(--claw)"></span>Effective marginal rate</div>
+    <div class="v" id="kEmr">0%</div>
+    <div class="s" id="kEmrSub">—</div>
+  </div>
+  <div class="kpi">
+    <div class="k">Return on what you save</div>
+    <div class="v" id="kRoi">—</div>
+    <div class="s" id="kRoiSub">first-year value</div>
+  </div>
+</div>
+
+<div class="workspace">
+
+<aside class="rail">
+  <details class="grp" open>
+    <summary>Your income</summary>
+    <div class="grpbody">
+      <div class="field">
+        <label for="income">Employment income</label>
+        <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
+        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
+      </div>
+      <div class="field">
+        <label>Household</label>
+        <div class="seg-ctl" id="marital">
+          <button type="button" data-v="single" aria-pressed="true">Single</button>
+          <button type="button" data-v="couple" aria-pressed="false">Partnered</button>
+        </div>
+      </div>
+      <div class="field" id="partnerField" hidden>
+        <label for="partner">Partner's income</label>
+        <input type="number" id="partner" value="55000" min="0" max="500000" step="1000">
+      </div>
+      <div class="field">
+        <label>Children under 18</label>
+        <div class="seg-ctl" id="haskids">
+          <button type="button" data-v="no" aria-pressed="true">None</button>
+          <button type="button" data-v="yes" aria-pressed="false">I have children</button>
+        </div>
+        <div id="kidsWrap" hidden>
+          <div class="kids" id="kids"></div>
+          <div class="hint">Children change the answer: benefit clawback raises the value of every deduction.</div>
+        </div>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>What you can save</summary>
+    <div class="grpbody">
+      <div class="field">
+        <label for="save">Monthly savings</label>
+        <input type="number" id="save" value="500" min="0" max="20000" step="50">
+        <div class="hint">This is the amount being allocated below.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp" open>
+    <summary>Accounts available</summary>
+    <div class="grpbody">
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="fhsa" checked style="accent-color:var(--stat)">
+          <span>I could buy a first home someday</span>
+        </label>
+        <div class="hint">Unlocks the FHSA — deductible going in and tax-free coming out.</div>
+      </div>
+      <div class="field">
+        <label class="row" style="gap:8px;cursor:pointer;font-size:13px">
+          <input type="checkbox" id="hasMatch" style="accent-color:var(--stat)">
+          <span>My employer matches my retirement contributions</span>
+        </label>
+        <div id="matchWrap" hidden>
+          <div class="row" style="margin-top:9px">
+            <input type="number" id="matchRate" value="50" min="0" max="200" step="5" aria-label="Cents matched per dollar">
+            <span class="hint" style="margin:0;white-space:nowrap">¢ per $1, up to</span>
+            <input type="number" id="matchCap" value="3000" min="0" max="50000" step="500" aria-label="Most the employer will match per year">
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label for="retrate">Expected tax rate when you withdraw</label>
+        <div class="row">
+          <input type="range" id="retrate" value="25" min="0" max="55" step="1" style="flex:1">
+          <span class="num" id="retrateOut" style="width:52px;text-align:right;font-weight:600">25%</span>
+        </div>
+        <div class="hint">The RRSP decision turns entirely on this. Below your current
+        effective rate, an RRSP gains; above it, an RRSP loses.</div>
+      </div>
+    </div>
+  </details>
+
+  <details class="grp">
+    <summary>Share</summary>
+    <div class="grpbody">
+      <div class="btnrow">
+        <button class="btn" type="button" id="copyLink">Copy link to these inputs</button>
+        <button class="btn" type="button" id="doPrint">Print</button>
+      </div>
+      <div class="assum" id="shareMsg">Every input is encoded in the address bar, so a link
+      reproduces this exact allocation. Nothing is uploaded.</div>
+    </div>
+  </details>
+</aside>
+
+<main style="min-width:0">
+  <div class="tabpanel" style="border-top:1px solid var(--rule);border-radius:7px">
+    <div class="block" style="padding:0">
+      <div class="block-h" style="padding:16px 18px 0;margin-bottom:8px">
+        <h3>Where your money should go, in order</h3>
+        <span class="sub">Highest marginal value first</span>
+      </div>
+      <div id="alloc"></div>
+      <div class="bd" id="allocNote" hidden></div>
+    </div>
+    <div class="total">
+      <span class="k">What the government gives back in year one</span>
+      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
+    </div>
+    <div class="bd" id="breakdown"></div>
+    <div id="warnings"></div>
+
+    <div class="block">
+      <div class="block-h">
+        <h3>Contribution room</h3>
+        <span class="sub">Estimated from the income you entered</span>
+      </div>
+      <div class="dt-wrap" style="max-height:none">
+        <table class="dt" style="min-width:460px"><thead><tr>
+          <th>Account</th><th>Room</th><th>Used</th><th>Left</th>
+        </tr></thead><tbody id="roomTable"></tbody></table>
+      </div>
+      <div class="assum">Room is estimated from the income you entered and ignores
+      carry-forward and any pension adjustment. Your real figures are in CRA My Account.</div>
+    </div>
+
+    <div class="block">
+      <div class="block-h">
+        <h3>Why this order</h3>
+        <span class="sub">What the solver is comparing</span>
+      </div>
+      <div class="ltext" style="max-width:none">
+        <p>Each dollar is scored against what it earns you <em>this year</em>, then handed to
+        whichever account scores highest, and the scoring is redone as your income falls:</p>
+        <ul>
+          <li><b>Employer match</b> — the match rate itself, on top of the deduction. Nothing
+          competes with an instant 50%.</li>
+          <li><b>FHSA</b> — your full effective marginal rate, because it is deductible going in
+          <em>and</em> tax-free coming out for a first home.</li>
+          <li><b>RRSP</b> — your effective rate today minus the rate you expect to withdraw at.
+          That difference is the whole bet, and it goes negative when you are contributing at a
+          lower rate than you will withdraw at.</li>
+          <li><b>TFSA</b> — no deduction, so it scores zero, but it is never negative. It is the
+          baseline every other account has to beat.</li>
+          <li><b>Regular account</b> — only once every registered dollar of room is used.</li>
+        </ul>
+        <div class="callout">
+          <span class="t">Why the effective rate, not your bracket</span>
+          A deduction lowers your taxable income, which returns the tax <b>and</b> restores the
+          income-tested benefits you were losing. For a family in a clawback band the benefit
+          restored can exceed the refund. <a href="learn.html#marginal">How that works →</a>
+        </div>
+        <div class="callout warnbox">
+          <span class="t">This assumes the groundwork is done</span>
+          It cannot see your debts or your cash cushion. Clear high-interest debt and build an
+          emergency fund first — both beat every allocation below.
+          <a href="learn.html#order">The full order of operations →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+</div>
+</div>
+
+<footer>
+  Federal brackets: CRA 2026. British Columbia brackets: Province of B.C. Canada Child Benefit,
+  BC Family Benefit and Canada Groceries and Essentials Benefit: 2026–27 benefit year.
+  Everything runs in your browser; nothing you type is sent anywhere or stored. The only thing kept on
+  your device is whether you prefer the light or dark theme.
+  <br><br>
+  This is an educational model, not tax, financial, or investment advice. It does not account for
+  every credit, deduction, or personal circumstance. Confirm your contribution room in CRA My Account,
+  and consider speaking to a qualified professional before acting.
+</footer>

@@ -66,6 +66,7 @@ header{border-bottom:1px solid var(--rule);background:var(--surface)}
   text-transform:uppercase;color:var(--stat);text-decoration:none;border-bottom:1px solid transparent;
   padding-bottom:1px}
 .navlink:hover{border-bottom-color:var(--stat)}
+.navlink[aria-current=page]{color:var(--ink);border-bottom-color:var(--ink)}
 
 /* --- learn page --- */
 .prose{max-width:1180px;margin:0 auto;padding:22px 24px}
@@ -133,6 +134,12 @@ table.lt td.n{font-family:var(--mono);white-space:nowrap}
   overflow:hidden;margin:16px 0}
 @media(max-width:1240px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:640px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Four-up variant for the Allocate page. A class, not an inline style: an
+   inline grid-template-columns outranks the media queries above, so the
+   columns never collapse and every label clips at narrow widths. */
+.kpis.four{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:1100px){.kpis.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.kpis.four{grid-template-columns:1fr}}
 .kpi{background:var(--surface);padding:11px 14px 12px;min-width:0}
 .kpi .k{font-family:var(--cond);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;
   color:var(--muted);display:flex;align-items:center;gap:5px;white-space:nowrap;
@@ -397,7 +404,7 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
   <div class="wordmark">Can<span>Path</span></div>
   <span class="badge">2026</span>
   <span class="badge">British Columbia</span>
-  <a class="navlink" href="{{NAV_HREF}}">{{NAV_TEXT}}</a>
+{{NAV}}
   <span class="eyebrow">Educational model — not financial advice</span>
   <button class="themebtn" id="themeBtn" type="button" aria-pressed="false">
     <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M4.2 12H1.8M22.2 12h-2.4M6.5 6.5 4.8 4.8M19.2 19.2l-1.7-1.7M17.5 6.5l1.7-1.7M4.8 19.2l1.7-1.7"/></svg>

@@ -224,7 +224,6 @@
   <div class="tabs" role="tablist">
     <button class="tab" role="tab" id="tabbtn-proj" aria-controls="tab-proj" aria-selected="true">Projection</button>
     <button class="tab" role="tab" id="tabbtn-marg" aria-controls="tab-marg" aria-selected="false">Marginal rate</button>
-    <button class="tab" role="tab" id="tabbtn-alloc" aria-controls="tab-alloc" aria-selected="false">Allocation</button>
     <button class="tab" role="tab" id="tabbtn-sched" aria-controls="tab-sched" aria-selected="false">Schedule</button>
   </div>
 
@@ -325,32 +324,8 @@
     </div>
   </section>
 
-  <!-- ALLOCATION -->
-  <section class="tabpanel" id="tab-alloc" role="tabpanel" aria-labelledby="tabbtn-alloc" hidden>
-    <div class="block" style="padding:0">
-      <div class="block-h" style="padding:16px 18px 0;margin-bottom:8px">
-        <h3>Funding order</h3><span class="sub">Highest marginal value first</span>
-      </div>
-      <div id="alloc"></div>
-      <div class="bd" id="allocNote" hidden></div>
-    </div>
-    <div class="total">
-      <span class="k">What the government gives back in year one</span>
-      <span><span class="v" id="totalVal">$0</span> <span class="k" id="totalPct"></span></span>
-    </div>
-    <div class="bd" id="breakdown"></div>
-    <div id="warnings"></div>
-    <div class="block">
-      <div class="block-h"><h3>Contribution room</h3><span class="sub">Estimated from the income above</span></div>
-      <div class="dt-wrap" style="max-height:none">
-        <table class="dt" style="min-width:420px"><thead><tr>
-          <th>Account</th><th>Room</th><th>Used</th><th>Left</th>
-        </tr></thead><tbody id="roomTable"></tbody></table>
-      </div>
-      <div class="assum">Room is estimated from the income you entered and ignores
-      carry-forward and any pension adjustment. Your real figures are in CRA My Account.</div>
-    </div>
-  </section>
+  <!-- Allocation now lives on allocate.html: it is a question in its own
+       right (income in, funding order out) and was buried as tab three. -->
 
   <!-- SCHEDULE -->
   <section class="tabpanel" id="tab-sched" role="tabpanel" aria-labelledby="tabbtn-sched" hidden>
