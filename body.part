@@ -264,6 +264,15 @@
         <span class="spk"><i style="background:var(--gold)"></i><span><b id="kGovFV">$0</b>government help, reinvested</span></span>
       </div>
     </div>
+    <div class="block" style="padding:0">
+      <div class="block-h" style="padding:16px 18px 0;margin-bottom:10px">
+        <h3>Where your money should go</h3>
+        <span class="sub"><span id="homeAllocSub">—</span> · <a href="allocate.html">Full breakdown &amp; room →</a></span>
+      </div>
+      <div id="homeAlloc"></div>
+      <div class="bd" id="homeAllocNote" hidden></div>
+      <div id="homeWarnings"></div>
+    </div>
     <div class="block">
       <div class="block-h"><h3>Retirement readiness</h3><span class="sub" id="readySub"></span></div>
       <div class="meter" id="meter">

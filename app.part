@@ -795,6 +795,70 @@ function update(){
            are taken at the start of each year, before any growth.`;
   }
 
+  /* ---- funding order, on the home screen ----
+     The allocation moved to its own page and vanished from the default view,
+     so the question the tool exists to answer -- where does this money go --
+     needed a click to reach. The full page keeps room tables and reasoning;
+     this is the answer itself, with no interaction required. ACCOUNTS has sat
+     here declared-but-unused since that move. */
+  const homeOrder=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
+  const homeRows=homeOrder.concat(
+    ["employer_match","fhsa","rrsp","tfsa","non_registered"]
+      .filter(k=>alloc.allocation[k]>0&&homeOrder.indexOf(k)<0));
+  const hel=$("homeAlloc");
+  if(!homeRows.length){
+    hel.innerHTML='<div class="arow"><span></span><span class="awhy">'+
+      'Enter a monthly amount to see where it should go.</span><span></span></div>';
+    $("homeAllocSub").textContent="—";
+  }else{
+    /* Rounded rows must sum to what the user typed; independently rounding
+       each one produced $1,501 on a $1,500 plan. */
+    const raw=homeRows.map(k=>alloc.allocation[k]/12), fl=raw.map(Math.floor);
+    let diff=Math.round(i.monthly)-fl.reduce((x,y)=>x+y,0);
+    const byFrac=raw.map((_,n)=>n).sort((x,y)=>(raw[y]-fl[y])-(raw[x]-fl[x]));
+    for(let n=0;diff>0&&n<byFrac.length;n++){fl[byFrac[n]]++;diff--;}
+    for(let n=byFrac.length-1;diff<0&&n>=0;n--){if(fl[byFrac[n]]>0){fl[byFrac[n]]--;diff++;}}
+    hel.innerHTML=homeRows.map((k,n)=>
+      '<div class="arow"><span class="rank">'+(n+1)+'</span>'+
+      '<span><div class="aname">'+ACCOUNTS[k].name+' <span class="full">'+ACCOUNTS[k].full+
+      '</span></div><div class="awhy">'+ACCOUNTS[k].why+'</div></span>'+
+      '<span class="aamt">'+money(fl[n])+'<span style="font-size:11px;color:var(--muted)">/mo</span>'+
+      '<span style="display:block;font-size:11px;font-weight:400;color:var(--muted)">'+
+      money(alloc.allocation[k])+' a year</span></span></div>').join("");
+    $("homeAllocSub").textContent=money(govYear1)+" back in year one on "+money(i.monthly*12)+" saved";
+  }
+  /* Say why an account someone expected is missing. The commonest confusion
+     is an absent RRSP: with the first-home box ticked and a savings amount
+     that fits inside FHSA room, the RRSP is correctly beaten and never
+     appears, which reads as the tool ignoring it. */
+  const hn=$("homeAllocNote");
+  /* drawEMR has its own `me`; that one is scoped to the chart. */
+  const emrNow=effectiveMarginalRate(i.income,i.household,cfg);
+  const roomLeft=alloc.rrsp_room_left||0;
+  let hmsg="";
+  if(i.monthly>0&&!(alloc.allocation.rrsp>0)&&roomLeft>1){
+    if(alloc.allocation.fhsa>0)
+      hmsg="<span>No RRSP here because the <b>FHSA beats it</b> — same deduction, but "+
+        "tax-free coming out for a first home. About <b>"+money(roomLeft)+"</b> of RRSP "+
+        "room is waiting for when the FHSA runs out.</span>";
+    else if(emrNow.effective_rate<i.retrate)
+      hmsg="<span>No RRSP here because at <b>"+pct(emrNow.effective_rate)+"</b> you would "+
+        "contribute at a lower rate than the "+pct(i.retrate)+" you expect to withdraw at.</span>";
+    else
+      hmsg="<span>About <b>"+money(roomLeft)+"</b> of RRSP room is unused — you are saving "+
+        "less than the accounts above it can hold.</span>";
+  }
+  hn.hidden=!hmsg; hn.innerHTML=hmsg;
+  /* The guardrails are the most valuable output the solver produces; leaving
+     them only on the other page hid them from the default view. */
+  const hw=$("homeWarnings");
+  const hsig=alloc.warnings.join("|");
+  if(hw.dataset.sig!==hsig){
+    hw.dataset.sig=hsig;
+    hw.innerHTML=alloc.warnings.map(t=>
+      '<div class="warn"><span class="mark" aria-hidden="true">!</span><span>'+t+'</span></div>').join("");
+  }
+
   /* ---- cost of waiting ---- */
   const wait=costOfWaiting(plan,5);
   const ownSkipped=i.monthly*12*Math.min(5,years);

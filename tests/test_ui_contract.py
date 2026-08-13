@@ -56,6 +56,11 @@ check("depletion readout present", 'id="depletion"' in html)
 check("OAS recovery readout present", 'id="oasClaw"' in html)
 check("take-home table present", 'id="takehome"' in html)
 check("schedule table body present", 'id="schedBody"' in html)
+# The funding order must be reachable without a click: it belongs to the
+# default Projection panel, not to a tab the reader has to find.
+_proj = html.split('id="tab-proj"', 1)[-1].split("</section>", 1)[0]
+check("funding order is on the home screen", 'id="homeAlloc"' in _proj)
+check("its guardrails are too", 'id="homeWarnings"' in _proj)
 alloc = open(os.path.join(ROOT, "allocate.html")).read()
 for i in ("income", "save", "alloc", "totalVal", "breakdown", "warnings",
           "roomTable", "allocNote", "retrate", "kBack", "kRoi"):
