@@ -239,7 +239,7 @@
           </span>
           <label class="row" style="gap:6px;cursor:pointer;font-size:11.5px;color:var(--muted);margin:0">
             <input type="checkbox" id="showBand" checked style="accent-color:var(--stat)">
-            <span>Rate ±2%</span>
+            <span>Show ±2% range</span>
           </label>
           <span class="pills" id="horizons"></span>
         </span>

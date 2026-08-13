@@ -7,15 +7,18 @@
    into markup at draw time) set window.onThemeChange. */
 (function(){
   var el=function(id){return document.getElementById(id);};
-  var TINT={light:"#0E1B2C",dark:"#0A121C"};
+  var TINT={light:"#0E1B2C",dark:"#0A121C",term:"#080809"};
+  var ORDER=["term","light","dark"];   /* terminal is the default */
+  var NAME={term:"Terminal",light:"Light",dark:"Dark"};
 
   function apply(mode,remember){
     document.documentElement.dataset.theme=mode;
-    var dark=mode==="dark", btn=el("themeBtn"), label=el("themeLabel");
-    if(label)label.textContent=dark?"Dark":"Light";
+    var dark=mode!=="light", btn=el("themeBtn"), label=el("themeLabel");
+    if(label)label.textContent=NAME[mode]||"Light";
     if(btn){
       btn.setAttribute("aria-pressed",String(dark));
-      btn.setAttribute("aria-label","Switch to "+(dark?"light":"dark")+" theme");
+      var nxt=ORDER[(ORDER.indexOf(mode)+1)%ORDER.length];
+      btn.setAttribute("aria-label","Switch to the "+(NAME[nxt]||nxt).toLowerCase()+" theme");
     }
     var meta=document.querySelector('meta[name="theme-color"]');
     if(meta)meta.setAttribute("content",TINT[mode]);
@@ -28,17 +31,15 @@
 
   var btn=el("themeBtn");
   if(btn)btn.addEventListener("click",function(){
-    apply(document.documentElement.dataset.theme==="dark"?"light":"dark",true);
+    apply(ORDER[(ORDER.indexOf(document.documentElement.dataset.theme)+1)%ORDER.length],true);
   });
 
-  /* Follow the OS only while the user has not made a choice of their own. */
-  if(window.matchMedia){
-    var mq=window.matchMedia("(prefers-color-scheme:dark)");
-    var onSys=function(e){if(!window.__theme.explicit)apply(e.matches?"dark":"light",false);};
-    if(mq.addEventListener)mq.addEventListener("change",onSys);
-    else if(mq.addListener)mq.addListener(onSys);
-  }
+  /* The OS preference no longer selects the default -- terminal is the house
+     look and applies whatever the system says. Following prefers-color-scheme
+     here would have yanked an un-chosen visitor out of it the moment their
+     machine flipped to light at sunrise. Light and dark remain one and two
+     clicks away, and an explicit choice is remembered. */
 
   /* Sync the button label and tint to whatever the head script resolved. */
-  apply(document.documentElement.dataset.theme==="dark"?"dark":"light",false);
+  apply(NAME[document.documentElement.dataset.theme]?document.documentElement.dataset.theme:"term",false);
 })();

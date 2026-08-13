@@ -48,6 +48,64 @@
   --gold-ink:#DBA648;   /* already 7.65:1 on the dark panel */
   --shadow:0 1px 2px #00000040;
 }
+
+/* ============================================================
+   TERMINAL — dark ground, amber signature, hard corners.
+   Reads as a trading terminal rather than a consumer web app:
+   the data is the interface, the chrome gets out of the way.
+   Every pair below was measured; the worst text contrast is
+   6.24:1 against an AA floor of 4.5.
+   ============================================================ */
+:root[data-theme=term]{
+  color-scheme:dark;
+  --ink:#E8E3D8;        /* warm off-white — 15.64:1 on the ground */
+  --paper:#080809;      /* terminal black */
+  --surface:#101113;    /* panel */
+  --rule:#26241F;       /* hairline, decorative only by design */
+  --edge:#7A7264;       /* interactive boundary — 3.97:1 / 4.21:1 */
+  --muted:#9C9484;
+  --stat:#FFB020;       /* AMBER. Your own money, and the house accent */
+  --gold:#3FC8F5;       /* cyan — government, kept far from the amber */
+  --keep:#2ED573;       /* green — growth */
+  --claw:#FF5C5C;       /* red — what you lose */
+  --gold-ink:#3FC8F5;
+  --on-ink:#080809; --on-ink-dim:#5A5449; --hover:#FFFFFF14;
+  --warn:#FFB020; --warn-bg:#1A1405; --warn-br:#3D3010; --warn-ink:#FFD98A;
+  --good-bg:#07160E; --good-br:#1B4030;
+  --shadow:0 0 0 1px #26241F;
+}
+/* Square everything. Rounded corners are the single strongest signal of a
+   consumer web app, and the terminal look does not survive them. */
+:root[data-theme=term] *{border-radius:0!important}
+/* Numerals are the content here, so the whole shell goes tabular. */
+:root[data-theme=term] body{font-feature-settings:"tnum" 1,"zero" 1}
+:root[data-theme=term] .kpi .v,
+:root[data-theme=term] .hero-num,
+:root[data-theme=term] .aamt,
+:root[data-theme=term] .total .v{letter-spacing:0}
+/* Amber rails on the panel headers — the terminal's section markers. */
+:root[data-theme=term] .panel-head,
+:root[data-theme=term] .tabs{border-bottom:1px solid var(--rule)}
+:root[data-theme=term] .kpi.hero{box-shadow:inset 3px 0 0 var(--stat)}
+:root[data-theme=term] .tab[aria-selected=true]{
+  background:transparent;color:var(--stat);border-bottom-color:var(--stat)}
+:root[data-theme=term] .navlink[aria-current=page]{color:var(--stat);border-bottom-color:var(--stat)}
+/* Controls need a visible boundary on black; --rule is deliberately faint. */
+:root[data-theme=term] input[type=number],
+:root[data-theme=term] .btn,
+:root[data-theme=term] .pills button,
+:root[data-theme=term] .seg-ctl,
+:root[data-theme=term] .addkid,
+:root[data-theme=term] .scnslot,
+:root[data-theme=term] .themebtn,
+:root[data-theme=term] .kf{border-color:var(--edge)}
+:root[data-theme=term] .seg-ctl button+button{border-left-color:var(--edge)}
+
+/* Hairlines between adjacent chart segments. Fills sit at ~1.06:1 against
+   each other in every theme, so the boundary is invisible to a colour-
+   deficient reader; a --surface rule scores 6.24:1 against all four. */
+.split div+div,.dollar div+div,.meter i+i{box-shadow:inset 1px 0 0 var(--surface)}
+
 *{box-sizing:border-box}
 /* Author display rules outrank the UA sheet's [hidden]{display:none}, so any
    element given display:flex/grid still rendered while hidden. #allocNote left
@@ -118,9 +176,12 @@ table.lt td.n{font-family:var(--mono);white-space:nowrap}
 .themebtn:hover{color:var(--ink);border-color:var(--stat)}
 .themebtn svg{width:14px;height:14px;display:block;fill:none;stroke:currentColor;
   stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.themebtn .moon{display:none}
+.themebtn .moon,.themebtn .term{display:none}
 :root[data-theme=dark] .themebtn .moon{display:block}
 :root[data-theme=dark] .themebtn .sun{display:none}
+:root[data-theme=term] .themebtn .term{display:block}
+:root[data-theme=term] .themebtn .sun{display:none}
+:root[data-theme=term] .themebtn{color:var(--stat);border-color:var(--edge)}
 
 .shell{max-width:1180px;margin:0 auto;padding:22px 24px;display:grid;
   grid-template-columns:330px minmax(0,1fr);gap:22px;align-items:start}
@@ -401,9 +462,11 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
 (function(){
   var KEY="canpath-theme", saved=null;
   try{saved=localStorage.getItem(KEY);}catch(e){}
-  var explicit=(saved==="dark"||saved==="light");
+  var explicit=(saved==="dark"||saved==="light"||saved==="term");
   var sys=window.matchMedia&&window.matchMedia("(prefers-color-scheme:dark)").matches;
-  document.documentElement.dataset.theme=explicit?saved:(sys?"dark":"light");
+  /* Terminal is the house look; the OS preference only decides the
+     fallback once someone has explicitly chosen light or dark. */
+  document.documentElement.dataset.theme=explicit?saved:"term";
   window.__theme={key:KEY,explicit:explicit};
 })();
 </script>
@@ -418,6 +481,7 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
   <button class="themebtn" id="themeBtn" type="button" aria-pressed="false">
     <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.4v2.4M12 19.2v2.4M4.2 12H1.8M22.2 12h-2.4M6.5 6.5 4.8 4.8M19.2 19.2l-1.7-1.7M17.5 6.5l1.7-1.7M4.8 19.2l1.7-1.7"/></svg>
     <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.6A8.6 8.6 0 0 1 9.4 3.5a8.6 8.6 0 1 0 11.1 11.1Z"/></svg>
+    <svg class="term" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 4.5h17v15h-17z"/><path d="M7 9.5l3 2.5-3 2.5M12.5 15h4.5"/></svg>
     <span id="themeLabel">Light</span>
   </button>
 </div></header>

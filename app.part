@@ -219,9 +219,20 @@ const axisMoney=v=>{
    rather than on quarters of whatever the final number happens to be. */
 function niceScale(v,ticks){
   if(!(v>0))return{step:1,max:1};
-  const raw=v/ticks, exp=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/exp;
-  const step=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*exp;
-  return{step,max:step*Math.ceil(v/step)};
+  /* Try a few tick counts rather than accepting the first. With f just over
+     5 the 1/2/2.5/5 ladder jumps a whole decade, which parked a $2.0M peak
+     on a $3.0M axis and squashed the series into the bottom third of the
+     canvas. Accept the first candidate whose ceiling is within 25% of the
+     data. */
+  let best=null;
+  for(let n=ticks;n<=ticks+3;n++){
+    const raw=v/n, exp=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/exp;
+    const step=(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*exp;
+    const max=step*Math.ceil(v/step);
+    if(!best)best={step,max};
+    if(max<=v*1.25)return{step,max};
+  }
+  return best;
 }
 function chartSize(){
   const narrow=window.innerWidth<820;
@@ -300,12 +311,6 @@ function drawGrowth(i,st,nestEgg){
     if(v>0)out+=`<line class="gridline-d" x1="${GM.l}" y1="${Y(v)}" x2="${GW-GM.r}" y2="${Y(v)}"/>`;
     out+=`<text class="axis" x="${GM.l-9}" y="${sy(v)+4}" text-anchor="end">${axisMoney(v)}</text>`;});
 
-  if(showBand){
-    let bp="M"+X(0)+" "+Y(bandAt(0.02,0));
-    for(const d of curve)bp+="L"+X(d.t)+" "+Y(bandAt(0.02,d.t));
-    for(let k=curve.length-1;k>=0;k--)bp+="L"+X(curve[k].t)+" "+Y(bandAt(-0.02,curve[k].t));
-    out+=`<path d="${bp}Z" fill="var(--keep)" opacity=".10"/>`;
-  }
   out+=`<path d="${band(()=>0,d=>d.mine)}" fill="url(#gYou)"/>`;
   out+=`<path d="${band(d=>d.mine,d=>d.mine+d.gov)}" fill="url(#gGov)"/>`;
   out+=`<path d="${band(d=>d.mine+d.gov,d=>d.total)}" fill="url(#gGrow)"/>`;
@@ -314,6 +319,21 @@ function drawGrowth(i,st,nestEgg){
     out+=`<path d="${edge(d=>d.mine+d.gov)}" fill="none" stroke="var(--gold)" stroke-width="1" opacity=".55"/>`;
   out+=`<path d="${edge(d=>d.total)}" fill="none" stroke="var(--keep)" stroke-width="2.4" `+
        `stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  if(showBand){
+    /* Outlines over the ribbons, not a fill under them. Painted underneath,
+       the whole DOWNSIDE sat inside the ribbon stack and was invisible --
+       a control labelled "+/-2%" that only ever showed the +2% half. */
+    const dLo=-Math.min(0.02,i.rate);   // never imply negative growth
+    const lineAt=dr=>curve.map((d,k)=>(k?"L":"M")+X(d.t)+" "+Y(bandAt(dr,d.t))).join("");
+    [[0.02,"at "+pct(i.rate+0.02)],[dLo,"at "+pct(i.rate+dLo)]].forEach(([dr,lbl],n)=>{
+      out+=`<path d="${lineAt(dr)}" fill="none" stroke="var(--keep)" stroke-width="1.2" `+
+           `stroke-dasharray="4 4" opacity=".75"/>`;
+      if(!narrow)
+        out+=`<text class="chart-note" x="${X(years)-4}" y="${sy(bandAt(dr,years))+(n?14:-6)}" `+
+             `text-anchor="end">${lbl}</text>`;
+    });
+  }
   out+=`<line class="axis-base" x1="${GM.l}" y1="${Y(0)}" x2="${GW-GM.r}" y2="${Y(0)}"/>`;
 
   /* Saved scenarios as ghost lines. A/B comparison that exists only as two
@@ -388,6 +408,8 @@ function drawGrowth(i,st,nestEgg){
     (last.gov>0?`<span><i style="color:var(--gold)">■</i> Government help <b>${money(last.gov)}</b></span>`:"")+
     `<span><i style="color:var(--keep)">■</i> Growth <b>${money(last.growth)}</b></span>`+
     `<span>Balance after ${years} years <b>${money(last.total)}</b></span>`+
+    (showBand?`<span style="color:var(--muted)">At ${pct(i.rate-0.02)}–${pct(i.rate+0.02)} `+
+      `<b>${compact(bandAt(-0.02,years))} – ${compact(bandAt(0.02,years))}</b></span>`:"")+
     (st.helpDrops&&st.switchYear<years
       ? `<span style="color:var(--muted)">FHSA room ends year ${st.switchYear}; help drops to ${money(st.govLate)}/yr</span>`
       : "");
