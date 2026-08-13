@@ -44,10 +44,8 @@
     <div class="grpbody">
       <div class="field">
         <label>Province</label>
-        <div class="seg-ctl" id="prov">
-          <button type="button" data-v="BC" aria-pressed="true">British&nbsp;Columbia</button>
-          <button type="button" data-v="soon" aria-pressed="false" disabled title="Coming soon">Other&nbsp;— soon</button>
-        </div>
+        <div class="seg-ctl" id="prov" role="group" aria-label="Province"></div>
+        <div class="hint" id="provNote"></div>
       </div>
       <div class="field">
         <label>Household</label>

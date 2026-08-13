@@ -887,6 +887,260 @@
       "req_monthly": 6854.5123
     }
   ],
+  "province_cases": [
+    {
+      "province": "AB",
+      "income": 25000,
+      "prov_tax": 178.48,
+      "combined_tax": 1375.2,
+      "effective_rate": 0.22
+    },
+    {
+      "province": "AB",
+      "income": 60000,
+      "prov_tax": 2978.48,
+      "combined_tax": 9171.2,
+      "effective_rate": 0.291
+    },
+    {
+      "province": "AB",
+      "income": 120000,
+      "prov_tax": 8954.48,
+      "combined_tax": 27609.73,
+      "effective_rate": 0.36
+    },
+    {
+      "province": "AB",
+      "income": 250000,
+      "prov_tax": 24550.06,
+      "combined_tax": 79264.31,
+      "effective_rate": 0.432949
+    },
+    {
+      "province": "BC",
+      "income": 25000,
+      "prov_tax": 0.0,
+      "combined_tax": 1196.72,
+      "effective_rate": 0.14
+    },
+    {
+      "province": "BC",
+      "income": 60000,
+      "prov_tax": 2822.28,
+      "combined_tax": 9015.01,
+      "effective_rate": 0.288
+    },
+    {
+      "province": "BC",
+      "income": 120000,
+      "prov_tax": 8059.8,
+      "combined_tax": 26715.05,
+      "effective_rate": 0.3829
+    },
+    {
+      "province": "BC",
+      "income": 250000,
+      "prov_tax": 27928.93,
+      "combined_tax": 82643.18,
+      "effective_rate": 0.460949
+    },
+    {
+      "province": "MB",
+      "income": 25000,
+      "prov_tax": 995.76,
+      "combined_tax": 2192.48,
+      "effective_rate": 0.248
+    },
+    {
+      "province": "MB",
+      "income": 60000,
+      "prov_tax": 5029.26,
+      "combined_tax": 11221.99,
+      "effective_rate": 0.3385
+    },
+    {
+      "province": "MB",
+      "income": 120000,
+      "prov_tax": 13609.26,
+      "combined_tax": 32264.51,
+      "effective_rate": 0.434
+    },
+    {
+      "province": "MB",
+      "income": 250000,
+      "prov_tax": 36229.26,
+      "combined_tax": 90943.51,
+      "effective_rate": 0.466949
+    },
+    {
+      "province": "NB",
+      "income": 25000,
+      "prov_tax": 1065.58,
+      "combined_tax": 2262.3,
+      "effective_rate": 0.234
+    },
+    {
+      "province": "NB",
+      "income": 60000,
+      "prov_tax": 4708.27,
+      "combined_tax": 10900.99,
+      "effective_rate": 0.351
+    },
+    {
+      "province": "NB",
+      "income": 120000,
+      "prov_tax": 13414.95,
+      "combined_tax": 32070.2,
+      "effective_rate": 0.42
+    },
+    {
+      "province": "NB",
+      "income": 250000,
+      "prov_tax": 36179.81,
+      "combined_tax": 90894.07,
+      "effective_rate": 0.487949
+    },
+    {
+      "province": "NL",
+      "income": 25000,
+      "prov_tax": 157.44,
+      "combined_tax": 1354.16,
+      "effective_rate": 0.387
+    },
+    {
+      "province": "NL",
+      "income": 60000,
+      "prov_tax": 4831.86,
+      "combined_tax": 11024.59,
+      "effective_rate": 0.356
+    },
+    {
+      "province": "NL",
+      "income": 120000,
+      "prov_tax": 13930.26,
+      "combined_tax": 32585.51,
+      "effective_rate": 0.418
+    },
+    {
+      "province": "NL",
+      "income": 250000,
+      "prov_tax": 36812.9,
+      "combined_tax": 91527.16,
+      "effective_rate": 0.490949
+    },
+    {
+      "province": "NS",
+      "income": 25000,
+      "prov_tax": 1148.68,
+      "combined_tax": 2345.4,
+      "effective_rate": 0.2279
+    },
+    {
+      "province": "NS",
+      "income": 60000,
+      "prov_tax": 6011.89,
+      "combined_tax": 12204.61,
+      "effective_rate": 0.3605
+    },
+    {
+      "province": "NS",
+      "income": 120000,
+      "prov_tax": 16167.08,
+      "combined_tax": 34822.33,
+      "effective_rate": 0.435
+    },
+    {
+      "province": "NS",
+      "income": 250000,
+      "prov_tax": 42167.74,
+      "combined_tax": 96881.99,
+      "effective_rate": 0.502949
+    },
+    {
+      "province": "ON",
+      "income": 25000,
+      "prov_tax": 606.56,
+      "combined_tax": 1803.28,
+      "effective_rate": 0.1905
+    },
+    {
+      "province": "ON",
+      "income": 60000,
+      "prov_tax": 2624.52,
+      "combined_tax": 8817.25,
+      "effective_rate": 0.3025
+    },
+    {
+      "province": "ON",
+      "income": 120000,
+      "prov_tax": 8360.05,
+      "combined_tax": 27015.3,
+      "effective_rate": 0.3716
+    },
+    {
+      "province": "ON",
+      "income": 250000,
+      "prov_tax": 24168.05,
+      "combined_tax": 78882.3,
+      "effective_rate": 0.424549
+    },
+    {
+      "province": "PE",
+      "income": 25000,
+      "prov_tax": 700.0,
+      "combined_tax": 1896.72,
+      "effective_rate": 0.285
+    },
+    {
+      "province": "PE",
+      "income": 60000,
+      "prov_tax": 5310.06,
+      "combined_tax": 11502.78,
+      "effective_rate": 0.3457
+    },
+    {
+      "province": "PE",
+      "income": 120000,
+      "prov_tax": 15221.61,
+      "combined_tax": 33876.86,
+      "effective_rate": 0.4362
+    },
+    {
+      "province": "PE",
+      "income": 250000,
+      "prov_tax": 40110.84,
+      "combined_tax": 94825.09,
+      "effective_rate": 0.492949
+    },
+    {
+      "province": "SK",
+      "income": 25000,
+      "prov_tax": 484.99,
+      "combined_tax": 1681.72,
+      "effective_rate": 0.245
+    },
+    {
+      "province": "SK",
+      "income": 60000,
+      "prov_tax": 4269.35,
+      "combined_tax": 10462.08,
+      "effective_rate": 0.336
+    },
+    {
+      "province": "SK",
+      "income": 120000,
+      "prov_tax": 11769.35,
+      "combined_tax": 30424.6,
+      "effective_rate": 0.385
+    },
+    {
+      "province": "SK",
+      "income": 250000,
+      "prov_tax": 29903.26,
+      "combined_tax": 84617.51,
+      "effective_rate": 0.437949
+    }
+  ],
   "payroll_cases": [
     {
       "income": 0,

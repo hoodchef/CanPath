@@ -55,6 +55,11 @@ for (const c of fx.allocation_cases) {
   const consumed = (r.allocation.employer_match || 0) * (1 + c.match_rate) + (r.allocation.rrsp || 0);
   check(`${tag} within RRSP room`, Math.max(0, consumed - c.rrsp_room), 0);
 }
+for (const c of fx.province_cases) {
+  const h = { province: c.province, child_ages: [], partner_income: 0 };
+  check(`{prov} ${c.province}@${c.income} tax`, E.combinedTax(c.income, c.province, cfg), c.combined_tax);
+  check(`{prov} ${c.province}@${c.income} emr`, E.effectiveMarginalRate(c.income, h, cfg).effective_rate, c.effective_rate, 1e-6);
+}
 for (const c of fx.payroll_cases) {
   const d = E.payrollDeductions(c.income, E.TAX_2026);
   check(`payroll@${c.income} cpp`, d.cpp, c.cpp);

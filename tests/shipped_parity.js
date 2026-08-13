@@ -19,7 +19,7 @@ const pm = [block("projection")];
 
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
-  "\nmodule.exports={TAX_2026,totalBenefits,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
+  "\nmodule.exports={TAX_2026,combinedTax,totalBenefits,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
   "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,cppBreakevenAge,payrollDeductions,oasRecoveryTax,oasFullRecoveryIncome};");
 const E = require(tmp);
 const fx = JSON.parse(fs.readFileSync(path.join(root, "fixtures.json"), "utf8"));
@@ -85,6 +85,11 @@ for (const c of fx.readiness_cases) {
   chk(t + " projreal", r.projected_real, c.projected_real);
   chk(t + " reqmonthly", r.required_monthly, c.required_monthly);
   chk(t + " waitcost", w.cost, c.wait_cost);
+}
+for (const c of fx.province_cases) {
+  const h = { province: c.province, child_ages: [], partner_income: 0 };
+  chk(`{prov} ${c.province}@${c.income} tax`, E.combinedTax(c.income, c.province, E.TAX_2026), c.combined_tax);
+  chk(`{prov} ${c.province}@${c.income} emr`, E.effectiveMarginalRate(c.income, h, E.TAX_2026).effective_rate, c.effective_rate, 1e-6);
 }
 for (const c of fx.payroll_cases) {
   const d = E.payrollDeductions(c.income, E.TAX_2026);

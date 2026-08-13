@@ -23,7 +23,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from engine.tax import load_year, payroll_deductions                # noqa: E402
+from engine.tax import (load_year, payroll_deductions,               # noqa: E402
+                        provincial_tax, combined_tax)
 from engine.benefits import Household, total_benefits              # noqa: E402
 from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E402
                              value_of_contribution)
@@ -187,6 +188,17 @@ def build(cfg):
             "req_monthly": r(required_monthly(500000, principal, rate, years)),
         })
 
+    province_cases = []
+    for code in sorted(cfg["provinces"]):
+        for inc in (25000, 60000, 120000, 250000):
+            h = Household(code, [], 0.0)
+            province_cases.append({
+                "province": code, "income": inc,
+                "prov_tax": r(provincial_tax(inc, code, cfg), 2),
+                "combined_tax": r(combined_tax(inc, code, cfg), 2),
+                "effective_rate": r(effective_marginal_rate(inc, h, cfg)["effective_rate"], 6),
+            })
+
     payroll = []
     for inc in PAYROLL_INCOMES:
         d = payroll_deductions(inc, cfg)
@@ -238,6 +250,7 @@ def build(cfg):
         "marginal_cases": marginal,
         "allocation_cases": allocation,
         "projection_cases": projection,
+        "province_cases": province_cases,
         "payroll_cases": payroll,
         "depletion_cases": depletion,
         "cpp_breakeven_cases": breakeven,

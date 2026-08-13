@@ -40,6 +40,21 @@ function setSeg(id,v){
   const el=$(id);if(!el)return;
   el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
 }
+/* Built from the tax data, not hardcoded. A province the engine can price
+   appears without touching markup, and one it cannot must not appear at all. */
+(function(){
+  const el=$("prov");
+  if(!el)return;
+  Object.keys(cfg.provinces).forEach(code=>{
+    const b=document.createElement("button");
+    b.type="button";b.dataset.v=code;b.textContent=code;
+    b.title=cfg.provinces[code].name;
+    b.setAttribute("aria-label",cfg.provinces[code].name);
+    b.setAttribute("aria-pressed",String(code===state.prov));
+    el.appendChild(b);
+  });
+})();
+wireSeg("prov",v=>{state.prov=v;update();});
 wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
 wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
   if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});

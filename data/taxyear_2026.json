@@ -6,7 +6,8 @@
     "ccb": "2026-27 benefit year (July 2026 - June 2027), indexed 2.0%",
     "warning": "BC indexation is PAUSED for 2027-2030 per Budget 2026. Do not auto-index BC brackets forward.",
     "bc_family_benefit": "BC Family Benefit 2026-27, user-supplied 2026-08. Maxima 1750/1100/900 per 1st/2nd/additional child, single-parent supplement 500. Reduced 4% of AFNI over 30176 but never below the per-child floors (775/750/725); the floor then reduces 4% of AFNI over 96562. NOT independently verified against a CRA/BC publication -- confirm before anyone relies on it.",
-    "cgeb": "Canada Groceries and Essentials Benefit (the renamed GST/HST credit), July 2026 onward, user-supplied 2026-08. Single 679, couple 890, 234 per child UNDER 19 (note: 19, not the CCB's 18). Reduced 5% of AFNI over 46432. Self-consistent: 679/0.05 + 46432 = 60012, the stated zero point. An earlier figure of 2% did not reconcile and was superseded. NOT independently verified -- confirm before relying on it."
+    "cgeb": "Canada Groceries and Essentials Benefit (the renamed GST/HST credit), July 2026 onward, user-supplied 2026-08. Single 679, couple 890, 234 per child UNDER 19 (note: 19, not the CCB's 18). Reduced 5% of AFNI over 46432. Self-consistent: 679/0.05 + 46432 = 60012, the stated zero point. An earlier figure of 2% did not reconcile and was superseded. NOT independently verified -- confirm before relying on it.",
+    "provinces": "Provincial brackets, BPAs and low-income reductions: user-supplied 2026-08, NOT independently verified -- confirm against each province before relying on them. BC retains the 5.60% bottom rate and 690 tax reduction from the earlier submission, which stated Budget 2026 raised it; a later submission gave 5.06%/575, BC's pre-2026 figures, and was not adopted. ON and NL ship with NO low-income reduction: the supplied blocks left those parameters null. ON's surtax is also unmodelled, which understates Ontario tax at higher incomes. Quebec is excluded deliberately -- it needs its own return, QPP instead of CPP, and the 16.5% federal abatement, none of which this engine models. PROVINCIAL CHILD BENEFITS ARE MODELLED FOR BC ONLY, so the effective marginal rate outside BC omits provincial clawbacks and is a floor. NL's low-income reduction uses base_amount 842 only: the supplied dependant_amount of 563 cannot be applied because provincial_tax takes no household, and the supplied phaseout_end of 30491 reconciles with neither 842 (zero at 29,454) nor 842+563 (zero at 32,972) at the stated 16%."
   },
   "federal": {
     "brackets": [
@@ -78,6 +79,232 @@
         "max_credit": 690,
         "threshold": 25570,
         "phaseout_rate": 0.0356
+      }
+    },
+    "AB": {
+      "name": "Alberta",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.08
+        },
+        {
+          "floor": 61200,
+          "rate": 0.1
+        },
+        {
+          "floor": 154259,
+          "rate": 0.12
+        },
+        {
+          "floor": 185111,
+          "rate": 0.13
+        },
+        {
+          "floor": 246813,
+          "rate": 0.14
+        },
+        {
+          "floor": 370220,
+          "rate": 0.15
+        }
+      ],
+      "credit_rate": 0.08,
+      "bpa": 22769
+    },
+    "SK": {
+      "name": "Saskatchewan",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.105
+        },
+        {
+          "floor": 54532,
+          "rate": 0.125
+        },
+        {
+          "floor": 155805,
+          "rate": 0.145
+        }
+      ],
+      "credit_rate": 0.105,
+      "bpa": 20381
+    },
+    "MB": {
+      "name": "Manitoba",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.108
+        },
+        {
+          "floor": 47000,
+          "rate": 0.1275
+        },
+        {
+          "floor": 100000,
+          "rate": 0.174
+        }
+      ],
+      "credit_rate": 0.108,
+      "bpa": 15780
+    },
+    "ON": {
+      "name": "Ontario",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.0505
+        },
+        {
+          "floor": 53891,
+          "rate": 0.0915
+        },
+        {
+          "floor": 107785,
+          "rate": 0.1116
+        },
+        {
+          "floor": 150000,
+          "rate": 0.1216
+        },
+        {
+          "floor": 220000,
+          "rate": 0.1316
+        }
+      ],
+      "credit_rate": 0.0505,
+      "bpa": 12989
+    },
+    "NB": {
+      "name": "New Brunswick",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.094
+        },
+        {
+          "floor": 52333,
+          "rate": 0.14
+        },
+        {
+          "floor": 104666,
+          "rate": 0.16
+        },
+        {
+          "floor": 193861,
+          "rate": 0.195
+        }
+      ],
+      "credit_rate": 0.094,
+      "bpa": 13664
+    },
+    "NS": {
+      "name": "Nova Scotia",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.0879
+        },
+        {
+          "floor": 30995,
+          "rate": 0.1495
+        },
+        {
+          "floor": 61991,
+          "rate": 0.1667
+        },
+        {
+          "floor": 97417,
+          "rate": 0.175
+        },
+        {
+          "floor": 157124,
+          "rate": 0.21
+        }
+      ],
+      "credit_rate": 0.0879,
+      "bpa": 11932
+    },
+    "PE": {
+      "name": "Prince Edward Island",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.095
+        },
+        {
+          "floor": 33928,
+          "rate": 0.1347
+        },
+        {
+          "floor": 65820,
+          "rate": 0.166
+        },
+        {
+          "floor": 106890,
+          "rate": 0.1762
+        },
+        {
+          "floor": 142520,
+          "rate": 0.19
+        },
+        {
+          "floor": 200000,
+          "rate": 0.2
+        }
+      ],
+      "credit_rate": 0.095,
+      "bpa": 15000,
+      "tax_reduction": {
+        "max_credit": 350,
+        "threshold": 23000,
+        "phaseout_rate": 0.05
+      }
+    },
+    "NL": {
+      "name": "Newfoundland and Labrador",
+      "brackets": [
+        {
+          "floor": 0,
+          "rate": 0.087
+        },
+        {
+          "floor": 44192,
+          "rate": 0.145
+        },
+        {
+          "floor": 89354,
+          "rate": 0.158
+        },
+        {
+          "floor": 159528,
+          "rate": 0.178
+        },
+        {
+          "floor": 223340,
+          "rate": 0.198
+        },
+        {
+          "floor": 285319,
+          "rate": 0.208
+        },
+        {
+          "floor": 570638,
+          "rate": 0.213
+        },
+        {
+          "floor": 1141275,
+          "rate": 0.218
+        }
+      ],
+      "credit_rate": 0.087,
+      "bpa": 15000,
+      "tax_reduction": {
+        "max_credit": 842,
+        "threshold": 24191,
+        "phaseout_rate": 0.16
       }
     }
   },

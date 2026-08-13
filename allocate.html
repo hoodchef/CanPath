@@ -525,6 +525,11 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
         <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
         <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
       </div>
+
+      <div class="field">
+        <label id="lblProv">Province</label>
+        <div class="seg-ctl" id="prov" role="group" aria-labelledby="lblProv"></div>
+      </div>
       <div class="field">
         <label>Household</label>
         <div class="seg-ctl" id="marital">
@@ -697,8 +702,7 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
 const TAX_2026={tax_year:2026,
 federal:{brackets:[{floor:0,rate:.14},{floor:58523,rate:.205},{floor:117045,rate:.26},{floor:181440,rate:.29},{floor:258482,rate:.33}],
 credit_rate:.14,bpa:{base:14829,additional:1623,phaseout_start:181440,phaseout_end:258482}},
-provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:50363,rate:.077},{floor:100728,rate:.105},{floor:115648,rate:.1229},{floor:140430,rate:.147},{floor:190405,rate:.168},{floor:265545,rate:.205}],
-credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}}},
+provinces:{BC:{name:"British Columbia",brackets:[{floor:0,rate:.056},{floor:50363,rate:.077},{floor:100728,rate:.105},{floor:115648,rate:.1229},{floor:140430,rate:.147},{floor:190405,rate:.168},{floor:265545,rate:.205}],credit_rate:.056,bpa:13216,tax_reduction:{max_credit:690,threshold:25570,phaseout_rate:.0356}},AB:{name:"Alberta",brackets:[{floor:0,rate:.08},{floor:61200,rate:.1},{floor:154259,rate:.12},{floor:185111,rate:.13},{floor:246813,rate:.14},{floor:370220,rate:.15}],credit_rate:.08,bpa:22769},SK:{name:"Saskatchewan",brackets:[{floor:0,rate:.105},{floor:54532,rate:.125},{floor:155805,rate:.145}],credit_rate:.105,bpa:20381},MB:{name:"Manitoba",brackets:[{floor:0,rate:.108},{floor:47000,rate:.1275},{floor:100000,rate:.174}],credit_rate:.108,bpa:15780},ON:{name:"Ontario",brackets:[{floor:0,rate:.0505},{floor:53891,rate:.0915},{floor:107785,rate:.1116},{floor:150000,rate:.1216},{floor:220000,rate:.1316}],credit_rate:.0505,bpa:12989},NB:{name:"New Brunswick",brackets:[{floor:0,rate:.094},{floor:52333,rate:.14},{floor:104666,rate:.16},{floor:193861,rate:.195}],credit_rate:.094,bpa:13664},NS:{name:"Nova Scotia",brackets:[{floor:0,rate:.0879},{floor:30995,rate:.1495},{floor:61991,rate:.1667},{floor:97417,rate:.175},{floor:157124,rate:.21}],credit_rate:.0879,bpa:11932},PE:{name:"Prince Edward Island",brackets:[{floor:0,rate:.095},{floor:33928,rate:.1347},{floor:65820,rate:.166},{floor:106890,rate:.1762},{floor:142520,rate:.19},{floor:200000,rate:.2}],credit_rate:.095,bpa:15000,tax_reduction:{max_credit:350,threshold:23000,phaseout_rate:.05}},NL:{name:"Newfoundland and Labrador",brackets:[{floor:0,rate:.087},{floor:44192,rate:.145},{floor:89354,rate:.158},{floor:159528,rate:.178},{floor:223340,rate:.198},{floor:285319,rate:.208},{floor:570638,rate:.213},{floor:1141275,rate:.218}],credit_rate:.087,bpa:15000,tax_reduction:{max_credit:842,threshold:24191,phaseout_rate:.16}}},
 benefits:{ccb:{max_under_6:8157,max_6_to_17:6883,threshold_1:38237,threshold_2:82847,
 phase1_rates:{1:.07,2:.135,3:.19,4:.23},phase2_rates:{1:.032,2:.057,3:.08,4:.095}},
 bc_family_benefit:{max_first_child:1750,max_second_child:1100,max_additional_child:900,
@@ -909,6 +913,21 @@ function setSeg(id,v){
   const el=$(id);if(!el)return;
   el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
 }
+/* Built from the tax data, not hardcoded. A province the engine can price
+   appears without touching markup, and one it cannot must not appear at all. */
+(function(){
+  const el=$("prov");
+  if(!el)return;
+  Object.keys(cfg.provinces).forEach(code=>{
+    const b=document.createElement("button");
+    b.type="button";b.dataset.v=code;b.textContent=code;
+    b.title=cfg.provinces[code].name;
+    b.setAttribute("aria-label",cfg.provinces[code].name);
+    b.setAttribute("aria-pressed",String(code===state.prov));
+    el.appendChild(b);
+  });
+})();
+wireSeg("prov",v=>{state.prov=v;update();});
 wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
 wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
   if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});

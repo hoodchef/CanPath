@@ -48,6 +48,22 @@ function setSeg(id,v){
 wireSeg("marital",v=>{state.marital=v;$("partnerField").hidden=(v!=="couple");update();});
 wireSeg("haskids",v=>{state.haskids=v;$("kidsWrap").hidden=(v!=="yes");
   if(v==="yes"&&!state.kids.length)state.kids=[3];renderKids();update();});
+/* Built from the tax data, not hardcoded. A province the engine can price
+   appears without touching markup, and one it cannot must not appear at all
+   -- the old disabled "Other — soon" button was a promise the data had to
+   keep. */
+(function(){
+  const el=$("prov");
+  if(!el)return;
+  Object.keys(cfg.provinces).forEach(code=>{
+    const b=document.createElement("button");
+    b.type="button";b.dataset.v=code;b.textContent=code;
+    b.title=cfg.provinces[code].name;
+    b.setAttribute("aria-label",cfg.provinces[code].name);
+    b.setAttribute("aria-pressed",String(code===state.prov));
+    el.appendChild(b);
+  });
+})();
 wireSeg("prov",v=>{state.prov=v;update();});
 wireSeg("basis",v=>{state.basis=v;update();});
 wireSeg("chartview",v=>{state.scale=v;update();});
@@ -862,6 +878,15 @@ function update(){
     hw.innerHTML=alloc.warnings.map(t=>
       '<div class="warn"><span class="mark" aria-hidden="true">!</span><span>'+t+'</span></div>').join("");
   }
+
+  /* Provincial CHILD BENEFITS are modelled for BC only. Outside BC the
+     effective marginal rate omits provincial clawbacks and is a floor, and
+     a tool whose entire claim is "your real rate" must say so where the
+     province is chosen rather than in a footnote. */
+  $("provNote").innerHTML=state.prov==="BC"
+    ? "BC Family Benefit and its clawback are modelled."
+    : `<b>${cfg.provinces[state.prov].name}</b>: income tax only. This province's `+
+      `child benefits are not modelled, so the marginal rate shown is a floor.`;
 
   /* ---- savings-capacity worksheet ----
      The monthly savings figure drove the projection, the allocation and the

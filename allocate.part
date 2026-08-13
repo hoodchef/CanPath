@@ -34,6 +34,11 @@
         <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
         <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
       </div>
+
+      <div class="field">
+        <label id="lblProv">Province</label>
+        <div class="seg-ctl" id="prov" role="group" aria-labelledby="lblProv"></div>
+      </div>
       <div class="field">
         <label>Household</label>
         <div class="seg-ctl" id="marital">

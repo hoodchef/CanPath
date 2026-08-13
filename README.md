@@ -102,7 +102,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  150 assertions    tools/gen_fixtures.py   492 assertions   463 assertions
+  177 assertions    tools/gen_fixtures.py   655 assertions   620 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a
@@ -189,6 +189,7 @@ nothing GitHub-specific in the app itself.
 |---|---|
 | Federal brackets, BPA | CRA 2026, indexed 2.0%, lowest rate 14% |
 | BC brackets, BPA, tax reduction | Province of B.C., indexed 2.2%, bottom rate 5.60% |
+| AB SK MB ON NB NS PE NL brackets | **user-supplied, unverified** |
 | Canada Child Benefit | 2026–27 benefit year, indexed 2.0% |
 | BC Family Benefit | 2026–27, **user-supplied, unverified** |
 | Canada Groceries and Essentials Benefit | July 2026 on, **user-supplied, unverified** |
@@ -203,12 +204,17 @@ returning users keep running last year's brackets from cache.
 
 ## Known limits
 
-- **British Columbia only, and this is the biggest limit on who can use it.**
-  The engine is province-ready — `provincial_tax()` already dispatches on
-  `cfg["provinces"][code]` — but `data/taxyear_2026.json` contains one province.
-  Adding another is a data edit of brackets, a BPA and any low-income credit,
-  blocked purely on sourced figures. Quebec is a separate product regardless
-  (own return, QPP, abatement, French-language obligations).
+- **Nine provinces: BC, AB, SK, MB, ON, NB, NS, PE, NL.** All figures are
+  user-supplied and NOT independently verified — confirm before relying on
+  them. Quebec is excluded deliberately: it needs its own return, QPP rather
+  than CPP, and the 16.5% federal abatement, none of which this engine models.
+  The territories are absent for want of data.
+- **Provincial child benefits are modelled for BC only.** Outside BC the
+  effective marginal rate is income tax plus federal clawbacks only, so it is
+  a floor rather than the whole picture. The app says so beside the selector.
+- **Ontario ships without its low-income reduction or its surtax**, and
+  Newfoundland without the per-dependant part of its reduction — the supplied
+  data left those incomplete. Both are recorded in `source_notes`.
 - GIS and OAS clawback are flagged by guardrails but not yet modelled, so
   retirement-age scenarios are incomplete.
 - **BCFB and CGEB figures are user-supplied and NOT independently verified.**
