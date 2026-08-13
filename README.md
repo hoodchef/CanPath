@@ -102,7 +102,7 @@ three-stage chain rather than by review:
 
 ```
 Python reference  →  fixtures.json  →  JavaScript port  →  shipped index.html
-  177 assertions    tools/gen_fixtures.py   655 assertions   620 assertions
+  177 assertions    tools/gen_fixtures.py   907 assertions   872 assertions
 ```
 
 The closed-form compound-growth formulas are additionally checked against a
@@ -209,9 +209,19 @@ returning users keep running last year's brackets from cache.
   them. Quebec is excluded deliberately: it needs its own return, QPP rather
   than CPP, and the 16.5% federal abatement, none of which this engine models.
   The territories are absent for want of data.
-- **Provincial child benefits are modelled for BC only.** Outside BC the
-  effective marginal rate is income tax plus federal clawbacks only, so it is
-  a floor rather than the whole picture. The app says so beside the selector.
+- **Provincial child benefits are modelled for all nine.** SK is null because
+  Saskatchewan has none. PEI's is a literal two-tier step, so it produces real
+  cliffs at $45,000 and $80,000 — the app names the cliff rather than printing
+  the several-hundred-percent rate that differencing across a discontinuity
+  produces.
+- **Nova Scotia uses the stated 50% rate, which does not reconcile** with the
+  earlier statement that it is partial from $26,000 to $34,000: at 50% one
+  child reaches zero at $29,050, and $34,000 would require 19.06%. The explicit
+  rate was preferred, but it is the steepest child-benefit clawback in the file
+  and drives an NS peak of 79.0%. Worth re-checking.
+- **Alberta's two rates are supplied as approximate** (~11%, ~15%) and are the
+  only inexact figures in the data. Its working component is modelled as
+  available in full above the $2,760 employment floor rather than phasing in.
 - **Ontario ships without its low-income reduction or its surtax**, and
   Newfoundland without the per-dependant part of its reduction — the supplied
   data left those incomplete. Both are recorded in `source_notes`.

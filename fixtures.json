@@ -12,6 +12,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 500.6,
         "total": 500.6
       },
@@ -34,6 +35,7 @@
       "benefit_split": {
         "ccb": 8609.93,
         "bcfb": 1525,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 10134.93
       },
@@ -57,6 +59,7 @@
       "benefit_split": {
         "ccb": 12474.86,
         "bcfb": 2250,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 14724.86
       },
@@ -80,6 +83,7 @@
       "benefit_split": {
         "ccb": 8874.86,
         "bcfb": 512.48,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 9387.34
       },
@@ -101,6 +105,7 @@
       "benefit_split": {
         "ccb": 5933.59,
         "bcfb": 775,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 6708.59
       },
@@ -122,6 +127,7 @@
       "benefit_split": {
         "ccb": 8157.0,
         "bcfb": 1937.04,
+        "pcb": 0.0,
         "cgeb": 913.0,
         "total": 11007.04
       },
@@ -141,6 +147,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 0.0
       },
@@ -163,6 +170,7 @@
       "benefit_split": {
         "ccb": 2339.93,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 2339.93
       },
@@ -182,6 +190,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 679.0,
         "total": 679.0
       },
@@ -204,6 +213,7 @@
       "benefit_split": {
         "ccb": 10291.65,
         "bcfb": 1525,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 11816.65
       },
@@ -228,6 +238,7 @@
       "benefit_split": {
         "ccb": 26688.22,
         "bcfb": 4016.12,
+        "pcb": 0.0,
         "cgeb": 1010.45,
         "total": 31714.79
       },
@@ -249,6 +260,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 0.0
       },
@@ -271,6 +283,7 @@
       "benefit_split": {
         "ccb": 7333.59,
         "bcfb": 1457.04,
+        "pcb": 0.0,
         "cgeb": 968.6,
         "total": 9759.23
       },
@@ -293,6 +306,7 @@
       "benefit_split": {
         "ccb": 6059.59,
         "bcfb": 1457.04,
+        "pcb": 0.0,
         "cgeb": 968.6,
         "total": 8485.23
       },
@@ -317,6 +331,7 @@
       "benefit_split": {
         "ccb": 12101.99,
         "bcfb": 2157.04,
+        "pcb": 0.0,
         "cgeb": 702.6,
         "total": 14961.64
       },
@@ -338,6 +353,7 @@
       "benefit_split": {
         "ccb": 8157.0,
         "bcfb": 2250.0,
+        "pcb": 0.0,
         "cgeb": 913.0,
         "total": 11320.0
       },
@@ -359,6 +375,7 @@
       "benefit_split": {
         "ccb": 7683.59,
         "bcfb": 1657.04,
+        "pcb": 0.0,
         "cgeb": 913.0,
         "total": 10253.63
       },
@@ -380,6 +397,7 @@
       "benefit_split": {
         "ccb": 7015.02,
         "bcfb": 1275.0,
+        "pcb": 0.0,
         "cgeb": 507.05,
         "total": 8797.07
       },
@@ -401,6 +419,7 @@
       "benefit_split": {
         "ccb": 5933.59,
         "bcfb": 775,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 6708.59
       },
@@ -422,6 +441,7 @@
       "benefit_split": {
         "ccb": 4595.42,
         "bcfb": 775,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 5370.42
       },
@@ -443,6 +463,7 @@
       "benefit_split": {
         "ccb": 4165.4,
         "bcfb": 237.48,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 4402.88
       },
@@ -462,6 +483,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 679.0,
         "total": 679.0
       },
@@ -481,6 +503,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 350.6,
         "total": 350.6
       },
@@ -500,6 +523,7 @@
       "benefit_split": {
         "ccb": 0.0,
         "bcfb": 0.0,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 0.0
       },
@@ -522,6 +546,7 @@
       "benefit_split": {
         "ccb": 7184.93,
         "bcfb": 787.48,
+        "pcb": 0.0,
         "cgeb": 0.0,
         "total": 7972.41
       },
@@ -544,6 +569,7 @@
       "benefit_split": {
         "ccb": 14126.99,
         "bcfb": 2257.04,
+        "pcb": 0.0,
         "cgeb": 1358.0,
         "total": 17742.03
       },
@@ -565,6 +591,7 @@
       "benefit_split": {
         "ccb": 7683.59,
         "bcfb": 1157.04,
+        "pcb": 0.0,
         "cgeb": 1124.0,
         "total": 9964.63
       },
@@ -588,6 +615,7 @@
       "benefit_split": {
         "ccb": 21912.03,
         "bcfb": 3157.04,
+        "pcb": 0.0,
         "cgeb": 1592.0,
         "total": 26661.07
       },
@@ -1139,6 +1167,764 @@
       "prov_tax": 29903.26,
       "combined_tax": 84617.51,
       "effective_rate": 0.437949
+    }
+  ],
+  "pcb_cases": [
+    {
+      "province": "AB",
+      "afni": 15000,
+      "pcb": 3787.0,
+      "total": 20185.0
+    },
+    {
+      "province": "AB",
+      "afni": 20397,
+      "pcb": 3787.0,
+      "total": 20185.0
+    },
+    {
+      "province": "AB",
+      "afni": 26000,
+      "pcb": 3787.0,
+      "total": 20185.0
+    },
+    {
+      "province": "AB",
+      "afni": 26865,
+      "pcb": 3787.0,
+      "total": 20185.0
+    },
+    {
+      "province": "AB",
+      "afni": 28116,
+      "pcb": 3787.0,
+      "total": 20185.0
+    },
+    {
+      "province": "AB",
+      "afni": 30000,
+      "pcb": 3579.76,
+      "total": 19977.76
+    },
+    {
+      "province": "AB",
+      "afni": 34000,
+      "pcb": 3139.76,
+      "total": 19537.76
+    },
+    {
+      "province": "AB",
+      "afni": 44999,
+      "pcb": 1929.87,
+      "total": 17415.0
+    },
+    {
+      "province": "AB",
+      "afni": 45001,
+      "pcb": 1929.65,
+      "total": 17414.51
+    },
+    {
+      "province": "AB",
+      "afni": 47115,
+      "pcb": 1697.11,
+      "total": 16862.43
+    },
+    {
+      "province": "AB",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "AB",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "AB",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "AB",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "BC",
+      "afni": 15000,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 20397,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 26000,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 26865,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 28116,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 30000,
+      "pcb": 0.0,
+      "total": 19248.0
+    },
+    {
+      "province": "BC",
+      "afni": 34000,
+      "pcb": 0.0,
+      "total": 19095.04
+    },
+    {
+      "province": "BC",
+      "afni": 44999,
+      "pcb": 0.0,
+      "total": 17742.21
+    },
+    {
+      "province": "BC",
+      "afni": 45001,
+      "pcb": 0.0,
+      "total": 17741.86
+    },
+    {
+      "province": "BC",
+      "afni": 47115,
+      "pcb": 0.0,
+      "total": 17337.76
+    },
+    {
+      "province": "BC",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 14438.64
+    },
+    {
+      "province": "BC",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 10927.13
+    },
+    {
+      "province": "BC",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 10926.86
+    },
+    {
+      "province": "BC",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 9427.41
+    },
+    {
+      "province": "MB",
+      "afni": 15000,
+      "pcb": 840.0,
+      "total": 17238.0
+    },
+    {
+      "province": "MB",
+      "afni": 20397,
+      "pcb": 705.08,
+      "total": 17103.08
+    },
+    {
+      "province": "MB",
+      "afni": 26000,
+      "pcb": 565.0,
+      "total": 16963.0
+    },
+    {
+      "province": "MB",
+      "afni": 26865,
+      "pcb": 543.38,
+      "total": 16941.38
+    },
+    {
+      "province": "MB",
+      "afni": 28116,
+      "pcb": 512.1,
+      "total": 16910.1
+    },
+    {
+      "province": "MB",
+      "afni": 30000,
+      "pcb": 465.0,
+      "total": 16863.0
+    },
+    {
+      "province": "MB",
+      "afni": 34000,
+      "pcb": 365.0,
+      "total": 16763.0
+    },
+    {
+      "province": "MB",
+      "afni": 44999,
+      "pcb": 90.02,
+      "total": 15575.15
+    },
+    {
+      "province": "MB",
+      "afni": 45001,
+      "pcb": 89.97,
+      "total": 15574.84
+    },
+    {
+      "province": "MB",
+      "afni": 47115,
+      "pcb": 37.12,
+      "total": 15202.44
+    },
+    {
+      "province": "MB",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "MB",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "MB",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "MB",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "NB",
+      "afni": 15000,
+      "pcb": 500.0,
+      "total": 16898.0
+    },
+    {
+      "province": "NB",
+      "afni": 20397,
+      "pcb": 492.06,
+      "total": 16890.06
+    },
+    {
+      "province": "NB",
+      "afni": 26000,
+      "pcb": 380.0,
+      "total": 16778.0
+    },
+    {
+      "province": "NB",
+      "afni": 26865,
+      "pcb": 362.7,
+      "total": 16760.7
+    },
+    {
+      "province": "NB",
+      "afni": 28116,
+      "pcb": 337.68,
+      "total": 16735.68
+    },
+    {
+      "province": "NB",
+      "afni": 30000,
+      "pcb": 300.0,
+      "total": 16698.0
+    },
+    {
+      "province": "NB",
+      "afni": 34000,
+      "pcb": 220.0,
+      "total": 16618.0
+    },
+    {
+      "province": "NB",
+      "afni": 44999,
+      "pcb": 0.02,
+      "total": 15485.15
+    },
+    {
+      "province": "NB",
+      "afni": 45001,
+      "pcb": 0.0,
+      "total": 15484.86
+    },
+    {
+      "province": "NB",
+      "afni": 47115,
+      "pcb": 0.0,
+      "total": 15165.32
+    },
+    {
+      "province": "NB",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "NB",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "NB",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "NB",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "NL",
+      "afni": 15000,
+      "pcb": 3889.92,
+      "total": 20287.92
+    },
+    {
+      "province": "NL",
+      "afni": 20397,
+      "pcb": 3889.92,
+      "total": 20287.92
+    },
+    {
+      "province": "NL",
+      "afni": 26000,
+      "pcb": 2993.44,
+      "total": 19391.44
+    },
+    {
+      "province": "NL",
+      "afni": 26865,
+      "pcb": 2855.04,
+      "total": 19253.04
+    },
+    {
+      "province": "NL",
+      "afni": 28116,
+      "pcb": 2654.88,
+      "total": 19052.88
+    },
+    {
+      "province": "NL",
+      "afni": 30000,
+      "pcb": 2353.44,
+      "total": 18751.44
+    },
+    {
+      "province": "NL",
+      "afni": 34000,
+      "pcb": 1713.44,
+      "total": 18111.44
+    },
+    {
+      "province": "NL",
+      "afni": 44999,
+      "pcb": 0.0,
+      "total": 15485.13
+    },
+    {
+      "province": "NL",
+      "afni": 45001,
+      "pcb": 0.0,
+      "total": 15484.86
+    },
+    {
+      "province": "NL",
+      "afni": 47115,
+      "pcb": 0.0,
+      "total": 15165.32
+    },
+    {
+      "province": "NL",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "NL",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "NL",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "NL",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "NS",
+      "afni": 15000,
+      "pcb": 3049.92,
+      "total": 19447.92
+    },
+    {
+      "province": "NS",
+      "afni": 20397,
+      "pcb": 3049.92,
+      "total": 19447.92
+    },
+    {
+      "province": "NS",
+      "afni": 26000,
+      "pcb": 3049.92,
+      "total": 19447.92
+    },
+    {
+      "province": "NS",
+      "afni": 26865,
+      "pcb": 2617.42,
+      "total": 19015.42
+    },
+    {
+      "province": "NS",
+      "afni": 28116,
+      "pcb": 1991.92,
+      "total": 18389.92
+    },
+    {
+      "province": "NS",
+      "afni": 30000,
+      "pcb": 1049.92,
+      "total": 17447.92
+    },
+    {
+      "province": "NS",
+      "afni": 34000,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "NS",
+      "afni": 44999,
+      "pcb": 0.0,
+      "total": 15485.13
+    },
+    {
+      "province": "NS",
+      "afni": 45001,
+      "pcb": 0.0,
+      "total": 15484.86
+    },
+    {
+      "province": "NS",
+      "afni": 47115,
+      "pcb": 0.0,
+      "total": 15165.32
+    },
+    {
+      "province": "NS",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "NS",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "NS",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "NS",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "ON",
+      "afni": 15000,
+      "pcb": 3519.84,
+      "total": 19917.84
+    },
+    {
+      "province": "ON",
+      "afni": 20397,
+      "pcb": 3519.84,
+      "total": 19917.84
+    },
+    {
+      "province": "ON",
+      "afni": 26000,
+      "pcb": 3519.84,
+      "total": 19917.84
+    },
+    {
+      "province": "ON",
+      "afni": 26865,
+      "pcb": 3519.84,
+      "total": 19917.84
+    },
+    {
+      "province": "ON",
+      "afni": 28116,
+      "pcb": 3419.76,
+      "total": 19817.76
+    },
+    {
+      "province": "ON",
+      "afni": 30000,
+      "pcb": 3269.04,
+      "total": 19667.04
+    },
+    {
+      "province": "ON",
+      "afni": 34000,
+      "pcb": 2949.04,
+      "total": 19347.04
+    },
+    {
+      "province": "ON",
+      "afni": 44999,
+      "pcb": 2069.12,
+      "total": 17554.25
+    },
+    {
+      "province": "ON",
+      "afni": 45001,
+      "pcb": 2068.96,
+      "total": 17553.82
+    },
+    {
+      "province": "ON",
+      "afni": 47115,
+      "pcb": 1899.84,
+      "total": 17065.16
+    },
+    {
+      "province": "ON",
+      "afni": 60000,
+      "pcb": 869.04,
+      "total": 13650.64
+    },
+    {
+      "province": "ON",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "ON",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "ON",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "PE",
+      "afni": 15000,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 20397,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 26000,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 26865,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 28116,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 30000,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 34000,
+      "pcb": 819.84,
+      "total": 17217.84
+    },
+    {
+      "province": "PE",
+      "afni": 44999,
+      "pcb": 819.84,
+      "total": 16304.97
+    },
+    {
+      "province": "PE",
+      "afni": 45001,
+      "pcb": 579.84,
+      "total": 16064.7
+    },
+    {
+      "province": "PE",
+      "afni": 47115,
+      "pcb": 579.84,
+      "total": 15745.16
+    },
+    {
+      "province": "PE",
+      "afni": 60000,
+      "pcb": 579.84,
+      "total": 13361.43
+    },
+    {
+      "province": "PE",
+      "afni": 79999,
+      "pcb": 579.84,
+      "total": 9981.97
+    },
+    {
+      "province": "PE",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "PE",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
+    },
+    {
+      "province": "SK",
+      "afni": 15000,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 20397,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 26000,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 26865,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 28116,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 30000,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 34000,
+      "pcb": 0.0,
+      "total": 16398.0
+    },
+    {
+      "province": "SK",
+      "afni": 44999,
+      "pcb": 0.0,
+      "total": 15485.13
+    },
+    {
+      "province": "SK",
+      "afni": 45001,
+      "pcb": 0.0,
+      "total": 15484.86
+    },
+    {
+      "province": "SK",
+      "afni": 47115,
+      "pcb": 0.0,
+      "total": 15165.32
+    },
+    {
+      "province": "SK",
+      "afni": 60000,
+      "pcb": 0.0,
+      "total": 12781.59
+    },
+    {
+      "province": "SK",
+      "afni": 79999,
+      "pcb": 0.0,
+      "total": 9402.13
+    },
+    {
+      "province": "SK",
+      "afni": 80001,
+      "pcb": 0.0,
+      "total": 9401.86
+    },
+    {
+      "province": "SK",
+      "afni": 100000,
+      "pcb": 0.0,
+      "total": 8039.93
     }
   ],
   "payroll_cases": [

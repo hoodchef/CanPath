@@ -60,6 +60,11 @@ for (const c of fx.province_cases) {
   check(`{prov} ${c.province}@${c.income} tax`, E.combinedTax(c.income, c.province, cfg), c.combined_tax);
   check(`{prov} ${c.province}@${c.income} emr`, E.effectiveMarginalRate(c.income, h, cfg).effective_rate, c.effective_rate, 1e-6);
 }
+for (const c of fx.pcb_cases) {
+  const h = { province: c.province, child_ages: [4, 8], partner_income: 0, partnered: true };
+  check(`pcb ${c.province}@${c.afni}`, E.provincialChildBenefit(c.afni, [4, 8], c.province, cfg), c.pcb);
+  check(`benefits ${c.province}@${c.afni}`, E.totalBenefits(c.afni, h, cfg).total, c.total);
+}
 for (const c of fx.payroll_cases) {
   const d = E.payrollDeductions(c.income, E.TAX_2026);
   check(`payroll@${c.income} cpp`, d.cpp, c.cpp);

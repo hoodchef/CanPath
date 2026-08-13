@@ -883,10 +883,26 @@ function update(){
      effective marginal rate omits provincial clawbacks and is a floor, and
      a tool whose entire claim is "your real rate" must say so where the
      province is chosen rather than in a footnote. */
-  $("provNote").innerHTML=state.prov==="BC"
-    ? "BC Family Benefit and its clawback are modelled."
-    : `<b>${cfg.provinces[state.prov].name}</b>: income tax only. This province's `+
-      `child benefits are not modelled, so the marginal rate shown is a floor.`;
+  /* A cliff is not a phase-out. PEI's benefit steps down by a fixed amount at
+     $45,000 and again at $80,000, so the "marginal rate" across that dollar is
+     several hundred percent -- true, but an artefact of differencing across a
+     discontinuity rather than a rate anyone experiences on the next dollar.
+     Name the cliff instead of printing the number. */
+  const pcbCfg=(cfg.benefits.provincial_child_benefits||{})[state.prov];
+  const pname=cfg.provinces[state.prov].name;
+  let pmsg;
+  if(state.prov==="BC")
+    pmsg="BC Family Benefit and its clawback are modelled.";
+  else if(!pcbCfg)
+    pmsg=`<b>${pname}</b> has no provincial child benefit, so income tax is the whole of it here.`;
+  else if(pcbCfg.type==="tiered"){
+    const edges=pcbCfg.tiers.map(t=>t.upto);
+    pmsg=`<b>${pcbCfg.name}</b> steps down at ${edges.map(money).join(" and ")} rather than `+
+      `phasing out. Crossing either line loses the whole step at once, so the marginal `+
+      `rate at those exact points is a cliff, not a percentage.`;
+  }else
+    pmsg=`<b>${pcbCfg.name}</b> is modelled and included in the rate above.`;
+  $("provNote").innerHTML=pmsg;
 
   /* ---- savings-capacity worksheet ----
      The monthly savings figure drove the projection, the allocation and the

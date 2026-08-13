@@ -25,7 +25,8 @@ sys.path.insert(0, str(ROOT))
 
 from engine.tax import (load_year, payroll_deductions,               # noqa: E402
                         provincial_tax, combined_tax)
-from engine.benefits import Household, total_benefits              # noqa: E402
+from engine.benefits import (Household, total_benefits,             # noqa: E402
+                             provincial_child_benefit)
 from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E402
                              value_of_contribution)
 from engine.accounts import Profile, optimize                       # noqa: E402
@@ -199,6 +200,19 @@ def build(cfg):
                 "effective_rate": r(effective_marginal_rate(inc, h, cfg)["effective_rate"], 6),
             })
 
+    # Provincial child benefits: every province, at incomes straddling each
+    # threshold, tier edge and zero point.
+    pcb_cases = []
+    for code in sorted(cfg["provinces"]):
+        for inc in (15000, 20397, 26000, 26865, 28116, 30000, 34000, 44999,
+                    45001, 47115, 60000, 79999, 80001, 100000):
+            h = Household(code, [4, 8], 0.0, partnered_flag=True)
+            pcb_cases.append({
+                "province": code, "afni": inc,
+                "pcb": r(provincial_child_benefit(inc, [4, 8], code, cfg), 2),
+                "total": r(total_benefits(inc, h, cfg)["total"], 2),
+            })
+
     payroll = []
     for inc in PAYROLL_INCOMES:
         d = payroll_deductions(inc, cfg)
@@ -251,6 +265,7 @@ def build(cfg):
         "allocation_cases": allocation,
         "projection_cases": projection,
         "province_cases": province_cases,
+        "pcb_cases": pcb_cases,
         "payroll_cases": payroll,
         "depletion_cases": depletion,
         "cpp_breakeven_cases": breakeven,

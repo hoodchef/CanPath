@@ -7,7 +7,8 @@
     "warning": "BC indexation is PAUSED for 2027-2030 per Budget 2026. Do not auto-index BC brackets forward.",
     "bc_family_benefit": "BC Family Benefit 2026-27, user-supplied 2026-08. Maxima 1750/1100/900 per 1st/2nd/additional child, single-parent supplement 500. Reduced 4% of AFNI over 30176 but never below the per-child floors (775/750/725); the floor then reduces 4% of AFNI over 96562. NOT independently verified against a CRA/BC publication -- confirm before anyone relies on it.",
     "cgeb": "Canada Groceries and Essentials Benefit (the renamed GST/HST credit), July 2026 onward, user-supplied 2026-08. Single 679, couple 890, 234 per child UNDER 19 (note: 19, not the CCB's 18). Reduced 5% of AFNI over 46432. Self-consistent: 679/0.05 + 46432 = 60012, the stated zero point. An earlier figure of 2% did not reconcile and was superseded. NOT independently verified -- confirm before relying on it.",
-    "provinces": "Provincial brackets, BPAs and low-income reductions: user-supplied 2026-08, NOT independently verified -- confirm against each province before relying on them. BC retains the 5.60% bottom rate and 690 tax reduction from the earlier submission, which stated Budget 2026 raised it; a later submission gave 5.06%/575, BC's pre-2026 figures, and was not adopted. ON and NL ship with NO low-income reduction: the supplied blocks left those parameters null. ON's surtax is also unmodelled, which understates Ontario tax at higher incomes. Quebec is excluded deliberately -- it needs its own return, QPP instead of CPP, and the 16.5% federal abatement, none of which this engine models. PROVINCIAL CHILD BENEFITS ARE MODELLED FOR BC ONLY, so the effective marginal rate outside BC omits provincial clawbacks and is a floor. NL's low-income reduction uses base_amount 842 only: the supplied dependant_amount of 563 cannot be applied because provincial_tax takes no household, and the supplied phaseout_end of 30491 reconciles with neither 842 (zero at 29,454) nor 842+563 (zero at 32,972) at the stated 16%."
+    "provinces": "Provincial brackets, BPAs and low-income reductions: user-supplied 2026-08, NOT independently verified -- confirm against each province before relying on them. BC retains the 5.60% bottom rate and 690 tax reduction from the earlier submission, which stated Budget 2026 raised it; a later submission gave 5.06%/575, BC's pre-2026 figures, and was not adopted. ON and NL ship with NO low-income reduction: the supplied blocks left those parameters null. ON's surtax is also unmodelled, which understates Ontario tax at higher incomes. Quebec is excluded deliberately -- it needs its own return, QPP instead of CPP, and the 16.5% federal abatement, none of which this engine models. PROVINCIAL CHILD BENEFITS ARE MODELLED FOR BC ONLY, so the effective marginal rate outside BC omits provincial clawbacks and is a floor. NL's low-income reduction uses base_amount 842 only: the supplied dependant_amount of 563 cannot be applied because provincial_tax takes no household, and the supplied phaseout_end of 30491 reconciles with neither 842 (zero at 29,454) nor 842+563 (zero at 32,972) at the stated 16%.",
+    "provincial_child_benefits": "User-supplied 2026-08, NOT independently verified. BC is modelled separately as bc_family_benefit at 4%. SK is null because Saskatchewan has no provincial child benefit; its SLITC is a low-income tax credit. NS USES THE STATED 50%, which does NOT reconcile with the earlier statement that it is partial from 26,000 to 34,000: at 50% one child reaches zero at 29,050, and the 34,000 endpoint would require 19.06%. The explicit rate was preferred over the rate inferred from the band, but 50% is by far the steepest child-benefit clawback here and is worth re-checking. AB's two rates are supplied as APPROXIMATE ('~11%', '~15%') and are the only inexact figures in this file. Its working component is modelled as available in full above 2,760 of employment income rather than phasing in, because no phase-in rate was supplied. PE is a literal two-tier step, so it produces genuine cliffs at 45,000 and 80,000 rather than a phase-out. QC is excluded; its Family Allowance is a separate Retraite Quebec program."
   },
   "federal": {
     "brackets": [
@@ -349,6 +350,90 @@
       "child_age_limit": 19,
       "threshold": 46432,
       "phaseout_rate": 0.05
+    },
+    "provincial_child_benefits": {
+      "SK": null,
+      "AB": {
+        "name": "Alberta Child and Family Benefit",
+        "type": "ab",
+        "base_amounts": [
+          1529,
+          764
+        ],
+        "base_threshold": 28116,
+        "base_rate": 0.11,
+        "working_amounts": [
+          782,
+          712,
+          426,
+          141
+        ],
+        "working_threshold": 47115,
+        "working_rate": 0.15,
+        "working_min_employment": 2760
+      },
+      "MB": {
+        "name": "Manitoba Child Benefit",
+        "type": "linear",
+        "amounts": [
+          420
+        ],
+        "threshold": 15000,
+        "rate": 0.025
+      },
+      "ON": {
+        "name": "Ontario Child Benefit",
+        "type": "linear",
+        "amounts": [
+          1759.92
+        ],
+        "threshold": 26865,
+        "rate": 0.08
+      },
+      "NB": {
+        "name": "New Brunswick Child Tax Benefit",
+        "type": "linear",
+        "amounts": [
+          250
+        ],
+        "threshold": 20000,
+        "rate": 0.02
+      },
+      "NS": {
+        "name": "Nova Scotia Child Benefit",
+        "type": "linear",
+        "amounts": [
+          1524.96
+        ],
+        "threshold": 26000,
+        "rate": 0.5
+      },
+      "NL": {
+        "name": "Newfoundland and Labrador Child Benefit",
+        "type": "linear",
+        "amounts": [
+          1887.96,
+          2001.96,
+          2149.92,
+          2310
+        ],
+        "threshold": 20397,
+        "rate": 0.16
+      },
+      "PE": {
+        "name": "Prince Edward Island Child Benefit",
+        "type": "tiered",
+        "tiers": [
+          {
+            "upto": 45000,
+            "per_child": 409.92
+          },
+          {
+            "upto": 80000,
+            "per_child": 289.92
+          }
+        ]
+      }
     }
   },
   "accounts": {

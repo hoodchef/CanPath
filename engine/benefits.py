@@ -149,12 +149,73 @@ def canada_groceries_essentials_benefit(afni: float, household: Household,
     return max(0.0, maximum - reduction)
 
 
+def _stacked_max(amounts: List[float], n: int) -> float:
+    """Per-child amounts that differ by birth order, last value repeating."""
+    return sum(amounts[min(i, len(amounts) - 1)] for i in range(n))
+
+
+def provincial_child_benefit(afni: float, child_ages: List[int],
+                             province: str, cfg: dict,
+                             employment_income: float = None) -> float:
+    """
+    Provincial child benefits other than BC's, which has its own shape.
+
+    Three forms, because three are what the supplied data describes:
+
+      linear -- one maximum, one threshold, one rate.
+      tiered -- a literal step per income band. Not a phase-out: a CLIFF,
+                producing a marginal rate of several hundred percent on the
+                dollar that crosses it. That is what PEI's data says, so it
+                is what is modelled.
+      ab     -- Alberta's two independent components, a base and a working
+                amount, each with its own threshold and rate. The working
+                component is treated as available in full above its
+                employment-income floor rather than phasing in, because no
+                phase-in rate was supplied.
+
+    A province mapped to null has no benefit at all -- Saskatchewan -- which
+    is a different fact from "not yet modelled" and is recorded as such.
+    """
+    table = cfg["benefits"].get("provincial_child_benefits") or {}
+    b = table.get(province)
+    if not b:
+        return 0.0
+    n = len([a for a in child_ages if a < 18])
+    if n == 0:
+        return 0.0
+
+    kind = b["type"]
+    if kind == "linear":
+        maximum = _stacked_max(b["amounts"], n)
+        return max(0.0, maximum - b["rate"] * max(0.0, afni - b["threshold"]))
+
+    if kind == "tiered":
+        for tier in b["tiers"]:
+            if afni <= tier["upto"]:
+                return tier["per_child"] * n
+        return 0.0
+
+    if kind == "ab":
+        base = max(0.0, _stacked_max(b["base_amounts"], n)
+                   - b["base_rate"] * max(0.0, afni - b["base_threshold"]))
+        earned = afni if employment_income is None else employment_income
+        working = 0.0
+        if earned > b["working_min_employment"]:
+            working = max(0.0, _stacked_max(b["working_amounts"], n)
+                          - b["working_rate"] * max(0.0, afni - b["working_threshold"]))
+        return base + working
+
+    return 0.0
+
+
 def total_benefits(afni: float, household: Household, cfg: dict) -> dict:
     """All income-tested benefits for a household. Extend as coverage grows."""
     ccb = canada_child_benefit(afni, household.child_ages, cfg)
     bcfb = (bc_family_benefit(afni, household.child_ages, cfg,
                               single_parent=not household.partnered)
             if household.province == "BC" else 0.0)
+    pcb = provincial_child_benefit(afni, household.child_ages,
+                                   household.province, cfg)
     cgeb = canada_groceries_essentials_benefit(afni, household, cfg)
-    return {"ccb": ccb, "bcfb": bcfb, "cgeb": cgeb,
-            "total": ccb + bcfb + cgeb}
+    return {"ccb": ccb, "bcfb": bcfb, "pcb": pcb, "cgeb": cgeb,
+            "total": ccb + bcfb + pcb + cgeb}

@@ -140,6 +140,7 @@ const TAX_2026 = {
       phaseout_rate: 0.04,
       floor_first_child: 775, floor_second_child: 750, floor_additional_child: 725,
     },
+    provincial_child_benefits: {SK:null,AB:{name:"Alberta Child and Family Benefit",type:"ab",base_amounts:[1529,764],base_threshold:28116,base_rate:.11,working_amounts:[782,712,426,141],working_threshold:47115,working_rate:.15,working_min_employment:2760},MB:{name:"Manitoba Child Benefit",type:"linear",amounts:[420],threshold:15000,rate:.025},ON:{name:"Ontario Child Benefit",type:"linear",amounts:[1759.92],threshold:26865,rate:.08},NB:{name:"New Brunswick Child Tax Benefit",type:"linear",amounts:[250],threshold:20000,rate:.02},NS:{name:"Nova Scotia Child Benefit",type:"linear",amounts:[1524.96],threshold:26000,rate:.5},NL:{name:"Newfoundland and Labrador Child Benefit",type:"linear",amounts:[1887.96,2001.96,2149.92,2310],threshold:20397,rate:.16},PE:{name:"Prince Edward Island Child Benefit",type:"tiered",tiers:[{upto:45000,per_child:409.92},{upto:80000,per_child:289.92}]}},
     cgeb: {
       max_single: 679, max_couple: 890, max_per_child: 234,
       child_age_limit: 19, threshold: 46432, phaseout_rate: 0.05,
@@ -263,12 +264,37 @@ function cgeb(afni,h,cfg){const c=cfg.benefits.cgeb;if(!c)return 0;
   const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
   const mx=(partnered?c.max_couple:c.max_single)+c.max_per_child*kids;
   return Math.max(0,mx-c.phaseout_rate*Math.max(0,afni-c.threshold));}
+
+/* Provincial child benefits other than BC's. linear = one rate; tiered = a
+   literal STEP, i.e. a real cliff, not a phase-out; ab = Alberta's two
+   independent components. A province mapped to null has none at all. */
+const stackedMax=(amts,n)=>{let t=0;for(let i=0;i<n;i++)t+=amts[Math.min(i,amts.length-1)];return t;};
+function provincialChildBenefit(afni,ages,prov,cfg,employmentIncome){
+  const tbl=cfg.benefits.provincial_child_benefits||{},b=tbl[prov];
+  if(!b)return 0;
+  const n=ages.filter(a=>a<18).length;if(!n)return 0;
+  if(b.type==="linear")
+    return Math.max(0,stackedMax(b.amounts,n)-b.rate*Math.max(0,afni-b.threshold));
+  if(b.type==="tiered"){
+    for(const t of b.tiers)if(afni<=t.upto)return t.per_child*n;
+    return 0;}
+  if(b.type==="ab"){
+    const base=Math.max(0,stackedMax(b.base_amounts,n)
+      -b.base_rate*Math.max(0,afni-b.base_threshold));
+    const earned=employmentIncome==null?afni:employmentIncome;
+    let work=0;
+    if(earned>b.working_min_employment)
+      work=Math.max(0,stackedMax(b.working_amounts,n)
+        -b.working_rate*Math.max(0,afni-b.working_threshold));
+    return base+work;}
+  return 0;}
 function totalBenefits(afni,h,cfg){
   const partnered=h.partnered!=null?h.partnered:(h.partner_income||0)>0;
   const ccb=canadaChildBenefit(afni,h.child_ages,cfg);
   const bcfb=h.province==="BC"?bcFamilyBenefit(afni,h.child_ages,cfg,!partnered):0;
+  const pcb=provincialChildBenefit(afni,h.child_ages,h.province,cfg);
   const g=cgeb(afni,h,cfg);
-  return{ccb,bcfb,cgeb:g,total:ccb+bcfb+g};}
+  return{ccb,bcfb,pcb,cgeb:g,total:ccb+bcfb+pcb+g};}
 
 function netPosition(income, household, cfg, deduction = 0) {
   const taxable = Math.max(0, income - deduction);
@@ -419,6 +445,7 @@ function guardrails(profile, cfg, allocated, rrspLeft) {
 
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { TAX_2026, bracketTax, federalBPA, federalTax, provincialTax, combinedTax,
-    canadaChildBenefit, bcFamilyBenefit, cgeb, totalBenefits, netPosition, effectiveMarginalRate, valueOfContribution, optimize,
+    canadaChildBenefit, bcFamilyBenefit, provincialChildBenefit, cgeb, totalBenefits,
+    netPosition, effectiveMarginalRate, valueOfContribution, optimize,
     payrollDeductions };
 }
