@@ -49,6 +49,10 @@
   --shadow:0 1px 2px #00000040;
 }
 *{box-sizing:border-box}
+/* Author display rules outrank the UA sheet's [hidden]{display:none}, so any
+   element given display:flex/grid still rendered while hidden. #allocNote left
+   a 23px band and a stray rule in the commonest scenario on the page. */
+[hidden]{display:none!important}
 html,body{margin:0;padding:0}
 body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;
   line-height:1.5;-webkit-font-smoothing:antialiased}
@@ -289,7 +293,9 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--stat);outline-o
 .addkid:hover{border-color:var(--stat);color:var(--stat)}
 
 /* --- hero --- */
-.hero{padding:24px 24px 22px;text-align:left}
+/* Scoped: bare .hero came LATER than .kpi at equal specificity, so it won the
+   cascade and made the first KPI tile 26px taller than its siblings. */
+main>.hero{padding:24px 24px 22px;text-align:left}
 .hero .eyebrow{margin-bottom:8px}
 .hero-num{font-family:var(--mono);font-size:clamp(38px,7vw,62px);font-weight:600;
   letter-spacing:-.03em;line-height:1;color:var(--keep)}
@@ -315,7 +321,10 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--stat);outline-o
 .pills button.pill-var[aria-pressed=true]{background:var(--stat);color:var(--on-ink);
   border-style:solid;border-color:var(--stat)}
 
-svg{display:block;width:100%;height:auto;touch-action:none}
+/* pan-y, not none: `none` made every chart a dead zone where a vertical
+   swipe did nothing, ~260px of unscrollable page on a phone. Horizontal
+   drags still reach pointermove, so the scrub survives. */
+svg{display:block;width:100%;height:auto;touch-action:pan-y}
 .axis{font-family:var(--mono);font-size:11px;fill:var(--muted)}
 .gridline{stroke:var(--rule);stroke-width:1}
 /* Dashed rules recede behind the data; the baseline stays solid so the
@@ -882,6 +891,10 @@ function read(){
   };
 }
 
+let urlT=null;
+function syncURL(){clearTimeout(urlT);
+  urlT=setTimeout(()=>{try{history.replaceState(null,"","?"+encodeState());}catch(e){}},400);}
+
 function update(){
   const i=read();
   $("retrateOut").textContent=(i.retrate*100).toFixed(0)+"%";
@@ -959,8 +972,7 @@ function update(){
   $("roomTable").innerHTML=roomRows.map(([n,room,used])=>
     `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
     `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
-
-  history.replaceState(null,"","?"+encodeState());
+  syncURL();
 }
 
 ["income","partner","save","matchRate","matchCap","retrate","fhsa","hasMatch"].forEach(id=>{

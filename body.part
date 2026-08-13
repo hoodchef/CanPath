@@ -84,7 +84,7 @@
       <div class="field">
         <label for="income">Employment income</label>
         <input type="number" id="income" value="68000" min="0" max="500000" step="1000">
-        <input type="range" id="incomeRange" value="68000" min="15000" max="250000" step="500" aria-label="Income">
+        <input type="range" id="incomeRange" value="68000" min="0" max="300000" step="1000" aria-label="Employment income">
       </div>
       <div class="field" id="partnerField" hidden>
         <label for="partner">Partner's income</label>

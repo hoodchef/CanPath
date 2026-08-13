@@ -496,8 +496,8 @@
     <p>These two words get used interchangeably and mean different things.</p>
     <ul>
       <li>A <b>deduction</b> reduces the income you are taxed on. It is worth your
-      marginal rate — a {{$accounts.tfsa.annual_limit}} RRSP contribution saves more
-      for a high earner than a low earner.</li>
+      marginal rate: the same contribution saves a high earner more than a low
+      earner, because they get back a larger share of it.</li>
       <li>A <b>non-refundable credit</b> reduces the tax you owe, calculated at the
       lowest rate — federally {{%federal.credit_rate}}, and
       {{%provinces.BC.credit_rate}} in BC. It is worth the same to everyone, and it

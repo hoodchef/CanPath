@@ -102,6 +102,10 @@ function read(){
   };
 }
 
+let urlT=null;
+function syncURL(){clearTimeout(urlT);
+  urlT=setTimeout(()=>{try{history.replaceState(null,"","?"+encodeState());}catch(e){}},400);}
+
 function update(){
   const i=read();
   $("retrateOut").textContent=(i.retrate*100).toFixed(0)+"%";
@@ -179,8 +183,7 @@ function update(){
   $("roomTable").innerHTML=roomRows.map(([n,room,used])=>
     `<tr><td>${n}</td><td>${money(room)}</td><td>${money(used)}</td>`+
     `<td>${money(Math.max(0,room-used))}</td></tr>`).join("");
-
-  history.replaceState(null,"","?"+encodeState());
+  syncURL();
 }
 
 ["income","partner","save","matchRate","matchCap","retrate","fhsa","hasMatch"].forEach(id=>{

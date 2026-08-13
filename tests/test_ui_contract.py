@@ -81,13 +81,15 @@ for cls in ("neg", "pos", "pill-var", "mark", "filled"):
 # The KPI modifier must not collide with the guardrail callout box.
 check("KPI value modifier is not .warn", '.kpi .v.warn' not in html)
 
-print(f"\n{'=' * 72}\n  {PASS} passed, {FAIL} failed\n{'=' * 72}")
-sys.exit(1 if FAIL else 0)
-
 print("\n--- allocate.html: every id its script reads exists in the page ---")
+# This block used to sit BELOW sys.exit() and had never once executed. The
+# allocate page's id contract was unguarded the entire time it existed.
 _alloc_html = open(os.path.join(ROOT, "allocate.html")).read()
 _missing = sorted({m for m in re.findall(r'\$\("([\w-]+)"\)', allocapp)
                    if f'id="{m}"' not in _alloc_html})
 check("no id read by alloc-app.part is missing from the page", not _missing,
       f"missing: {_missing}")
+
+print(f"\n{'=' * 72}\n  {PASS} passed, {FAIL} failed\n{'=' * 72}")
+sys.exit(1 if FAIL else 0)
 

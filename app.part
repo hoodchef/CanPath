@@ -93,6 +93,12 @@ function renderHorizons(maxYears,retAge){
   });
 }
 
+/* Safari throws SecurityError past ~100 replaceState calls per 30s, and a
+   single slider drag clears that. Debounced so the URL still tracks. */
+let urlT=null;
+function syncURL(){clearTimeout(urlT);
+  urlT=setTimeout(()=>{try{history.replaceState(null,"","?"+encodeState());}catch(e){}},400);}
+
 /* ---- inputs ---- */
 function read(){
   const kids=state.haskids==="yes"?state.kids.slice():[];
@@ -315,7 +321,10 @@ function drawGrowth(i,st,nestEgg){
   ["A","B"].forEach((key,n)=>{
     const sc=SCN[key];if(!sc||!sc.curve)return;
     const c=sc.curve;let p="";
-    for(let k=0;k<=60;k++){const t=years*k/60;
+    /* snapshot() records the scenario's own horizon; drawing it over the
+       CURRENT one extrapolated a saved 33-year plan across 41 years. */
+    const span=Math.min(years,c.years||years);
+    for(let k=0;k<=60;k++){const t=span*k/60;
       p+=(k?"L":"M")+X(t)+" "+Y(fvPiecewise(c.have,c.mE,c.mL,c.k,c.rate,t));}
     out+=`<path d="${p}" fill="none" stroke="var(--${n?"gold":"stat"})" stroke-width="1.5" `+
          `stroke-dasharray="5 3" opacity=".75"/>`;
@@ -366,6 +375,12 @@ function drawGrowth(i,st,nestEgg){
        `fill="transparent" style="cursor:crosshair"/>`;
   out+=`<g id="ghover" style="pointer-events:none"></g>`;
   svg.innerHTML=out;
+  /* A <title> child cannot survive innerHTML replacement, so the name is set
+     as an attribute after every draw. */
+  svg.setAttribute("aria-label",
+    `Balance over time. From ${money(i.have)} today to ${money(last.total)} after `+
+    `${years} years: ${money(last.mine)} contributed, ${money(last.gov)} government `+
+    `help, ${money(last.growth)} growth. Year-by-year figures are in the Schedule tab.`);
   CHART={at,sx,sy,years,gw:GW,gh:GH};
 
   $("growthRead").innerHTML=
@@ -647,7 +662,10 @@ function update(){
   $("kCrossSub").textContent=crossRow?`age ${crossRow.age}, growth exceeds all money in`
     :"Not within this horizon";
   const roomTotal=(alloc.rrsp_room_used||0)+(alloc.allocation.tfsa||0)+(alloc.allocation.fhsa||0);
-  const roomAvail=(alloc.rrsp_room_used||0)+(alloc.rrsp_room_left||0)+7000+(i.fhsa?8000:0);
+  /* Read the limits from the tax data. Hardcoding 7000/8000 here is the
+     exact drift the build system exists to prevent. */
+  const roomAvail=(alloc.rrsp_room_used||0)+(alloc.rrsp_room_left||0)
+    +cfg.accounts.tfsa.annual_limit+(i.fhsa?cfg.accounts.fhsa.annual_limit:0);
   $("kRoom").textContent=roomAvail>0?pct0(Math.min(1,roomTotal/roomAvail)):"—";
   $("kRoomSub").textContent=`${money(roomTotal)} of ${money(roomAvail)} sheltered`;
 
@@ -791,8 +809,11 @@ function update(){
        can invest on top of what you already saved.`;
 
   /* ---- URL reflects the scenario, without spamming history ---- */
-  history.replaceState(null,"","?"+encodeState());
+  /* Safari throws SecurityError past ~100 replaceState calls per 30s, which a
+     single slider drag clears. It sat ABOVE __last, so the throw also skipped
+     that assignment and "Save as A" snapshotted a stale scenario. */
   window.__last={i,totalFV,ready,st};
+  syncURL();
 }
 
 /* ---- wiring ---- */
@@ -800,7 +821,7 @@ function update(){
  "matchRate","matchCap","retrate","wdraw","cppshare","showBand"].forEach(id=>{
   const el=$(id);if(!el)return;
   el.addEventListener("input",()=>{
-    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,15000),250000);
+    if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,0),300000);
     if(id==="age"||id==="retage")state.horizon=null;
     if(id==="hasMatch")$("matchWrap").hidden=!$("hasMatch").checked;
     update();
@@ -838,7 +859,8 @@ document.addEventListener("keydown",e=>{
   if(e.metaKey||e.ctrlKey||e.altKey)return;
   const t=e.target;
   if(t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA"||t.isContentEditable))return;
-  const map={"1":"proj","2":"marg","3":"alloc","4":"sched"};
+  /* "alloc" moved to its own page; the old map blanked every panel. */
+  const map={"1":"proj","2":"marg","3":"sched"};
   if(map[e.key]){e.preventDefault();showTab(map[e.key]);}
 });
 
