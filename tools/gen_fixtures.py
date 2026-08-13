@@ -76,6 +76,13 @@ ALLOCATION = [
     # room still open. Money must go to the RRSP, not to a taxable account --
     # the shelter on 30 years of growth outlives the rate difference.
     (55000, 24000, [], False, 0.0, 0, 0.30),
+    # RESP: a 20% grant on the first $2,500 per child. Scores above an RRSP
+    # whose arbitrage is thin and below an FHSA at a high marginal rate, and
+    # must never enter total_deducted -- it is not a deductible contribution.
+    (95000, 20000, [4, 8], True, 0.0, 0, 0.25),
+    (45000, 12000, [4, 8], True, 0.0, 0, 0.25),
+    (150000, 40000, [3, 6, 9], True, 0.5, 4000, 0.30),
+    (68000, 3000, [5], False, 0.0, 0, 0.25),
 ]
 
 # (principal, monthly, rate, years)
@@ -163,6 +170,7 @@ def build(cfg):
             "allocation": {k: r(v, 2) for k, v in res["allocation"].items()},
             "total_deducted": r(res["total_deducted"], 2),
             "rrsp_room": r(p.rrsp_room, 2),
+            "resp_grant_earned": r(res["resp_grant_earned"], 2),
             "tax_refund": r(res["tax_refund"], 2),
             "benefit_restored": r(res["benefit_restored"], 2),
         })

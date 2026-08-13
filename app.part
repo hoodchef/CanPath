@@ -20,6 +20,8 @@ const ACCOUNTS={
     why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
   fhsa:{name:"FHSA",full:"First Home Savings Account",
     why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  resp:{name:"RESP",full:"Registered Education Savings Plan",
+    why:"The government adds 20 cents per dollar for your kids' education, up to $500 a child each year. No deduction, but no other account pays you a guaranteed 20% either."},
   rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
     why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
   tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
@@ -805,7 +807,7 @@ function update(){
      here declared-but-unused since that move. */
   const homeOrder=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
   const homeRows=homeOrder.concat(
-    ["employer_match","fhsa","rrsp","tfsa","non_registered"]
+    ["employer_match","fhsa","resp","rrsp","tfsa","non_registered"]
       .filter(k=>alloc.allocation[k]>0&&homeOrder.indexOf(k)<0));
   const hel=$("homeAlloc");
   if(!homeRows.length){

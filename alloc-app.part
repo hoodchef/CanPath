@@ -17,6 +17,8 @@ const ACCOUNTS={
     why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
   fhsa:{name:"FHSA",full:"First Home Savings Account",
     why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  resp:{name:"RESP",full:"Registered Education Savings Plan",
+    why:"The government adds 20 cents per dollar for your kids' education, up to $500 a child each year. No deduction, but no other account pays you a guaranteed 20% either."},
   rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
     why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
   tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
@@ -129,7 +131,7 @@ function update(){
   $("kRoi").textContent=saved>0?pct(back/saved):"—";
 
   /* The real funding sequence from the solver, not a hardcoded list. */
-  const fallback=["employer_match","fhsa","rrsp","tfsa","non_registered"];
+  const fallback=["employer_match","fhsa","resp","rrsp","tfsa","non_registered"];
   const seq=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
   const rows=seq.concat(fallback.filter(k=>alloc.allocation[k]>0&&seq.indexOf(k)<0));
   const el=$("alloc");el.innerHTML="";

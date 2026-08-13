@@ -24,6 +24,8 @@ class Profile:
     tfsa_room: float = None
     fhsa_room: float = None
     fhsa_lifetime_remaining: float = None    # FHSA is lifetime-capped, not just annual
+    resp_children: int = None                # defaults to the household's under-18 count
+    cesg_remaining: float = None             # unclaimed CESG across those children
     employer_match_rate: float = 0.0         # e.g. 0.50 = 50 cents per dollar
     employer_match_cap: float = 0.0          # max employee $ that gets matched
 
@@ -36,6 +38,11 @@ class Profile:
             self.tfsa_room = a["tfsa"]["annual_limit"]
         if self.fhsa_lifetime_remaining is None:
             self.fhsa_lifetime_remaining = a["fhsa"]["lifetime_limit"]
+        if self.resp_children is None:
+            self.resp_children = self.household.n_children
+        if self.cesg_remaining is None:
+            self.cesg_remaining = (a["resp"]["cesg_lifetime_max"]
+                                   * self.resp_children)
         if self.fhsa_room is None:
             # The $40,000 lifetime cap binds before the $8,000 annual one in
             # the final year of an FHSA. Granting the annual limit forever is
@@ -63,10 +70,19 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
                         baseline every other account must beat
     """
     profile.resolve_room(cfg)
+    acct = cfg["accounts"]
 
-    allocated = {"employer_match": 0.0, "fhsa": 0.0, "rrsp": 0.0,
+    allocated = {"employer_match": 0.0, "fhsa": 0.0, "resp": 0.0, "rrsp": 0.0,
                  "tfsa": 0.0, "non_registered": 0.0}
-    room = {"fhsa": profile.fhsa_room, "tfsa": profile.tfsa_room}
+    # RESP room here means "contribution that still attracts the grant". Past
+    # the matched amount an RESP is just another sheltered account with no
+    # deduction, which the solver has no reason to rank above a TFSA, so the
+    # room stops where the 20% stops.
+    resp_annual = acct["resp"]["cesg_matched_contribution"] * profile.resp_children
+    resp_by_grant = (profile.cesg_remaining / acct["resp"]["cesg_match_rate"]
+                     if acct["resp"]["cesg_match_rate"] else 0.0)
+    room = {"fhsa": profile.fhsa_room, "tfsa": profile.tfsa_room,
+            "resp": max(0.0, min(resp_annual, resp_by_grant))}
 
     # A group-RRSP match is still an RRSP. The employee's contribution AND
     # the employer's match both consume the SAME contribution room, so they
@@ -100,6 +116,10 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
             scores["employer_match"] = profile.employer_match_rate + emr
         if room["fhsa"] > 0:
             scores["fhsa"] = emr
+        if room["resp"] > 0:
+            # The grant rate alone. An RESP contribution is NOT deductible, so
+            # unlike the employer match its score carries no emr term.
+            scores["resp"] = acct["resp"]["cesg_match_rate"]
         if rrsp_pool > 0:
             scores["rrsp"] = emr - profile.expected_retirement_rate
         if room["tfsa"] > 0:
@@ -153,6 +173,9 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
         if best not in sequence:
             sequence.append(best)
 
+        # RESP is deliberately absent: contributions are not deductible, and
+        # adding it here would inflate the refund and the restored benefit
+        # shown to every household with children.
         if best in ("rrsp", "fhsa", "employer_match"):
             deducted += amount
 
@@ -171,6 +194,7 @@ def optimize(profile: Profile, cfg: dict, chunk: float = 250.0) -> dict:
         "tax_refund": before["tax"] - after["tax"],
         "benefit_restored": after["benefits"] - before["benefits"],
         "employer_match_earned": allocated["employer_match"] * profile.employer_match_rate,
+        "resp_grant_earned": allocated["resp"] * acct["resp"]["cesg_match_rate"],
         "warnings": _guardrails(profile, cfg, allocated, rrsp_pool),
         "steps": steps,
     }

@@ -52,6 +52,9 @@ for (const c of fx.allocation_cases) {
   chk(`alloc@${c.income} refund`, r.tax_refund, c.tax_refund);
   chk(`alloc@${c.income} benefit`, r.benefit_restored, c.benefit_restored);
   chk(`alloc@${c.income} deducted`, r.total_deducted, c.total_deducted);
+  chk(`alloc@${c.income} resp grant`, r.resp_grant_earned, c.resp_grant_earned);
+  const ded = (r.allocation.employer_match || 0) + (r.allocation.fhsa || 0) + (r.allocation.rrsp || 0);
+  chk(`alloc@${c.income} RESP excluded from deducted`, r.total_deducted, ded);
   // The shipped app must respect contribution room too, not just the
   // reference. Derived from the allocation rather than the solver's own
   // room accounting, so deleting that accounting fails the test.

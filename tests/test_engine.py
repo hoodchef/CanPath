@@ -109,5 +109,22 @@ for _remaining, _expected in [(40000, 8000), (8000, 8000), (3000, 3000), (0, 0)]
     optimize(_p, cfg)
     check(f"FHSA room with {_remaining:,} of lifetime left", _p.fhsa_room, _expected)
 
+print("\n--- RESP room is capped by the CESG a child has left, not just the year ---")
+# The $7,200 lifetime grant runs out after roughly 14 fully-matched years.
+# Every fixture leaves it untouched, so the cap is never the binding
+# constraint there and deleting it passed the whole suite.
+_kids2 = Household(province="BC", child_ages=[4, 8])
+for _left, _expected in [(7200 * 2, 5000.0),   # full: the annual cap binds
+                         (1000.0, 5000.0),     # 1000/0.20 = 5000, exactly equal
+                         (600.0, 3000.0),      # grant-limited below the annual cap
+                         (0.0, 0.0)]:          # exhausted
+    _p = Profile(income=95000, household=_kids2, savings_capacity=30000,
+                 fhsa_eligible=False, cesg_remaining=_left)
+    _r = optimize(_p, cfg)
+    check(f"RESP room with ${_left:,.0f} of CESG left",
+          _r["allocation"].get("resp", 0.0), _expected)
+    check(f"grant earned with ${_left:,.0f} left",
+          _r["resp_grant_earned"], min(_left, _expected * 0.20))
+
 print(f"\n{'='*72}\n  {PASS} passed, {FAIL} failed\n{'='*72}")
 sys.exit(1 if FAIL else 0)

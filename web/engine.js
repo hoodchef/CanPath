@@ -60,6 +60,10 @@ const TAX_2026 = {
     rrsp: { earned_income_rate: 0.18, dollar_limit: 33810 },
     tfsa: { annual_limit: 7000, cumulative_since_2009: 109000 },
     fhsa: { annual_limit: 8000, lifetime_limit: 40000, max_single_year: 16000 },
+    resp: {
+      lifetime_contribution: 50000, cesg_match_rate: 0.20, cesg_annual_max: 500,
+      cesg_lifetime_max: 7200, cesg_matched_contribution: 2500,
+    },
   },
   payroll: {
     cpp: { rate: 0.0595, basic_exemption: 3500, ympe: 74600 },
@@ -223,8 +227,14 @@ function optimize(profile, cfg, chunk = 250) {
   const fhsaRoom = profile.fhsa_room ??
     (profile.fhsa_eligible ? Math.min(a.fhsa.annual_limit, Math.max(0, fhsaLife)) : 0);
 
-  const allocated = { employer_match: 0, fhsa: 0, rrsp: 0, tfsa: 0, non_registered: 0 };
-  const room = { fhsa: fhsaRoom, tfsa: tfsaRoom };
+  const allocated = { employer_match: 0, fhsa: 0, resp: 0, rrsp: 0, tfsa: 0, non_registered: 0 };
+  // RESP room means "contribution that still attracts the 20% grant".
+  const respKids = profile.resp_children ??
+    ((profile.household && profile.household.child_ages) || []).filter((x) => x < 18).length;
+  const cesgLeft = profile.cesg_remaining ?? a.resp.cesg_lifetime_max * respKids;
+  const respRoom = Math.max(0, Math.min(a.resp.cesg_matched_contribution * respKids,
+    a.resp.cesg_match_rate ? cesgLeft / a.resp.cesg_match_rate : 0));
+  const room = { fhsa: fhsaRoom, tfsa: tfsaRoom, resp: respRoom };
   // Employer match and RRSP share ONE pool: a group-RRSP match consumes the
   // same room the employee's own contributions do, and each matched dollar
   // costs (1 + rate) of it.
@@ -246,6 +256,8 @@ function optimize(profile, cfg, chunk = 250) {
     const scores = {};
     if (matchRoom > 0) scores.employer_match = (profile.employer_match_rate || 0) + emr;
     if (room.fhsa > 0) scores.fhsa = emr;
+    // Grant rate alone: an RESP contribution is not deductible.
+    if (room.resp > 0) scores.resp = a.resp.cesg_match_rate;
     if (pool > 0) scores.rrsp = emr - profile.expected_retirement_rate;
     if (room.tfsa > 0) scores.tfsa = 0;
 
@@ -275,6 +287,7 @@ function optimize(profile, cfg, chunk = 250) {
     allocated[best] += amount;
     remaining -= amount;
     if (sequence.indexOf(best) < 0) sequence.push(best);
+    // "resp" is deliberately absent -- contributions are not deductible.
     if (best === "rrsp" || best === "fhsa" || best === "employer_match") deducted += amount;
     steps.push({ account: best, amount, emr_at_step: emr });
   }
@@ -290,6 +303,7 @@ function optimize(profile, cfg, chunk = 250) {
     tax_refund: before.tax - after.tax,
     benefit_restored: after.benefits - before.benefits,
     employer_match_earned: allocated.employer_match * (profile.employer_match_rate || 0),
+    resp_grant_earned: allocated.resp * a.resp.cesg_match_rate,
     warnings: guardrails(profile, cfg, allocated, pool), steps,
   };
 }

@@ -920,7 +920,7 @@ bc_family_benefit:{max_first_child:1750,max_second_child:1100,max_additional_chi
 single_parent_supplement:500,threshold_1:30176,threshold_2:96562,phaseout_rate:.04,
 floor_first_child:775,floor_second_child:750,floor_additional_child:725},
 cgeb:{max_single:679,max_couple:890,max_per_child:234,child_age_limit:19,threshold:46432,phaseout_rate:.05}},
-accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000}},
+accounts:{rrsp:{earned_income_rate:.18,dollar_limit:33810},tfsa:{annual_limit:7000},fhsa:{annual_limit:8000,lifetime_limit:40000},resp:{lifetime_contribution:50000,cesg_match_rate:.20,cesg_annual_max:500,cesg_lifetime_max:7200,cesg_matched_contribution:2500}},
 payroll:{cpp:{rate:.0595,basic_exemption:3500,ympe:74600},cpp2:{rate:.04,yampe:85000},ei:{rate:.0163,max_insurable:68900}}};
 
 function bracketTax(ti,br){if(ti<=0)return 0;let t=0;
@@ -999,8 +999,16 @@ function optimize(p,cfg,chunk=250){const A=cfg.accounts;
   /* FHSA is lifetime-capped ($40k), not merely annual: granting $8k/yr
      forever projects a deduction that cannot legally exist. */
   const life=p.fhsa_lifetime_remaining==null?A.fhsa.lifetime_limit:p.fhsa_lifetime_remaining;
+  /* RESP room means "contribution that still attracts the 20% grant". Past
+     the matched amount an RESP is a sheltered account with no deduction,
+     which has no claim to rank above a TFSA. */
+  const kids=p.resp_children!=null?p.resp_children
+    :((p.household&&p.household.child_ages)||[]).filter(x=>x<18).length;
+  const cesgLeft=p.cesg_remaining!=null?p.cesg_remaining:A.resp.cesg_lifetime_max*kids;
   const room={fhsa:p.fhsa_eligible?Math.min(A.fhsa.annual_limit,Math.max(0,life)):0,
-    tfsa:A.tfsa.annual_limit};
+    tfsa:A.tfsa.annual_limit,
+    resp:Math.max(0,Math.min(A.resp.cesg_matched_contribution*kids,
+      A.resp.cesg_match_rate?cesgLeft/A.resp.cesg_match_rate:0))};
   /* Employer match and RRSP draw on ONE pool. A group-RRSP match consumes
      the same contribution room the employee's own dollars do, and every
      matched dollar costs (1+rate) of room. Two separate pools let this
@@ -1008,7 +1016,7 @@ function optimize(p,cfg,chunk=250){const A=cfg.accounts;
   const rrspRoom=Math.min(p.income*A.rrsp.earned_income_rate,A.rrsp.dollar_limit);
   let pool=rrspRoom,matchLeft=p.employer_match_cap||0;
   const mult=1+(p.employer_match_rate||0);
-  const alloc={employer_match:0,fhsa:0,rrsp:0,tfsa:0,non_registered:0};
+  const alloc={employer_match:0,fhsa:0,resp:0,rrsp:0,tfsa:0,non_registered:0};
   /* Order accounts were FIRST funded in: the allocation object is unordered,
      and a panel headed "funding order" must not invent its own ranking. */
   const seq=[];
@@ -1019,6 +1027,9 @@ function optimize(p,cfg,chunk=250){const A=cfg.accounts;
     const sc={};
     if(matchRoom>0)sc.employer_match=(p.employer_match_rate||0)+emr;
     if(room.fhsa>0)sc.fhsa=emr;
+    /* Grant rate alone -- an RESP contribution is NOT deductible, so unlike
+       the employer match its score carries no emr term. */
+    if(room.resp>0)sc.resp=A.resp.cesg_match_rate;
     if(pool>0)sc.rrsp=emr-p.expected_retirement_rate;
     if(room.tfsa>0)sc.tfsa=0;
     const keys=Object.keys(sc);let best;
@@ -1041,6 +1052,8 @@ function optimize(p,cfg,chunk=250){const A=cfg.accounts;
     else room[best]-=amt;
     alloc[best]+=amt;rem-=amt;
     if(seq.indexOf(best)<0)seq.push(best);
+    /* "resp" is deliberately absent: adding it would inflate the refund and
+       the restored benefit shown to every household with children. */
     if(best==="rrsp"||best==="fhsa"||best==="employer_match")ded+=amt;}
   const b=netPosition(p.income,p.household,cfg,0),a=netPosition(p.income,p.household,cfg,ded);
   const out={};for(const[k,v]of Object.entries(alloc))if(v>0)out[k]=v;
@@ -1049,6 +1062,7 @@ function optimize(p,cfg,chunk=250){const A=cfg.accounts;
     tax_refund:b.tax-a.tax,
     benefit_restored:a.benefits-b.benefits,
     employer_match_earned:alloc.employer_match*(p.employer_match_rate||0),
+    resp_grant_earned:alloc.resp*A.resp.cesg_match_rate,
     warnings:guardrails(p,cfg,alloc,pool)};}
 function guardrails(p,cfg,alloc,rrspLeft){const w=[];
   const emr=effectiveMarginalRate(p.income,p.household,cfg).effective_rate;
@@ -1228,6 +1242,8 @@ const ACCOUNTS={
     why:"Your employer adds money when you do. Nothing else comes close — take all of it before anything else."},
   fhsa:{name:"FHSA",full:"First Home Savings Account",
     why:"A tax refund going in and no tax coming out for a first home. No other account does both."},
+  resp:{name:"RESP",full:"Registered Education Savings Plan",
+    why:"The government adds 20 cents per dollar for your kids' education, up to $500 a child each year. No deduction, but no other account pays you a guaranteed 20% either."},
   rrsp:{name:"RRSP",full:"Registered Retirement Savings Plan",
     why:"You get a refund now and pay tax later, in retirement, when your income is lower."},
   tfsa:{name:"TFSA",full:"Tax-Free Savings Account",
@@ -2013,7 +2029,7 @@ function update(){
      here declared-but-unused since that move. */
   const homeOrder=(alloc.sequence||[]).filter(k=>alloc.allocation[k]>0);
   const homeRows=homeOrder.concat(
-    ["employer_match","fhsa","rrsp","tfsa","non_registered"]
+    ["employer_match","fhsa","resp","rrsp","tfsa","non_registered"]
       .filter(k=>alloc.allocation[k]>0&&homeOrder.indexOf(k)<0));
   const hel=$("homeAlloc");
   if(!homeRows.length){

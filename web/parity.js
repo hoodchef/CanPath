@@ -42,6 +42,12 @@ for (const c of fx.allocation_cases) {
   check(`${tag} refund`, r.tax_refund, c.tax_refund);
   check(`${tag} benefit`, r.benefit_restored, c.benefit_restored);
   check(`${tag} deducted`, r.total_deducted, c.total_deducted);
+  check(`${tag} resp grant`, r.resp_grant_earned, c.resp_grant_earned);
+  // The invariant that matters most: an RESP contribution is not deductible,
+  // so it must never appear in total_deducted. Derived from the allocation,
+  // not from the solver's own accounting.
+  const ded = (r.allocation.employer_match || 0) + (r.allocation.fhsa || 0) + (r.allocation.rrsp || 0);
+  check(`${tag} RESP excluded from deducted`, r.total_deducted, ded);
   // Invariant, not just a fixture match: the solver may never recommend more
   // deductible contribution than the RRSP room can absorb. Derived from the
   // allocation, not from the solver's own room accounting -- checking the
