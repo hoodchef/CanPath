@@ -147,6 +147,37 @@ readable port of the same reference; both are parity-checked, but only
 `engine.part` reaches users. Behaviour changes go in `engine/` (the reference),
 then both ports.
 
+## Deploy
+
+The site is static: three generated HTML files, a manifest, a service worker
+and four icons. No build step runs on the server.
+
+**GitHub Pages** — Settings → Pages → Source: *Deploy from a branch*, branch
+`main`, folder `/ (root)`. It publishes at `https://<user>.github.io/CanPath/`.
+Every path in the project is relative, so the subdirectory works untouched.
+
+`.nojekyll` is committed deliberately: Pages runs Jekyll by default, which
+silently drops files beginning with an underscore — this repo has
+`_a11y_repro.html`.
+
+**A custom domain** — add a `CNAME` file containing the bare hostname, then
+point DNS at GitHub:
+
+| Record | Host | Value |
+|---|---|---|
+| A | `@` | `185.199.108.153` |
+| A | `@` | `185.199.109.153` |
+| A | `@` | `185.199.110.153` |
+| A | `@` | `185.199.111.153` |
+| CNAME | `www` | `<user>.github.io` |
+
+Then tick *Enforce HTTPS* once the certificate issues. **The service worker
+requires HTTPS**, so the app is only installable on a real domain or on
+`localhost` — over plain HTTP it runs but will not install or work offline.
+
+Any static host works equally well (Netlify, Cloudflare Pages, S3). There is
+nothing GitHub-specific in the app itself.
+
 ## Data sources
 
 | Input | Source |

@@ -1,18 +1,52 @@
 {
-  "name": "CanPath — Canadian tax & benefit optimizer",
+  "name": "CanPath \u2014 Canadian tax & benefit optimizer",
   "short_name": "CanPath",
   "description": "See your true effective marginal rate, including the benefit clawbacks your tax bracket hides, and where your savings should actually go.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#EEF1F5",
-  "theme_color": "#0E1B2C",
+  "orientation": "any",
+  "background_color": "#080809",
+  "theme_color": "#080809",
   "lang": "en-CA",
-  "categories": ["finance", "productivity", "utilities"],
+  "categories": [
+    "finance",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "/",
+  "shortcuts": [
+    {
+      "name": "Allocate my savings",
+      "short_name": "Allocate",
+      "url": "./allocate.html",
+      "description": "Where the next dollar should go"
+    },
+    {
+      "name": "Learn",
+      "short_name": "Learn",
+      "url": "./learn.html",
+      "description": "How the accounts, credits and clawbacks work"
+    }
   ]
 }
