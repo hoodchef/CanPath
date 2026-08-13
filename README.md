@@ -40,6 +40,11 @@ the financially fluent.
 - **Depletion analysis** — how long the balance funds your draw, in years and
   to an age, since a 4% coverage figure never says when the money runs out
 - **Take-home breakdown** — gross to net through federal tax, BC tax, CPP and EI
+- **A savings-capacity worksheet** — derives the monthly savings figure from
+  take-home minus housing, fixed and variable spending, instead of asking you
+  to guess the input every other number depends on. Stateless: nothing stored
+- **CPP timing** — 60 vs 65 vs 70 side by side with the nominal break-even age,
+  and a start age separable from the retirement date
 - **OAS recovery tax** — the retirement-side clawback: 15¢ of every dollar of
   individual net income above $95,323, netted out of the readiness verdict
 - **Linear or log scale**, because forty years of compounding hides the first ten
@@ -198,8 +203,12 @@ returning users keep running last year's brackets from cache.
 
 ## Known limits
 
-- British Columbia only. Each province is a config block; Quebec is a separate
-  product (own return, QPP, abatement, French-language obligations).
+- **British Columbia only, and this is the biggest limit on who can use it.**
+  The engine is province-ready — `provincial_tax()` already dispatches on
+  `cfg["provinces"][code]` — but `data/taxyear_2026.json` contains one province.
+  Adding another is a data edit of brackets, a BPA and any low-income credit,
+  blocked purely on sourced figures. Quebec is a separate product regardless
+  (own return, QPP, abatement, French-language obligations).
 - GIS and OAS clawback are flagged by guardrails but not yet modelled, so
   retirement-age scenarios are incomplete.
 - **BCFB and CGEB figures are user-supplied and NOT independently verified.**

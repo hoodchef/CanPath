@@ -29,7 +29,8 @@ from engine.marginal import (effective_marginal_rate, net_position,  # noqa: E40
                              value_of_contribution)
 from engine.accounts import Profile, optimize                       # noqa: E402
 from engine.projection import (RetirementPlan, cost_of_waiting,     # noqa: E402
-                               cpp_estimate, depletion_years, future_value,
+                               cpp_breakeven_age, cpp_estimate,
+                               depletion_years, future_value,
                                oas_estimate, oas_full_recovery_income,
                                oas_recovery_tax, real_rate, required_monthly,
                                retirement_readiness)
@@ -85,6 +86,9 @@ PROJECTION = [
 ]
 
 PENSION_AGES = [60, 62, 65, 67, 70]
+
+# (early_start, late_start) -- the timing decision people actually face.
+CPP_BREAKEVEN = [(60, 65), (60, 70), (65, 70), (62, 67), (60, 61), (65, 65), (70, 65)]
 
 # (years_in_canada, net_income) -- straddles the threshold, the middle of the
 # recovery band, the exact full-recovery point, and well past it.
@@ -184,6 +188,11 @@ def build(cfg):
     depletion = [{"balance": b, "draw": d, "rate": rt,
                   "years": depletion_years(b, d, rt)} for b, d, rt in DEPLETION]
 
+    breakeven = [{"early": e, "late": l, "early_annual": r(cpp_estimate(e)),
+                  "late_annual": r(cpp_estimate(l)),
+                  "breakeven_age": cpp_breakeven_age(e, l)}
+                 for e, l in CPP_BREAKEVEN]
+
     oas_recovery = []
     for yrs, ni in OAS_RECOVERY:
         o = oas_estimate(65, yrs)
@@ -223,6 +232,7 @@ def build(cfg):
         "projection_cases": projection,
         "payroll_cases": payroll,
         "depletion_cases": depletion,
+        "cpp_breakeven_cases": breakeven,
         "oas_recovery_cases": oas_recovery,
         "pension_cases": pension,
         "readiness_cases": readiness,

@@ -894,6 +894,57 @@
       "years": 0
     }
   ],
+  "cpp_breakeven_cases": [
+    {
+      "early": 60,
+      "late": 65,
+      "early_annual": 7106.688,
+      "late_annual": 11104.2,
+      "breakeven_age": 73.9
+    },
+    {
+      "early": 60,
+      "late": 70,
+      "early_annual": 7106.688,
+      "late_annual": 15767.964,
+      "breakeven_age": 78.3
+    },
+    {
+      "early": 65,
+      "late": 70,
+      "early_annual": 11104.2,
+      "late_annual": 15767.964,
+      "breakeven_age": 82.0
+    },
+    {
+      "early": 62,
+      "late": 67,
+      "early_annual": 8705.6928,
+      "late_annual": 12969.7056,
+      "breakeven_age": 77.3
+    },
+    {
+      "early": 60,
+      "late": 61,
+      "early_annual": 7106.688,
+      "late_annual": 7906.1904,
+      "breakeven_age": 69.9
+    },
+    {
+      "early": 65,
+      "late": 65,
+      "early_annual": 11104.2,
+      "late_annual": 11104.2,
+      "breakeven_age": 65
+    },
+    {
+      "early": 70,
+      "late": 65,
+      "early_annual": 15767.964,
+      "late_annual": 11104.2,
+      "breakeven_age": 70
+    }
+  ],
   "oas_recovery_cases": [
     {
       "years_in_canada": 40,

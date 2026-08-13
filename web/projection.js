@@ -65,10 +65,31 @@ function oasAfterRecovery(oasAnnual,netIncome){
 function oasFullRecoveryIncome(oasAnnual){
   return oasAnnual<=0?OAS_2026.clawback_threshold
     :OAS_2026.clawback_threshold+oasAnnual/OAS_2026.clawback_rate;}
+
+/* The age at which cumulative CPP from a later start overtakes an earlier
+   one. Nominal and undiscounted on purpose: the discounted answer depends
+   on a rate the user must supply and cannot verify, while the nominal
+   crossover is a fact about the pension formula. */
+function cppBreakevenAge(earlyStart,lateStart,share,maxAge){
+  share=share==null?1:share; maxAge=maxAge==null?100:maxAge;
+  if(lateStart<=earlyStart)return earlyStart;
+  const e=cppEstimate(earlyStart,share), l=cppEstimate(lateStart,share);
+  if(l<=e)return maxAge;
+  for(let age=lateStart;age<maxAge;age+=1){
+    if(e*(age-earlyStart)<=l*(age-lateStart)){
+      for(let a=age-1;a<age;a+=0.1)
+        if(e*(a-earlyStart)<=l*(a-lateStart))return Math.round(a*10)/10;
+      return Math.round(age*10)/10;
+    }
+  }
+  return maxAge;
+}
 function retirementReadiness(p){
   const years=Math.max(0,p.retirement_age-p.current_age);
   const wr=p.withdrawal_rate??DEFAULT_WITHDRAWAL;
-  const cpp=cppEstimate(p.retirement_age,p.cpp_share??1);
+  /* CPP start is separable from the retirement date; default to it. */
+  const cppStart=p.cpp_start_age!=null?p.cpp_start_age:p.retirement_age;
+  const cpp=cppEstimate(cppStart,p.cpp_share??1);
   const oasGross=oasEstimate(Math.max(p.retirement_age,65),p.years_in_canada??40);
   /* Break the circularity at the stated target income -- see the reference. */
   const oasRecovery=oasRecoveryTax(oasGross,p.target_annual_income);
@@ -80,7 +101,7 @@ function retirementReadiness(p){
   const projReal=futureValue(p.current_savings,p.monthly_contribution,rr,years);
   const projNom=futureValue(p.current_savings,p.monthly_contribution,p.annual_rate,years);
   const need=requiredMonthly(nest,p.current_savings,rr,years);
-  return{years_to_retirement:years,cpp_annual:cpp,oas_annual:oas,
+  return{years_to_retirement:years,cpp_annual:cpp,cpp_start_age:cppStart,oas_annual:oas,
     oas_gross:oasGross,oas_recovery_tax:oasRecovery,government_annual:government,
     income_gap:gap,nest_egg_needed:nest,projected_real:projReal,projected_nominal:projNom,
     total_contributed:p.current_savings+p.monthly_contribution*12*years,
@@ -114,5 +135,5 @@ function costOfWaiting(p,delay=5){
 }
 if(typeof module!=="undefined"&&module.exports)module.exports={CPP_2026,OAS_2026,realRate,
   monthlyRate,futureValue,requiredMonthly,projectionSeries,cppEstimate,oasEstimate,
-  retirementReadiness,costOfWaiting,depletionYears,
+  retirementReadiness,costOfWaiting,depletionYears,cppBreakevenAge,
   oasRecoveryTax,oasAfterRecovery,oasFullRecoveryIncome};

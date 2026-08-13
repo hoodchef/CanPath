@@ -20,7 +20,7 @@ const pm = [block("projection")];
 const tmp = path.join(require("os").tmpdir(), "canpath_shipped.js");
 fs.writeFileSync(tmp, m[0] + "\n" + pm[0] +
   "\nmodule.exports={TAX_2026,totalBenefits,netPosition,effectiveMarginalRate,valueOfContribution,optimize," +
-  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,payrollDeductions,oasRecoveryTax,oasFullRecoveryIncome};");
+  "realRate,futureValue,requiredMonthly,cppEstimate,oasEstimate,retirementReadiness,costOfWaiting,depletionYears,cppBreakevenAge,payrollDeductions,oasRecoveryTax,oasFullRecoveryIncome};");
 const E = require(tmp);
 const fx = JSON.parse(fs.readFileSync(path.join(root, "fixtures.json"), "utf8"));
 
@@ -98,6 +98,11 @@ for(const c of fx.oas_recovery_cases){
   chk(`oasgross ${c.years_in_canada}y`,o,c.oas_gross);
   chk(`oasrecovery ${c.years_in_canada}y@${c.net_income}`,E.oasRecoveryTax(o,c.net_income),c.recovery);
   chk(`oasfullrec ${c.years_in_canada}y`,E.oasFullRecoveryIncome(o),c.full_recovery_income);
+}
+for(const c of fx.cpp_breakeven_cases){
+  chk(`cppearly ${c.early}`,E.cppEstimate(c.early),c.early_annual);
+  chk(`cpplate ${c.late}`,E.cppEstimate(c.late),c.late_annual);
+  chk(`cppbreakeven ${c.early}->${c.late}`,E.cppBreakevenAge(c.early,c.late),c.breakeven_age,0.05);
 }
 console.log(`shipped index.html vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

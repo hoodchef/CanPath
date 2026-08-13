@@ -166,6 +166,12 @@ class RetirementPlan:
     withdrawal_rate: float = DEFAULT_WITHDRAWAL_RATE
     years_in_canada: float = 40
     cpp_share: float = 1.0
+    # When CPP STARTS, which is not the same decision as when you stop
+    # working. Deferring to 70 pays 42% more for life; taking it at 60 pays
+    # 36% less. Tying it to the retirement date hid the single largest
+    # discretionary choice in the whole retirement picture. Defaults to the
+    # retirement age, so every existing caller is unaffected.
+    cpp_start_age: float = None
 
 
 def retirement_readiness(plan: RetirementPlan) -> dict:
@@ -179,7 +185,9 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
     """
     years = max(0.0, plan.retirement_age - plan.current_age)
 
-    cpp = cpp_estimate(plan.retirement_age, plan.cpp_share)
+    cpp_start = (plan.cpp_start_age if plan.cpp_start_age is not None
+                 else plan.retirement_age)
+    cpp = cpp_estimate(cpp_start, plan.cpp_share)
     oas_gross = oas_estimate(max(plan.retirement_age, 65), plan.years_in_canada)
     # The recovery tax depends on retirement net income, which depends on the
     # portfolio, which depends on the gap -- circular. Break it at the user's
@@ -204,6 +212,7 @@ def retirement_readiness(plan: RetirementPlan) -> dict:
     return {
         "years_to_retirement": years,
         "cpp_annual": cpp,
+        "cpp_start_age": cpp_start,
         "oas_annual": oas,
         "oas_gross": oas_gross,
         "oas_recovery_tax": oas_recovery,
@@ -255,6 +264,41 @@ def oas_full_recovery_income(oas_annual: float) -> float:
         return OAS_2026["clawback_threshold"]
     return (OAS_2026["clawback_threshold"]
             + oas_annual / OAS_2026["clawback_rate"])
+
+
+def cpp_breakeven_age(early_start: float, late_start: float,
+                      share_of_average: float = 1.0,
+                      max_age: float = 100.0) -> float:
+    """
+    The age at which cumulative CPP from a later start overtakes an earlier one.
+
+    Nominal cumulative dollars, undiscounted, and deliberately so: the
+    discounted answer depends entirely on a rate the user would have to
+    supply and cannot verify, while the nominal crossover is a fact about
+    the pension formula. Live past it and deferring won; die before it and
+    taking it early won. That is the question people actually ask.
+
+    Returns the age (to one decimal) where the later start pulls ahead, or
+    max_age if it never does within a plausible lifetime.
+    """
+    if late_start <= early_start:
+        return early_start
+    early = cpp_estimate(early_start, share_of_average)
+    late = cpp_estimate(late_start, share_of_average)
+    if late <= early:
+        return max_age          # deferring never pays; cannot cross
+    age = late_start
+    while age < max_age:
+        if early * (age - early_start) <= late * (age - late_start):
+            # Step back and refine to a tenth of a year.
+            a = age - 1.0
+            while a < age:
+                if early * (a - early_start) <= late * (a - late_start):
+                    return round(a, 1)
+                a += 0.1
+            return round(age, 1)
+        age += 1.0
+    return max_age
 
 
 def depletion_years(balance: float, annual_draw: float, annual_rate: float,

@@ -86,6 +86,26 @@ for cls in ("neg", "pos", "pill-var", "mark", "filled"):
 # The KPI modifier must not collide with the guardrail callout box.
 check("KPI value modifier is not .warn", '.kpi .v.warn' not in html)
 
+print("\n--- every button with an id is actually wired to something ---")
+# The reverse of the check below, and the one that was missing: an id can
+# exist in the markup while the handler that gives it behaviour was never
+# inserted. A .replace() against an anchor that does not exist is a silent
+# no-op, which has shipped a dead control more than once.
+_theme = open(os.path.join(ROOT, "theme.part")).read()
+_src = app + _theme          # theme.part owns the toggle, app.part the rest
+
+
+def _wired(bid):
+    if f'"{bid}"' in _src:
+        return True
+    # Ids built by concatenation, e.g. $("tabbtn-"+t): accept the stem.
+    return "-" in bid and f'"{bid.rsplit("-", 1)[0]}-"' in _src
+
+
+_btns = set(re.findall(r'<button[^>]*id="([\w-]+)"', html))
+_unwired = sorted(b for b in _btns if not _wired(b))
+check("no button id is missing a handler", not _unwired, f"dead controls: {_unwired}")
+
 print("\n--- allocate.html: every id its script reads exists in the page ---")
 # This block used to sit BELOW sys.exit() and had never once executed. The
 # allocate page's id contract was unguarded the entire time it existed.

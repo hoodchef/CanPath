@@ -584,6 +584,34 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
       <div class="field">
         <label for="save">Monthly savings</label>
         <input type="number" id="save" value="500" min="0" max="20000" step="50">
+        <details class="grp" id="saveWork" style="border:1px solid var(--rule);margin-top:8px">
+          <summary>Work it out from your pay</summary>
+          <div class="grpbody">
+            <div class="assum" style="border:0;padding:0;margin:0 0 8px">
+              Take-home is computed from the income above, after federal tax,
+              provincial tax, CPP and EI. Nothing here is stored.
+            </div>
+            <table class="dt" style="min-width:0;font-size:12.5px">
+              <tbody>
+                <tr><td>Take-home, monthly</td><td id="wTake">$0</td></tr>
+                <tr><td><label for="wHousing" style="margin:0;font-weight:400">Housing</label></td>
+                    <td><input type="number" id="wHousing" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Monthly housing cost"></td></tr>
+                <tr><td><label for="wFixed" style="margin:0;font-weight:400">Other fixed</label></td>
+                    <td><input type="number" id="wFixed" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Other fixed monthly costs"></td></tr>
+                <tr><td><label for="wVar" style="margin:0;font-weight:400">Variable</label></td>
+                    <td><input type="number" id="wVar" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Variable monthly spending"></td></tr>
+                <tr class="mark"><td><b>Left over</b></td><td><b id="wLeft">$0</b></td></tr>
+              </tbody>
+            </table>
+            <div class="btnrow" style="margin-top:9px">
+              <button class="btn primary" type="button" id="wUse">Use this figure</button>
+            </div>
+            <div class="assum" id="wNote"></div>
+          </div>
+        </details>
       </div>
       <div class="field">
         <label for="have">Already invested</label>
@@ -652,6 +680,14 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
           <span class="num" id="wdrawOut" style="width:52px;text-align:right;font-weight:600">4.0%</span>
         </div>
         <div class="hint">Sets the nest egg your target income implies.</div>
+      </div>
+      <div class="field">
+        <label for="cppstart">When you start CPP</label>
+        <div class="row">
+          <input type="range" id="cppstart" value="65" min="60" max="70" step="1" style="flex:1">
+          <span class="num" id="cppstartOut" style="width:52px;text-align:right;font-weight:600">65</span>
+        </div>
+        <div class="hint" id="cppstartHint"></div>
       </div>
       <div class="field">
         <label for="cppshare">CPP relative to the average</label>
@@ -778,6 +814,18 @@ footer{max-width:1180px;margin:0 auto;padding:6px 24px 40px;font-size:11.5px;col
       <div class="verdict" id="verdict"></div>
       <div class="assum" id="depletion"></div>
       <div class="assum" id="oasClaw" hidden></div>
+    </div>
+    <div class="block">
+      <div class="block-h">
+        <h3>When to start CPP</h3>
+        <span class="sub">Taking it early costs 0.6% a month; deferring pays 0.7%</span>
+      </div>
+      <div class="dt-wrap" style="max-height:none">
+        <table class="dt" style="min-width:420px"><thead><tr>
+          <th>Start at</th><th>Annual CPP</th><th>vs age 65</th><th>Break-even vs 60</th>
+        </tr></thead><tbody id="cppTable"></tbody></table>
+      </div>
+      <div class="assum" id="cppNote"></div>
     </div>
     <div class="block">
       <div class="block-h"><h3>The cost of waiting</h3><span class="sub">A five-year delay</span></div>
@@ -1088,10 +1136,31 @@ function oasAfterRecovery(oasAnnual,netIncome){
 function oasFullRecoveryIncome(oasAnnual){
   return oasAnnual<=0?OAS_2026.clawback_threshold
     :OAS_2026.clawback_threshold+oasAnnual/OAS_2026.clawback_rate;}
+
+/* The age at which cumulative CPP from a later start overtakes an earlier
+   one. Nominal and undiscounted on purpose: the discounted answer depends
+   on a rate the user must supply and cannot verify, while the nominal
+   crossover is a fact about the pension formula. */
+function cppBreakevenAge(earlyStart,lateStart,share,maxAge){
+  share=share==null?1:share; maxAge=maxAge==null?100:maxAge;
+  if(lateStart<=earlyStart)return earlyStart;
+  const e=cppEstimate(earlyStart,share), l=cppEstimate(lateStart,share);
+  if(l<=e)return maxAge;
+  for(let age=lateStart;age<maxAge;age+=1){
+    if(e*(age-earlyStart)<=l*(age-lateStart)){
+      for(let a=age-1;a<age;a+=0.1)
+        if(e*(a-earlyStart)<=l*(a-lateStart))return Math.round(a*10)/10;
+      return Math.round(age*10)/10;
+    }
+  }
+  return maxAge;
+}
 function retirementReadiness(p){
   const years=Math.max(0,p.retirement_age-p.current_age);
   const wr=p.withdrawal_rate??DEFAULT_WITHDRAWAL;
-  const cpp=cppEstimate(p.retirement_age,p.cpp_share??1);
+  /* CPP start is separable from the retirement date; default to it. */
+  const cppStart=p.cpp_start_age!=null?p.cpp_start_age:p.retirement_age;
+  const cpp=cppEstimate(cppStart,p.cpp_share??1);
   const oasGross=oasEstimate(Math.max(p.retirement_age,65),p.years_in_canada??40);
   /* Break the circularity at the stated target income -- see the reference. */
   const oasRecovery=oasRecoveryTax(oasGross,p.target_annual_income);
@@ -1103,7 +1172,7 @@ function retirementReadiness(p){
   const projReal=futureValue(p.current_savings,p.monthly_contribution,rr,years);
   const projNom=futureValue(p.current_savings,p.monthly_contribution,p.annual_rate,years);
   const need=requiredMonthly(nest,p.current_savings,rr,years);
-  return{years_to_retirement:years,cpp_annual:cpp,oas_annual:oas,
+  return{years_to_retirement:years,cpp_annual:cpp,cpp_start_age:cppStart,oas_annual:oas,
     oas_gross:oasGross,oas_recovery_tax:oasRecovery,government_annual:government,
     income_gap:gap,nest_egg_needed:nest,projected_real:projReal,projected_nominal:projNom,
     total_contributed:p.current_savings+p.monthly_contribution*12*years,
@@ -1267,6 +1336,7 @@ function read(){
     retrate:(+$("retrate").value||0)/100,
     wdraw:(+$("wdraw").value||4)/100,
     cppShare:(+$("cppshare").value||0)/100,
+    cppStart:+$("cppstart").value||65,
     infl:state.basis==="real"?0.02:0
   };
 }
@@ -1783,6 +1853,7 @@ function update(){
   const equivMonthly=years>0?requiredMonthly(totalFV,i.have,rr,years):0;
   const plan={current_age:i.age,retirement_age:i.retage,target_annual_income:i.target,
     current_savings:i.have,monthly_contribution:equivMonthly,annual_rate:i.rate,
+    cpp_start_age:i.cppStart,
     inflation:i.infl,withdrawal_rate:i.wdraw,cpp_share:i.cppShare};
   const ready=retirementReadiness(plan);
 
@@ -1998,6 +2069,50 @@ function update(){
       '<div class="warn"><span class="mark" aria-hidden="true">!</span><span>'+t+'</span></div>').join("");
   }
 
+  /* ---- savings-capacity worksheet ----
+     The monthly savings figure drove the projection, the allocation and the
+     readiness verdict, and was a number the user guessed. This derives it
+     from the take-home the engine already computes. Stateless by design:
+     storing a household budget would break the promise in the footer. */
+  $("wTake").textContent=money(net/12);
+  const wOut=Math.max(0,net/12-(+$("wHousing").value||0)
+    -(+$("wFixed").value||0)-(+$("wVar").value||0));
+  $("wLeft").textContent=money(wOut);
+  const spent=(+$("wHousing").value||0)+(+$("wFixed").value||0)+(+$("wVar").value||0);
+  $("wNote").innerHTML=spent<=0
+    ? "Fill in what you spend and this becomes your savings figure."
+    : `That is <b>${net>0?pct(wOut/(net/12)):"0%"}</b> of take-home. `+
+      `A starting split many people use is roughly half to needs, 30% to wants, `+
+      `20% to savings and debt — a sanity check, not a rule.`;
+
+  /* ---- CPP timing ----
+     cpp_estimate has always taken a start age and nothing exposed it, while
+     retirement_readiness assumed CPP began the day you stopped working. */
+  $("cppstartOut").textContent=i.cppStart;
+  const at65=cppEstimate(65,i.cppShare);
+  const rows=[60,62,65,67,70].map(age=>{
+    const amt=cppEstimate(age,i.cppShare);
+    const be=age>60?cppBreakevenAge(60,age,i.cppShare):null;
+    return `<tr${age===i.cppStart?' class="mark"':''}><td>${age}</td>`+
+      `<td>${money(amt)}</td>`+
+      `<td style="color:var(--${amt>=at65?"keep":"claw"})">`+
+      `${amt===at65?"—":(amt>at65?"+":"")+pct((amt-at65)/at65)}</td>`+
+      `<td>${be===null?"—":(be>=100?"never":"age "+be)}</td></tr>`;
+  });
+  $("cppTable").innerHTML=rows.join("");
+  const beSel=i.cppStart>60?cppBreakevenAge(60,i.cppStart,i.cppShare):null;
+  $("cppstartHint").innerHTML=i.cppStart===65
+    ? "65 is the reference age. Earlier is permanently smaller, later permanently larger."
+    : i.cppStart<65
+      ? `Starting at ${i.cppStart} pays <b>${pct((cppEstimate(i.cppStart,i.cppShare)-at65)/at65)}</b> versus 65, for life.`
+      : `Deferring to ${i.cppStart} pays <b>+${pct((cppEstimate(i.cppStart,i.cppShare)-at65)/at65)}</b> versus 65, for life.`;
+  $("cppNote").innerHTML=
+    `Break-even is cumulative and undiscounted: live past it and deferring won, `+
+    `die before it and taking it early won. `+
+    (beSel?`Against starting at 60, your choice of ${i.cppStart} breaks even at `+
+      `<b>age ${beSel}</b>. `:"")+
+    `CPP is taxable, and it counts as income for the OAS recovery tax.`;
+
   /* ---- cost of waiting ---- */
   const wait=costOfWaiting(plan,5);
   const ownSkipped=i.monthly*12*Math.min(5,years);
@@ -2043,7 +2158,8 @@ function update(){
 
 /* ---- wiring ---- */
 ["income","partner","save","have","age","retage","target","growth","fhsa","hasMatch",
- "matchRate","matchCap","retrate","wdraw","cppshare","showBand"].forEach(id=>{
+ "matchRate","matchCap","retrate","wdraw","cppshare","cppstart","showBand",
+ "wHousing","wFixed","wVar"].forEach(id=>{
   const el=$(id);if(!el)return;
   el.addEventListener("input",()=>{
     if(id==="income")$("incomeRange").value=Math.min(Math.max(+$("income").value,0),300000);
@@ -2087,6 +2203,14 @@ document.addEventListener("keydown",e=>{
   /* "alloc" moved to its own page; the old map blanked every panel. */
   const map={"1":"proj","2":"marg","3":"sched"};
   if(map[e.key]){e.preventDefault();showTab(map[e.key]);}
+});
+
+$("wUse").addEventListener("click",()=>{
+  /* Writes the derived figure into the field it explains, then lets the
+     normal input path recompute everything downstream. */
+  const el=$("save");
+  el.value=Math.round(Math.max(0,+$("wLeft").textContent.replace(/[^0-9.]/g,"")||0));
+  el.dispatchEvent(new Event("input",{bubbles:true}));
 });
 
 if("serviceWorker" in navigator&&location.protocol!=="file:")

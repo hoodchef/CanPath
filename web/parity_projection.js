@@ -39,5 +39,10 @@ for(const c of fx.oas_recovery_cases){
   chk(`oasrecovery ${c.years_in_canada}y@${c.net_income}`,P.oasRecoveryTax(o,c.net_income),c.recovery);
   chk(`oasfullrec ${c.years_in_canada}y`,P.oasFullRecoveryIncome(o),c.full_recovery_income);
 }
+for(const c of fx.cpp_breakeven_cases){
+  chk(`cppearly ${c.early}`,P.cppEstimate(c.early),c.early_annual);
+  chk(`cpplate ${c.late}`,P.cppEstimate(c.late),c.late_annual);
+  chk(`cppbreakeven ${c.early}->${c.late}`,P.cppBreakevenAge(c.early,c.late),c.breakeven_age,0.05);
+}
 console.log(`projection JS port vs Python reference: ${pass} passed, ${fail} failed`);
 process.exit(fail?1:0);

@@ -93,6 +93,34 @@
       <div class="field">
         <label for="save">Monthly savings</label>
         <input type="number" id="save" value="500" min="0" max="20000" step="50">
+        <details class="grp" id="saveWork" style="border:1px solid var(--rule);margin-top:8px">
+          <summary>Work it out from your pay</summary>
+          <div class="grpbody">
+            <div class="assum" style="border:0;padding:0;margin:0 0 8px">
+              Take-home is computed from the income above, after federal tax,
+              provincial tax, CPP and EI. Nothing here is stored.
+            </div>
+            <table class="dt" style="min-width:0;font-size:12.5px">
+              <tbody>
+                <tr><td>Take-home, monthly</td><td id="wTake">$0</td></tr>
+                <tr><td><label for="wHousing" style="margin:0;font-weight:400">Housing</label></td>
+                    <td><input type="number" id="wHousing" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Monthly housing cost"></td></tr>
+                <tr><td><label for="wFixed" style="margin:0;font-weight:400">Other fixed</label></td>
+                    <td><input type="number" id="wFixed" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Other fixed monthly costs"></td></tr>
+                <tr><td><label for="wVar" style="margin:0;font-weight:400">Variable</label></td>
+                    <td><input type="number" id="wVar" value="0" min="0" max="20000" step="50"
+                        style="width:96px;padding:4px 6px" aria-label="Variable monthly spending"></td></tr>
+                <tr class="mark"><td><b>Left over</b></td><td><b id="wLeft">$0</b></td></tr>
+              </tbody>
+            </table>
+            <div class="btnrow" style="margin-top:9px">
+              <button class="btn primary" type="button" id="wUse">Use this figure</button>
+            </div>
+            <div class="assum" id="wNote"></div>
+          </div>
+        </details>
       </div>
       <div class="field">
         <label for="have">Already invested</label>
@@ -161,6 +189,14 @@
           <span class="num" id="wdrawOut" style="width:52px;text-align:right;font-weight:600">4.0%</span>
         </div>
         <div class="hint">Sets the nest egg your target income implies.</div>
+      </div>
+      <div class="field">
+        <label for="cppstart">When you start CPP</label>
+        <div class="row">
+          <input type="range" id="cppstart" value="65" min="60" max="70" step="1" style="flex:1">
+          <span class="num" id="cppstartOut" style="width:52px;text-align:right;font-weight:600">65</span>
+        </div>
+        <div class="hint" id="cppstartHint"></div>
       </div>
       <div class="field">
         <label for="cppshare">CPP relative to the average</label>
@@ -287,6 +323,18 @@
       <div class="verdict" id="verdict"></div>
       <div class="assum" id="depletion"></div>
       <div class="assum" id="oasClaw" hidden></div>
+    </div>
+    <div class="block">
+      <div class="block-h">
+        <h3>When to start CPP</h3>
+        <span class="sub">Taking it early costs 0.6% a month; deferring pays 0.7%</span>
+      </div>
+      <div class="dt-wrap" style="max-height:none">
+        <table class="dt" style="min-width:420px"><thead><tr>
+          <th>Start at</th><th>Annual CPP</th><th>vs age 65</th><th>Break-even vs 60</th>
+        </tr></thead><tbody id="cppTable"></tbody></table>
+      </div>
+      <div class="assum" id="cppNote"></div>
     </div>
     <div class="block">
       <div class="block-h"><h3>The cost of waiting</h3><span class="sub">A five-year delay</span></div>
