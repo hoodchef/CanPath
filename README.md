@@ -245,6 +245,13 @@ returning users keep running last year's brackets from cache.
 - CPP and EI are excluded from the marginal rate **by design**: they are levied
   on gross employment income and are unaffected by an RRSP deduction.
 
+## Continuing this project
+
+[`CONTINUE.md`](CONTINUE.md) is the handoff document: which figures are
+trustworthy and which are not, what is blocked and on what data, the
+test-integrity traps this repo has already fallen into, and the ranked next
+steps. Read it before changing a number.
+
 ## Not advice
 
 This is an educational model. It is not tax, financial, or investment advice,
